@@ -40,3 +40,37 @@ public record UserListResponse(
     public bool HasNextPage => Page < TotalPages;
     public bool HasPreviousPage => Page > 1;
 }
+
+public record UserStatisticsResponse(
+    int TotalUsers,
+    int ActiveUsers,
+    int InactiveUsers,
+    int InstructorCount,
+    int StudentCount,
+    int AdminCount,
+    UserRoleDistribution RoleDistribution,
+    UserActivityStats ActivityStats,
+    UserGrowthStats GrowthStats,
+    DateTime LastUpdated
+);
+
+public record UserRoleDistribution(
+    decimal StudentPercentage,
+    decimal InstructorPercentage,
+    decimal AdminPercentage
+);
+
+public record UserActivityStats(
+    int UsersWithRecentActivity,
+    int UsersLoggedInThisWeek,
+    int UsersLoggedInThisMonth,
+    decimal ActiveUserPercentage
+);
+
+public record UserGrowthStats(
+    int NewUsersThisMonth,
+    int NewUsersLastMonth,
+    decimal GrowthRate,
+    int NewUsersThisWeek,
+    int NewUsersToday
+);
