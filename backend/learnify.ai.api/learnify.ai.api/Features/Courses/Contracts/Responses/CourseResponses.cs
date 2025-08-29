@@ -19,6 +19,7 @@ public record CourseResponse(
     string? ThumbnailUrl,
     string? VideoPreviewUrl,
     bool IsPublished,
+    bool IsFeatured,
     int? MaxStudents,
     string? Prerequisites,
     string LearningObjectives,
@@ -41,6 +42,7 @@ public record CourseSummaryResponse(
     CourseLevel Level,
     string? ThumbnailUrl,
     bool IsPublished,
+    bool IsFeatured,
     int TotalStudents,
     double AverageRating,
     DateTime CreatedAt

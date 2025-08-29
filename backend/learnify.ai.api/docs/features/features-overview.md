@@ -28,6 +28,7 @@ DELETE /api/users/{id}                # Delete user
 # User Role Management
 GET    /api/users/instructors         # Get all instructors
 GET    /api/users/students            # Get all students
+GET    /api/users/admins              # Get all admins
 PUT    /api/users/{id}/activate       # Activate user
 PUT    /api/users/{id}/deactivate     # Deactivate user
 

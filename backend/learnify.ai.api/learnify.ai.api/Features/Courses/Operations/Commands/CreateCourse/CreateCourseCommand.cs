@@ -21,6 +21,7 @@ public record CreateCourseCommand(
     string? ThumbnailUrl,
     string? VideoPreviewUrl,
     bool IsPublished,
+    bool IsFeatured,
     int? MaxStudents,
     string? Prerequisites,
     string LearningObjectives
@@ -105,6 +106,7 @@ public class CreateCourseHandler : IRequestHandler<CreateCourseCommand, CourseRe
             ThumbnailUrl = request.ThumbnailUrl,
             VideoPreviewUrl = request.VideoPreviewUrl,
             IsPublished = request.IsPublished,
+            IsFeatured = request.IsFeatured,
             MaxStudents = request.MaxStudents,
             Prerequisites = request.Prerequisites,
             LearningObjectives = request.LearningObjectives
@@ -130,6 +132,7 @@ public class CreateCourseHandler : IRequestHandler<CreateCourseCommand, CourseRe
             createdCourse.ThumbnailUrl,
             createdCourse.VideoPreviewUrl,
             createdCourse.IsPublished,
+            createdCourse.IsFeatured,
             createdCourse.MaxStudents,
             createdCourse.Prerequisites,
             createdCourse.LearningObjectives,

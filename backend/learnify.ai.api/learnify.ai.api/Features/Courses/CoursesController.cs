@@ -3,7 +3,19 @@ using learnify.ai.api.Common.Controllers;
 using learnify.ai.api.Common.Models;
 using learnify.ai.api.Features.Courses.Operations.Queries.GetCourses;
 using learnify.ai.api.Features.Courses.Operations.Queries.GetCourseById;
+using learnify.ai.api.Features.Courses.Operations.Queries.GetFeaturedCourses;
+using learnify.ai.api.Features.Courses.Operations.Queries.GetPopularCourses;
+using learnify.ai.api.Features.Courses.Operations.Queries.GetRecentCourses;
+using learnify.ai.api.Features.Courses.Operations.Queries.GetCourseAnalytics;
+using learnify.ai.api.Features.Courses.Operations.Queries.GetCourseStudents;
+using learnify.ai.api.Features.Courses.Operations.Queries.GetCourseCompletionRate;
+using learnify.ai.api.Features.Courses.Operations.Queries.GetCourseLessons;
 using learnify.ai.api.Features.Courses.Operations.Commands.CreateCourse;
+using learnify.ai.api.Features.Courses.Operations.Commands.UpdateCourse;
+using learnify.ai.api.Features.Courses.Operations.Commands.DeleteCourse;
+using learnify.ai.api.Features.Courses.Operations.Commands.PublishCourse;
+using learnify.ai.api.Features.Courses.Operations.Commands.UnpublishCourse;
+using learnify.ai.api.Features.Courses.Operations.Commands.FeatureCourse;
 using learnify.ai.api.Features.Courses.Contracts.Requests;
 using learnify.ai.api.Features.Courses.Contracts.Responses;
 using learnify.ai.api.Features.Courses.Core.Models;
@@ -27,6 +39,7 @@ public class CoursesController : BaseController
             request.InstructorId,
             request.Level,
             request.IsPublished,
+            request.IsFeatured,
             request.MinPrice,
             request.MaxPrice,
             request.SearchTerm,
@@ -73,6 +86,7 @@ public class CoursesController : BaseController
             request.ThumbnailUrl,
             request.VideoPreviewUrl,
             request.IsPublished,
+            request.IsFeatured,
             request.MaxStudents,
             request.Prerequisites,
             request.LearningObjectives
@@ -88,8 +102,32 @@ public class CoursesController : BaseController
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ApiResponse<CourseResponse>>> UpdateCourse(int id, [FromBody] UpdateCourseRequest request)
     {
-        // TODO: Implement UpdateCourseCommand
-        return Ok(new { Message = "Update course endpoint - TODO: Implement UpdateCourseCommand" }, "Course update endpoint");
+        var command = new UpdateCourseCommand(
+            id,
+            request.Title,
+            request.Description,
+            request.ShortDescription,
+            request.CategoryId,
+            request.Price,
+            request.DiscountPrice,
+            request.DurationHours,
+            request.Level,
+            request.Language,
+            request.ThumbnailUrl,
+            request.VideoPreviewUrl,
+            request.IsPublished,
+            request.IsFeatured,
+            request.MaxStudents,
+            request.Prerequisites,
+            request.LearningObjectives
+        );
+
+        var result = await Mediator.Send(command);
+        
+        if (result == null)
+            return NotFound<CourseResponse>($"Course with ID {id} not found");
+
+        return Ok(result, "Course updated successfully");
     }
 
     /// <summary>
@@ -98,8 +136,13 @@ public class CoursesController : BaseController
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteCourse(int id)
     {
-        // TODO: Implement DeleteCourseCommand
-        return Ok(false, "Delete course endpoint - TODO: Implement DeleteCourseCommand");
+        var command = new DeleteCourseCommand(id);
+        var result = await Mediator.Send(command);
+
+        if (!result)
+            return NotFound<bool>($"Course with ID {id} not found");
+
+        return Ok(result, "Course deleted successfully");
     }
 
     #endregion
@@ -117,6 +160,7 @@ public class CoursesController : BaseController
             request.InstructorId,
             request.Level,
             true, // IsPublished = true
+            request.IsFeatured,
             request.MinPrice,
             request.MaxPrice,
             request.SearchTerm,
@@ -139,6 +183,7 @@ public class CoursesController : BaseController
             request.InstructorId,
             request.Level,
             request.IsPublished,
+            request.IsFeatured,
             request.MinPrice,
             request.MaxPrice,
             searchTerm,
@@ -151,17 +196,15 @@ public class CoursesController : BaseController
     }
 
     /// <summary>
-    /// Get featured courses
+    /// Get featured courses based on ratings, enrollment count, and manual featuring
     /// </summary>
     [HttpGet("featured")]
     public async Task<ActionResult<ApiResponse<CourseListResponse>>> GetFeaturedCourses([FromQuery] CourseFilterRequest request)
     {
-        // TODO: Implement featured courses logic (could be based on ratings, enrollment count, etc.)
-        var query = new GetCoursesQuery(
+        var query = new GetFeaturedCoursesQuery(
             request.CategoryId,
             request.InstructorId,
             request.Level,
-            true, // Only published courses
             request.MinPrice,
             request.MaxPrice,
             request.SearchTerm,
@@ -174,17 +217,15 @@ public class CoursesController : BaseController
     }
 
     /// <summary>
-    /// Get popular courses
+    /// Get popular courses based on enrollment count
     /// </summary>
     [HttpGet("popular")]
     public async Task<ActionResult<ApiResponse<CourseListResponse>>> GetPopularCourses([FromQuery] CourseFilterRequest request)
     {
-        // TODO: Implement popular courses logic (based on enrollment count)
-        var query = new GetCoursesQuery(
+        var query = new GetPopularCoursesQuery(
             request.CategoryId,
             request.InstructorId,
             request.Level,
-            true, // Only published courses
             request.MinPrice,
             request.MaxPrice,
             request.SearchTerm,
@@ -197,17 +238,15 @@ public class CoursesController : BaseController
     }
 
     /// <summary>
-    /// Get recently added courses
+    /// Get recently added courses ordered by creation date
     /// </summary>
     [HttpGet("recent")]
     public async Task<ActionResult<ApiResponse<CourseListResponse>>> GetRecentCourses([FromQuery] CourseFilterRequest request)
     {
-        // TODO: Implement recent courses logic (order by CreatedAt desc)
-        var query = new GetCoursesQuery(
+        var query = new GetRecentCoursesQuery(
             request.CategoryId,
             request.InstructorId,
             request.Level,
-            true, // Only published courses
             request.MinPrice,
             request.MaxPrice,
             request.SearchTerm,
@@ -234,6 +273,7 @@ public class CoursesController : BaseController
             request.InstructorId,
             request.Level,
             request.IsPublished,
+            request.IsFeatured,
             request.MinPrice,
             request.MaxPrice,
             request.SearchTerm,
@@ -256,6 +296,7 @@ public class CoursesController : BaseController
             instructorId,
             request.Level,
             request.IsPublished,
+            request.IsFeatured,
             request.MinPrice,
             request.MaxPrice,
             request.SearchTerm,
@@ -278,6 +319,7 @@ public class CoursesController : BaseController
             request.InstructorId,
             level,
             request.IsPublished,
+            request.IsFeatured,
             request.MinPrice,
             request.MaxPrice,
             request.SearchTerm,
@@ -299,8 +341,13 @@ public class CoursesController : BaseController
     [HttpPut("{id:int}/publish")]
     public async Task<ActionResult<ApiResponse<CourseResponse>>> PublishCourse(int id)
     {
-        // TODO: Implement PublishCourseCommand
-        return Ok(new { Message = "Publish course endpoint - TODO: Implement PublishCourseCommand" }, "Course publish endpoint");
+        var command = new PublishCourseCommand(id);
+        var result = await Mediator.Send(command);
+
+        if (result == null)
+            return NotFound<CourseResponse>($"Course with ID {id} not found");
+
+        return Ok(result, "Course published successfully");
     }
 
     /// <summary>
@@ -309,78 +356,86 @@ public class CoursesController : BaseController
     [HttpPut("{id:int}/unpublish")]
     public async Task<ActionResult<ApiResponse<CourseResponse>>> UnpublishCourse(int id)
     {
-        // TODO: Implement UnpublishCourseCommand
-        return Ok(new { Message = "Unpublish course endpoint - TODO: Implement UnpublishCourseCommand" }, "Course unpublish endpoint");
+        var command = new UnpublishCourseCommand(id);
+        var result = await Mediator.Send(command);
+
+        if (result == null)
+            return NotFound<CourseResponse>($"Course with ID {id} not found");
+
+        return Ok(result, "Course unpublished successfully");
     }
 
     /// <summary>
-    /// Feature a course
+    /// Feature or unfeature a course
     /// </summary>
     [HttpPut("{id:int}/feature")]
-    public async Task<ActionResult<ApiResponse<CourseResponse>>> FeatureCourse(int id)
+    public async Task<ActionResult<ApiResponse<CourseResponse>>> FeatureCourse(int id, [FromQuery] bool featured = true)
     {
-        // TODO: Implement FeatureCourseCommand
-        return Ok(new { Message = "Feature course endpoint - TODO: Implement FeatureCourseCommand" }, "Course feature endpoint");
+        var command = new FeatureCourseCommand(id, featured);
+        var result = await Mediator.Send(command);
+
+        if (result == null)
+            return NotFound<CourseResponse>($"Course with ID {id} not found");
+
+        var message = featured ? "Course featured successfully" : "Course unfeatured successfully";
+        return Ok(result, message);
     }
 
     /// <summary>
-    /// Get course analytics
+    /// Get comprehensive course analytics including enrollment stats, completion rates, and revenue
     /// </summary>
     [HttpGet("{id:int}/analytics")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCourseAnalytics(int id)
+    public async Task<ActionResult<ApiResponse<CourseAnalyticsResponse>>> GetCourseAnalytics(int id)
     {
-        // TODO: Implement course analytics query
-        var analytics = new
+        var query = new GetCourseAnalyticsQuery(id);
+        
+        try
         {
-            CourseId = id,
-            TotalEnrollments = 0,
-            ActiveEnrollments = 0,
-            CompletionRate = 0.0,
-            AverageRating = 0.0,
-            TotalRevenue = 0.0,
-            Message = "Course analytics endpoint - TODO: Implement course analytics query"
-        };
-
-        return Ok(analytics, "Course analytics retrieved successfully");
+            var result = await Mediator.Send(query);
+            return Ok(result, "Course analytics retrieved successfully");
+        }
+        catch (ArgumentException)
+        {
+            return NotFound<CourseAnalyticsResponse>($"Course with ID {id} not found");
+        }
     }
 
     /// <summary>
-    /// Get enrolled students for a course
+    /// Get enrolled students for a course with pagination
     /// </summary>
     [HttpGet("{id:int}/students")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCourseStudents(int id, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<ApiResponse<CourseStudentsResponse>>> GetCourseStudents(int id, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        // TODO: Implement GetCourseStudentsQuery
-        var students = new
+        var query = new GetCourseStudentsQuery(id, page, pageSize);
+        
+        try
         {
-            CourseId = id,
-            Students = new object[0],
-            TotalCount = 0,
-            Page = page,
-            PageSize = pageSize,
-            Message = "Course students endpoint - TODO: Implement GetCourseStudentsQuery"
-        };
-
-        return Ok(students, "Course students retrieved successfully");
+            var result = await Mediator.Send(query);
+            return Ok(result, "Course students retrieved successfully");
+        }
+        catch (ArgumentException)
+        {
+            return NotFound<CourseStudentsResponse>($"Course with ID {id} not found");
+        }
     }
 
     /// <summary>
-    /// Get course completion rate
+    /// Get detailed course completion rate and progress statistics
     /// </summary>
     [HttpGet("{id:int}/completion-rate")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCourseCompletionRate(int id)
+    public async Task<ActionResult<ApiResponse<CourseCompletionRateResponse>>> GetCourseCompletionRate(int id)
     {
-        // TODO: Implement course completion rate calculation
-        var completionData = new
+        var query = new GetCourseCompletionRateQuery(id);
+        
+        try
         {
-            CourseId = id,
-            CompletionRate = 0.0,
-            TotalEnrollments = 0,
-            CompletedEnrollments = 0,
-            Message = "Course completion rate endpoint - TODO: Implement completion rate calculation"
-        };
-
-        return Ok(completionData, "Course completion rate retrieved successfully");
+            var result = await Mediator.Send(query);
+            return Ok(result, "Course completion rate retrieved successfully");
+        }
+        catch (ArgumentException)
+        {
+            return NotFound<CourseCompletionRateResponse>($"Course with ID {id} not found");
+        }
     }
 
     #endregion
@@ -388,21 +443,22 @@ public class CoursesController : BaseController
     #region Course Lessons
 
     /// <summary>
-    /// Get course lessons
+    /// Get course lessons with optional publishing filter
     /// </summary>
     [HttpGet("{courseId:int}/lessons")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCourseLessons(int courseId, [FromQuery] bool? isPublished = null)
+    public async Task<ActionResult<ApiResponse<CourseLessonsResponse>>> GetCourseLessons(int courseId, [FromQuery] bool? isPublished = null)
     {
-        // TODO: Implement GetCourseLessonsQuery
-        var lessons = new
+        var query = new GetCourseLessonsQuery(courseId, isPublished);
+        
+        try
         {
-            CourseId = courseId,
-            Lessons = new object[0],
-            TotalCount = 0,
-            Message = "Course lessons endpoint - TODO: Implement GetCourseLessonsQuery"
-        };
-
-        return Ok(lessons, "Course lessons retrieved successfully");
+            var result = await Mediator.Send(query);
+            return Ok(result, "Course lessons retrieved successfully");
+        }
+        catch (ArgumentException)
+        {
+            return NotFound<CourseLessonsResponse>($"Course with ID {courseId} not found");
+        }
     }
 
     /// <summary>
@@ -411,8 +467,8 @@ public class CoursesController : BaseController
     [HttpPost("{courseId:int}/lessons")]
     public async Task<ActionResult<ApiResponse<object>>> CreateCourseLesson(int courseId, [FromBody] object request)
     {
-        // TODO: Implement CreateLessonCommand
-        return Ok(new { Message = "Create lesson endpoint - TODO: Implement CreateLessonCommand" }, "Lesson creation endpoint");
+        // TODO: Implement CreateLessonCommand once lesson creation is fully implemented
+        return Ok(new { Message = "Create lesson endpoint - TODO: Implement CreateLessonCommand", CourseId = courseId }, "Lesson creation endpoint");
     }
 
     #endregion

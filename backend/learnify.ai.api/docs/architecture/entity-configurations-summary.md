@@ -5,7 +5,7 @@ This document summarizes all the Entity Framework Core configurations implemente
 
 ## Entity Configurations Implemented
 
-### ? Core Entities
+### ?? Core Entities
 
 #### 1. UserConfiguration.cs
 - **Table**: Users
@@ -94,7 +94,7 @@ This document summarizes all the Entity Framework Core configurations implemente
   - Content required
 - **Indexes**: CourseId, IsPublished, IsFree, CourseId+OrderIndex, CourseId+IsPublished
 
-### ? Enrollment System
+### ?? Enrollment System
 
 #### 5. EnrollmentConfiguration.cs
 - **Table**: Enrollments
@@ -132,7 +132,7 @@ This document summarizes all the Entity Framework Core configurations implemente
   - Unique enrollment-lesson combination
 - **Indexes**: EnrollmentId, LessonId, IsCompleted, LastAccessDate, composite indexes
 
-### ? Assessment System
+### ?? Assessment System
 
 #### 7. QuizConfiguration.cs
 - **Table**: Quizzes
@@ -207,7 +207,7 @@ This document summarizes all the Entity Framework Core configurations implemente
   - TimeSpent >= 0
 - **Indexes**: QuizId, UserId, IsPassed, StartedAt, CompletedAt, composite indexes
 
-### ? Business Entities
+### ?? Business Entities
 
 #### 11. PaymentConfiguration.cs
 - **Table**: Payments

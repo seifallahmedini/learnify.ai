@@ -1,9 +1,3 @@
-using learnify.ai.api.Features.Users.Models;
-using learnify.ai.api.Features.Enrollments.Core.Models;
-using learnify.ai.api.Features.Assessments.Core.Models;
-using learnify.ai.api.Features.Reviews.Core.Models;
-using learnify.ai.api.Features.Payments.Core.Models;
-
 namespace learnify.ai.api.Features.Courses.Core.Models;
 
 public class Course
@@ -22,6 +16,7 @@ public class Course
     public string? ThumbnailUrl { get; set; }
     public string? VideoPreviewUrl { get; set; }
     public bool IsPublished { get; set; } = false;
+    public bool IsFeatured { get; set; } = false;
     public int? MaxStudents { get; set; }
     public string? Prerequisites { get; set; }
     public string LearningObjectives { get; set; } = string.Empty;

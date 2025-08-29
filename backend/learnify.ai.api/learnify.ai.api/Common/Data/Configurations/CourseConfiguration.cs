@@ -59,6 +59,10 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
             .IsRequired()
             .HasDefaultValue(false);
 
+        builder.Property(c => c.IsFeatured)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.Property(c => c.MaxStudents);
 
         builder.Property(c => c.Prerequisites)
@@ -87,6 +91,9 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
         builder.HasIndex(c => c.IsPublished)
             .HasDatabaseName("IX_Courses_IsPublished");
 
+        builder.HasIndex(c => c.IsFeatured)
+            .HasDatabaseName("IX_Courses_IsFeatured");
+
         builder.HasIndex(c => c.Level)
             .HasDatabaseName("IX_Courses_Level");
 
@@ -108,6 +115,9 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
 
         builder.HasIndex(c => new { c.Price, c.IsPublished })
             .HasDatabaseName("IX_Courses_Price_IsPublished");
+
+        builder.HasIndex(c => new { c.IsFeatured, c.IsPublished })
+            .HasDatabaseName("IX_Courses_IsFeatured_IsPublished");
 
         // Relationships are configured in LearnifyDbContext
     }

@@ -15,6 +15,7 @@ public record GetCoursesQuery(
     int? InstructorId = null,
     CourseLevel? Level = null,
     bool? IsPublished = null,
+    bool? IsFeatured = null,
     decimal? MinPrice = null,
     decimal? MaxPrice = null,
     string? SearchTerm = null,
@@ -106,6 +107,11 @@ public class GetCoursesHandler : IRequestHandler<GetCoursesQuery, CourseListResp
             filteredCourses = filteredCourses.Where(c => c.IsPublished == request.IsPublished.Value);
         }
 
+        if (request.IsFeatured.HasValue)
+        {
+            filteredCourses = filteredCourses.Where(c => c.IsFeatured == request.IsFeatured.Value);
+        }
+
         if (request.MinPrice.HasValue)
         {
             filteredCourses = filteredCourses.Where(c => c.GetEffectivePrice() >= request.MinPrice.Value);
@@ -154,6 +160,7 @@ public class GetCoursesHandler : IRequestHandler<GetCoursesQuery, CourseListResp
                 course.Level,
                 course.ThumbnailUrl,
                 course.IsPublished,
+                course.IsFeatured,
                 totalStudents,
                 averageRating,
                 course.CreatedAt

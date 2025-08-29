@@ -52,6 +52,7 @@ public class GetCourseByIdHandler : IRequestHandler<GetCourseByIdQuery, CourseRe
             course.ThumbnailUrl,
             course.VideoPreviewUrl,
             course.IsPublished,
+            course.IsFeatured,
             course.MaxStudents,
             course.Prerequisites,
             course.LearningObjectives,

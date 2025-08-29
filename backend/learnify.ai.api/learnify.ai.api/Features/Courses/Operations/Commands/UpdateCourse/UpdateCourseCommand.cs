@@ -21,6 +21,7 @@ public record UpdateCourseCommand(
     string? ThumbnailUrl = null,
     string? VideoPreviewUrl = null,
     bool? IsPublished = null,
+    bool? IsFeatured = null,
     int? MaxStudents = null,
     string? Prerequisites = null,
     string? LearningObjectives = null
@@ -124,6 +125,9 @@ public class UpdateCourseHandler : IRequestHandler<UpdateCourseCommand, CourseRe
         if (request.IsPublished.HasValue)
             course.IsPublished = request.IsPublished.Value;
 
+        if (request.IsFeatured.HasValue)
+            course.IsFeatured = request.IsFeatured.Value;
+
         if (request.MaxStudents.HasValue)
             course.MaxStudents = request.MaxStudents.Value;
 
@@ -153,6 +157,7 @@ public class UpdateCourseHandler : IRequestHandler<UpdateCourseCommand, CourseRe
             updatedCourse.ThumbnailUrl,
             updatedCourse.VideoPreviewUrl,
             updatedCourse.IsPublished,
+            updatedCourse.IsFeatured,
             updatedCourse.MaxStudents,
             updatedCourse.Prerequisites,
             updatedCourse.LearningObjectives,

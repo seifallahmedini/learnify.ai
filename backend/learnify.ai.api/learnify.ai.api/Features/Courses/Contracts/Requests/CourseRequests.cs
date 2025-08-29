@@ -16,6 +16,7 @@ public record CreateCourseRequest(
     string? ThumbnailUrl,
     string? VideoPreviewUrl,
     bool IsPublished,
+    bool IsFeatured,
     int? MaxStudents,
     string? Prerequisites,
     string LearningObjectives
@@ -34,6 +35,7 @@ public record UpdateCourseRequest(
     string? ThumbnailUrl = null,
     string? VideoPreviewUrl = null,
     bool? IsPublished = null,
+    bool? IsFeatured = null,
     int? MaxStudents = null,
     string? Prerequisites = null,
     string? LearningObjectives = null
@@ -44,6 +46,7 @@ public record CourseFilterRequest(
     int? InstructorId = null,
     CourseLevel? Level = null,
     bool? IsPublished = null,
+    bool? IsFeatured = null,
     decimal? MinPrice = null,
     decimal? MaxPrice = null,
     string? SearchTerm = null,

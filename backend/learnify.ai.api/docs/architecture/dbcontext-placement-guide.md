@@ -6,7 +6,7 @@ In your vertical slice architecture, the **DbContext is placed in `Common/Data`*
 
 ## Why This Placement?
 
-### ? Shared Infrastructure Approach (Current Implementation)
+### ??? Shared Infrastructure Approach (Current Implementation)
 
 **Location**: `Common/Data/LearnifyDbContext.cs`
 
