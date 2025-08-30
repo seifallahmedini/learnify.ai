@@ -1,4 +1,4 @@
-namespace learnify.ai.api.Features.Users.Models;
+namespace learnify.ai.api.Features.Users;
 
 public class User
 {

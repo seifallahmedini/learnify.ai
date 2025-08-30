@@ -1,4 +1,4 @@
-namespace learnify.ai.api.Features.Courses.Core.Models;
+namespace learnify.ai.api.Features.Courses;
 
 public class Lesson
 {

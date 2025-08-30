@@ -1,7 +1,6 @@
 using learnify.ai.api.Common.Data.Repositories;
-using learnify.ai.api.Features.Reviews.Core.Models;
 
-namespace learnify.ai.api.Features.Reviews.Infrastructure.Data;
+namespace learnify.ai.api.Features.Reviews;
 
 public interface IReviewRepository : IBaseRepository<Review>
 {

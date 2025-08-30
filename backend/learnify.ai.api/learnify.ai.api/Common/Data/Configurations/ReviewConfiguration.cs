@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using learnify.ai.api.Features.Reviews.Core.Models;
+using learnify.ai.api.Features.Reviews;
 
 namespace learnify.ai.api.Common.Data.Configurations;
 

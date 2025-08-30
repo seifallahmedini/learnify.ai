@@ -14,58 +14,100 @@ public class ProgressController : BaseController
     /// Get all progress for enrollment
     /// </summary>
     [HttpGet("enrollment/{enrollmentId:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetEnrollmentProgress(int enrollmentId)
+    public async Task<ActionResult<ApiResponse<EnrollmentProgressDetailResponse>>> GetEnrollmentProgress(int enrollmentId)
     {
-        // TODO: Implement GetEnrollmentProgressQuery
-        var progress = new
+        try
         {
-            EnrollmentId = enrollmentId,
-            LessonProgress = new object[0],
-            OverallProgress = 0.0,
-            Message = "Get enrollment progress endpoint - TODO: Implement GetEnrollmentProgressQuery"
-        };
+            var query = new GetEnrollmentProgressQuery(enrollmentId);
+            var result = await Mediator.Send(query);
 
-        return Ok(progress, "Enrollment progress retrieved successfully");
+            if (result == null)
+                return NotFound<EnrollmentProgressDetailResponse>($"Enrollment with ID {enrollmentId} not found");
+
+            return Ok(result, "Enrollment progress retrieved successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<EnrollmentProgressDetailResponse>("An error occurred while retrieving enrollment progress");
+        }
     }
 
     /// <summary>
     /// Get lesson progress
     /// </summary>
     [HttpGet("lesson/{lessonId:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetLessonProgress(int lessonId, [FromQuery] int? enrollmentId = null)
+    public async Task<ActionResult<ApiResponse<LessonProgressResponse>>> GetLessonProgress(int lessonId, [FromQuery] int? enrollmentId = null)
     {
-        // TODO: Implement GetLessonProgressQuery
-        var progress = new
+        try
         {
-            LessonId = lessonId,
-            EnrollmentId = enrollmentId,
-            IsCompleted = false,
-            CompletionDate = (DateTime?)null,
-            TimeSpent = 0,
-            Message = "Get lesson progress endpoint - TODO: Implement GetLessonProgressQuery"
-        };
+            var query = new GetLessonProgressQuery(lessonId, enrollmentId);
+            var result = await Mediator.Send(query);
 
-        return Ok(progress, "Lesson progress retrieved successfully");
+            if (result == null)
+                return NotFound<LessonProgressResponse>($"Lesson with ID {lessonId} not found");
+
+            return Ok(result, "Lesson progress retrieved successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<LessonProgressResponse>(ex.Message);
+        }
+        catch (Exception)
+        {
+            return BadRequest<LessonProgressResponse>("An error occurred while retrieving lesson progress");
+        }
     }
 
     /// <summary>
     /// Mark lesson as complete
     /// </summary>
     [HttpPut("lesson/{lessonId:int}/complete")]
-    public async Task<ActionResult<ApiResponse<object>>> MarkLessonComplete(int lessonId, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<LessonProgressResponse>>> MarkLessonComplete(int lessonId, [FromBody] MarkLessonCompleteRequest request)
     {
-        // TODO: Implement MarkLessonCompleteCommand
-        return Ok(new { Message = "Mark lesson complete endpoint - TODO: Implement MarkLessonCompleteCommand" }, "Lesson completion endpoint");
+        try
+        {
+            var command = new MarkLessonCompleteCommand(lessonId, request.EnrollmentId);
+            var result = await Mediator.Send(command);
+
+            if (result == null)
+                return NotFound<LessonProgressResponse>($"Lesson with ID {lessonId} not found");
+
+            return Ok(result, "Lesson marked as complete successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<LessonProgressResponse>(ex.Message);
+        }
+        catch (Exception)
+        {
+            return BadRequest<LessonProgressResponse>("An error occurred while marking lesson as complete");
+        }
     }
 
     /// <summary>
     /// Track time spent on lesson
     /// </summary>
     [HttpPost("lesson/{lessonId:int}/time")]
-    public async Task<ActionResult<ApiResponse<object>>> TrackTimeSpent(int lessonId, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<LessonProgressResponse>>> TrackTimeSpent(int lessonId, [FromBody] TrackTimeSpentRequest request)
     {
-        // TODO: Implement TrackTimeSpentCommand
-        return Ok(new { Message = "Track time spent endpoint - TODO: Implement TrackTimeSpentCommand" }, "Time tracking endpoint");
+        try
+        {
+            var command = new TrackTimeSpentCommand(lessonId, request.EnrollmentId, request.TimeSpentMinutes);
+            var result = await Mediator.Send(command);
+
+            if (result == null)
+                return NotFound<LessonProgressResponse>($"Lesson with ID {lessonId} not found");
+
+            return Ok(result, "Time tracking updated successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<LessonProgressResponse>(ex.Message);
+        }
+        catch (Exception)
+        {
+            return BadRequest<LessonProgressResponse>("An error occurred while tracking time spent");
+        }
     }
 
     #endregion
@@ -76,58 +118,74 @@ public class ProgressController : BaseController
     /// Get user learning statistics
     /// </summary>
     [HttpGet("user/{userId:int}/stats")]
-    public async Task<ActionResult<ApiResponse<object>>> GetUserLearningStats(int userId)
+    public async Task<ActionResult<ApiResponse<UserLearningStatsResponse>>> GetUserLearningStats(
+        int userId,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
     {
-        // TODO: Implement GetUserLearningStatsQuery
-        var stats = new
+        try
         {
-            UserId = userId,
-            TotalTimeSpent = 0,
-            CompletedLessons = 0,
-            CompletedCourses = 0,
-            AverageProgress = 0.0,
-            Message = "Get user learning stats endpoint - TODO: Implement GetUserLearningStatsQuery"
-        };
+            var query = new GetUserLearningStatsQuery(userId, startDate, endDate);
+            var result = await Mediator.Send(query);
 
-        return Ok(stats, "User learning statistics retrieved successfully");
+            if (result == null)
+                return NotFound<UserLearningStatsResponse>($"User with ID {userId} not found");
+
+            return Ok(result, "User learning statistics retrieved successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<UserLearningStatsResponse>("An error occurred while retrieving user learning statistics");
+        }
     }
 
     /// <summary>
     /// Get course progress statistics
     /// </summary>
     [HttpGet("course/{courseId:int}/stats")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCourseProgressStats(int courseId)
+    public async Task<ActionResult<ApiResponse<CourseProgressStatsResponse>>> GetCourseProgressStats(
+        int courseId,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
     {
-        // TODO: Implement GetCourseProgressStatsQuery
-        var stats = new
+        try
         {
-            CourseId = courseId,
-            AverageProgress = 0.0,
-            CompletionRate = 0.0,
-            AverageTimeToComplete = 0,
-            Message = "Get course progress stats endpoint - TODO: Implement GetCourseProgressStatsQuery"
-        };
+            var query = new GetCourseProgressStatsQuery(courseId, startDate, endDate);
+            var result = await Mediator.Send(query);
 
-        return Ok(stats, "Course progress statistics retrieved successfully");
+            if (result == null)
+                return NotFound<CourseProgressStatsResponse>($"Course with ID {courseId} not found");
+
+            return Ok(result, "Course progress statistics retrieved successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<CourseProgressStatsResponse>("An error occurred while retrieving course progress statistics");
+        }
     }
 
     /// <summary>
     /// Get progress dashboard for user
     /// </summary>
     [HttpGet("dashboard/{userId:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetProgressDashboard(int userId)
+    public async Task<ActionResult<ApiResponse<ProgressDashboardResponse>>> GetProgressDashboard(
+        int userId,
+        [FromQuery] int? limit = 10)
     {
-        // TODO: Implement GetProgressDashboardQuery
-        var dashboard = new
+        try
         {
-            UserId = userId,
-            RecentProgress = new object[0],
-            OverallStats = new { },
-            ActiveCourses = new object[0],
-            Message = "Get progress dashboard endpoint - TODO: Implement GetProgressDashboardQuery"
-        };
+            var query = new GetProgressDashboardQuery(userId, limit);
+            var result = await Mediator.Send(query);
 
-        return Ok(dashboard, "Progress dashboard retrieved successfully");
+            if (result == null)
+                return NotFound<ProgressDashboardResponse>($"User with ID {userId} not found");
+
+            return Ok(result, "Progress dashboard retrieved successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<ProgressDashboardResponse>("An error occurred while retrieving progress dashboard");
+        }
     }
 
     #endregion

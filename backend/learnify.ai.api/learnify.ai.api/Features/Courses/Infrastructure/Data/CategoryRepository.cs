@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using learnify.ai.api.Common.Data;
 using learnify.ai.api.Common.Data.Repositories;
-using learnify.ai.api.Features.Courses.Core.Models;
 
-namespace learnify.ai.api.Features.Courses.Infrastructure.Data;
+namespace learnify.ai.api.Features.Courses;
 
 public class CategoryRepository : BaseRepository<Category>, ICategoryRepository
 {

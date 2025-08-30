@@ -1,8 +1,7 @@
 using learnify.ai.api.Common.Data;
 using learnify.ai.api.Common.Data.Repositories;
-using learnify.ai.api.Features.Users.Models;
 
-namespace learnify.ai.api.Features.Users.Data;
+namespace learnify.ai.api.Features.Users;
 
 public class UserRepository : BaseRepository<User>, IUserRepository
 {

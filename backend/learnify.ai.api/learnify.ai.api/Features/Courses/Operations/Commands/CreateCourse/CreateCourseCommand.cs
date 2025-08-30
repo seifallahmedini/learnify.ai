@@ -1,11 +1,8 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Courses.Contracts.Responses;
-using learnify.ai.api.Features.Courses.Infrastructure.Data;
-using learnify.ai.api.Features.Courses.Core.Models;
 
-namespace learnify.ai.api.Features.Courses.Operations.Commands.CreateCourse;
+namespace learnify.ai.api.Features.Courses;
 
 public record CreateCourseCommand(
     string Title,

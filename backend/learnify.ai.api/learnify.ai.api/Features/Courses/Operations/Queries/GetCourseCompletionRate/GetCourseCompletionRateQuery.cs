@@ -1,10 +1,9 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Courses.Infrastructure.Data;
-using learnify.ai.api.Features.Enrollments.Infrastructure.Data;
+using learnify.ai.api.Features.Enrollments;
 
-namespace learnify.ai.api.Features.Courses.Operations.Queries.GetCourseCompletionRate;
+namespace learnify.ai.api.Features.Courses;
 
 public record GetCourseCompletionRateQuery(int CourseId) : IQuery<CourseCompletionRateResponse>;
 
@@ -71,9 +70,9 @@ public class GetCourseCompletionRateHandler : IRequestHandler<GetCourseCompletio
             );
         }
 
-        var completedEnrollments = enrollmentsList.Count(e => e.Status == Enrollments.Core.Models.EnrollmentStatus.Completed);
-        var activeEnrollments = enrollmentsList.Count(e => e.Status == Enrollments.Core.Models.EnrollmentStatus.Active);
-        var droppedEnrollments = enrollmentsList.Count(e => e.Status == Enrollments.Core.Models.EnrollmentStatus.Dropped);
+        var completedEnrollments = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Completed);
+        var activeEnrollments = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Active);
+        var droppedEnrollments = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Dropped);
 
         var completionRate = (decimal)completedEnrollments / totalEnrollments * 100;
         var averageProgress = enrollmentsList.Average(e => e.Progress);

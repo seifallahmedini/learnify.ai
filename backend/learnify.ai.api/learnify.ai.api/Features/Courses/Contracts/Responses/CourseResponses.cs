@@ -1,6 +1,4 @@
-using learnify.ai.api.Features.Courses.Core.Models;
-
-namespace learnify.ai.api.Features.Courses.Contracts.Responses;
+namespace learnify.ai.api.Features.Courses;
 
 public record CourseResponse(
     int Id,

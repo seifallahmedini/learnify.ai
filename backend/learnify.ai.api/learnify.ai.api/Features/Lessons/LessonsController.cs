@@ -11,41 +11,59 @@ public class LessonsController : BaseController
     #region Lesson CRUD Operations
 
     /// <summary>
-    /// Get lesson by ID
+    /// Get lesson by ID with full details
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetLesson(int id)
+    public async Task<ActionResult<ApiResponse<LessonResponse>>> GetLesson(int id)
     {
-        // TODO: Implement GetLessonByIdQuery
-        var lesson = new
-        {
-            Id = id,
-            Title = "Sample Lesson",
-            Description = "Sample lesson description",
-            Message = "Get lesson endpoint - TODO: Implement GetLessonByIdQuery"
-        };
+        var query = new GetLessonByIdQuery(id);
+        var result = await Mediator.Send(query);
 
-        return Ok(lesson, "Lesson retrieved successfully");
+        if (result == null)
+            return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+
+        return Ok(result, "Lesson retrieved successfully");
     }
 
     /// <summary>
-    /// Update lesson
+    /// Update lesson details
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateLesson(int id, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<LessonResponse>>> UpdateLesson(int id, [FromBody] UpdateLessonRequest request)
     {
-        // TODO: Implement UpdateLessonCommand
-        return Ok(new { Message = "Update lesson endpoint - TODO: Implement UpdateLessonCommand" }, "Lesson update endpoint");
+        var command = new UpdateLessonCommand(
+            id,
+            request.Title,
+            request.Description,
+            request.Content,
+            request.VideoUrl,
+            request.Duration,
+            request.OrderIndex,
+            request.IsFree,
+            request.IsPublished
+        );
+
+        var result = await Mediator.Send(command);
+
+        if (result == null)
+            return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+
+        return Ok(result, "Lesson updated successfully");
     }
 
     /// <summary>
-    /// Delete lesson
+    /// Delete lesson permanently
     /// </summary>
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteLesson(int id)
     {
-        // TODO: Implement DeleteLessonCommand
-        return Ok(false, "Delete lesson endpoint - TODO: Implement DeleteLessonCommand");
+        var command = new DeleteLessonCommand(id);
+        var result = await Mediator.Send(command);
+
+        if (!result)
+            return NotFound<bool>($"Lesson with ID {id} not found");
+
+        return Ok(result, "Lesson deleted successfully");
     }
 
     #endregion
@@ -53,33 +71,48 @@ public class LessonsController : BaseController
     #region Lesson Organization
 
     /// <summary>
-    /// Reorder lessons in a course
+    /// Reorder lesson within a course
     /// </summary>
     [HttpPut("{id:int}/reorder")]
-    public async Task<ActionResult<ApiResponse<object>>> ReorderLesson(int id, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<LessonResponse>>> ReorderLesson(int id, [FromBody] ReorderLessonRequest request)
     {
-        // TODO: Implement ReorderLessonCommand
-        return Ok(new { Message = "Reorder lesson endpoint - TODO: Implement ReorderLessonCommand" }, "Lesson reorder endpoint");
+        var command = new ReorderLessonCommand(id, request.NewOrderIndex);
+        var result = await Mediator.Send(command);
+
+        if (result == null)
+            return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+
+        return Ok(result, "Lesson reordered successfully");
     }
 
     /// <summary>
-    /// Get next lesson
+    /// Get next lesson in the course sequence
     /// </summary>
     [HttpGet("{id:int}/next")]
-    public async Task<ActionResult<ApiResponse<object>>> GetNextLesson(int id)
+    public async Task<ActionResult<ApiResponse<LessonResponse>>> GetNextLesson(int id)
     {
-        // TODO: Implement GetNextLessonQuery
-        return Ok(new { Message = "Get next lesson endpoint - TODO: Implement GetNextLessonQuery" }, "Next lesson endpoint");
+        var query = new GetNextLessonQuery(id);
+        var result = await Mediator.Send(query);
+
+        if (result == null)
+            return NotFound<LessonResponse>($"No next lesson found for lesson ID {id}");
+
+        return Ok(result, "Next lesson retrieved successfully");
     }
 
     /// <summary>
-    /// Get previous lesson
+    /// Get previous lesson in the course sequence
     /// </summary>
     [HttpGet("{id:int}/previous")]
-    public async Task<ActionResult<ApiResponse<object>>> GetPreviousLesson(int id)
+    public async Task<ActionResult<ApiResponse<LessonResponse>>> GetPreviousLesson(int id)
     {
-        // TODO: Implement GetPreviousLessonQuery
-        return Ok(new { Message = "Get previous lesson endpoint - TODO: Implement GetPreviousLessonQuery" }, "Previous lesson endpoint");
+        var query = new GetPreviousLessonQuery(id);
+        var result = await Mediator.Send(query);
+
+        if (result == null)
+            return NotFound<LessonResponse>($"No previous lesson found for lesson ID {id}");
+
+        return Ok(result, "Previous lesson retrieved successfully");
     }
 
     #endregion
@@ -87,33 +120,52 @@ public class LessonsController : BaseController
     #region Lesson Content
 
     /// <summary>
-    /// Upload lesson video
+    /// Upload or update lesson video URL
     /// </summary>
     [HttpPost("{id:int}/video")]
-    public async Task<ActionResult<ApiResponse<object>>> UploadLessonVideo(int id, [FromForm] IFormFile video)
+    public async Task<ActionResult<ApiResponse<LessonResponse>>> UploadLessonVideo(int id, [FromBody] UploadVideoRequest request)
     {
-        // TODO: Implement video upload functionality
-        return Ok(new { Message = "Upload video endpoint - TODO: Implement video upload functionality" }, "Video upload endpoint");
+        var command = new UploadLessonVideoCommand(id, request.VideoUrl);
+        var result = await Mediator.Send(command);
+
+        if (result == null)
+            return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+
+        return Ok(result, "Lesson video uploaded successfully");
     }
 
     /// <summary>
     /// Update lesson content
     /// </summary>
     [HttpPut("{id:int}/content")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateLessonContent(int id, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<LessonResponse>>> UpdateLessonContent(int id, [FromBody] UpdateContentRequest request)
     {
-        // TODO: Implement UpdateLessonContentCommand
-        return Ok(new { Message = "Update content endpoint - TODO: Implement UpdateLessonContentCommand" }, "Content update endpoint");
+        var command = new UpdateLessonContentCommand(id, request.Content);
+        var result = await Mediator.Send(command);
+
+        if (result == null)
+            return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+
+        return Ok(result, "Lesson content updated successfully");
     }
 
     /// <summary>
-    /// Get lesson resources
+    /// Get lesson resources and attachments
     /// </summary>
     [HttpGet("{id:int}/resources")]
-    public async Task<ActionResult<ApiResponse<object>>> GetLessonResources(int id)
+    public async Task<ActionResult<ApiResponse<LessonResourcesResponse>>> GetLessonResources(int id)
     {
-        // TODO: Implement GetLessonResourcesQuery
-        return Ok(new { Message = "Get resources endpoint - TODO: Implement GetLessonResourcesQuery" }, "Lesson resources endpoint");
+        var query = new GetLessonResourcesQuery(id);
+        
+        try
+        {
+            var result = await Mediator.Send(query);
+            return Ok(result, "Lesson resources retrieved successfully");
+        }
+        catch (ArgumentException)
+        {
+            return NotFound<LessonResourcesResponse>($"Lesson with ID {id} not found");
+        }
     }
 
     #endregion
@@ -121,33 +173,49 @@ public class LessonsController : BaseController
     #region Lesson Access Control
 
     /// <summary>
-    /// Publish lesson
+    /// Publish lesson to make it visible to students
     /// </summary>
     [HttpPut("{id:int}/publish")]
-    public async Task<ActionResult<ApiResponse<object>>> PublishLesson(int id)
+    public async Task<ActionResult<ApiResponse<LessonResponse>>> PublishLesson(int id)
     {
-        // TODO: Implement PublishLessonCommand
-        return Ok(new { Message = "Publish lesson endpoint - TODO: Implement PublishLessonCommand" }, "Lesson publish endpoint");
+        var command = new PublishLessonCommand(id);
+        var result = await Mediator.Send(command);
+
+        if (result == null)
+            return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+
+        return Ok(result, "Lesson published successfully");
     }
 
     /// <summary>
-    /// Unpublish lesson
+    /// Unpublish lesson to hide it from students
     /// </summary>
     [HttpPut("{id:int}/unpublish")]
-    public async Task<ActionResult<ApiResponse<object>>> UnpublishLesson(int id)
+    public async Task<ActionResult<ApiResponse<LessonResponse>>> UnpublishLesson(int id)
     {
-        // TODO: Implement UnpublishLessonCommand
-        return Ok(new { Message = "Unpublish lesson endpoint - TODO: Implement UnpublishLessonCommand" }, "Lesson unpublish endpoint");
+        var command = new UnpublishLessonCommand(id);
+        var result = await Mediator.Send(command);
+
+        if (result == null)
+            return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+
+        return Ok(result, "Lesson unpublished successfully");
     }
 
     /// <summary>
-    /// Make lesson free
+    /// Make lesson free or premium
     /// </summary>
     [HttpPut("{id:int}/free")]
-    public async Task<ActionResult<ApiResponse<object>>> MakeLessonFree(int id)
+    public async Task<ActionResult<ApiResponse<LessonResponse>>> MakeLessonFree(int id, [FromQuery] bool isFree = true)
     {
-        // TODO: Implement MakeLessonFreeCommand
-        return Ok(new { Message = "Make lesson free endpoint - TODO: Implement MakeLessonFreeCommand" }, "Make lesson free endpoint");
+        var command = new MakeLessonFreeCommand(id, isFree);
+        var result = await Mediator.Send(command);
+
+        if (result == null)
+            return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+
+        var message = isFree ? "Lesson made free successfully" : "Lesson made premium successfully";
+        return Ok(result, message);
     }
 
     #endregion

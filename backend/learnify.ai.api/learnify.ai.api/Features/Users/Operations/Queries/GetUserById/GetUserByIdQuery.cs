@@ -1,10 +1,8 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Users.Data;
-using learnify.ai.api.Features.Users.Contracts.Responses;
 
-namespace learnify.ai.api.Features.Users.Queries.GetUserById;
+namespace learnify.ai.api.Features.Users;
 
 public record GetUserByIdQuery(int Id) : IQuery<UserResponse?>;
 

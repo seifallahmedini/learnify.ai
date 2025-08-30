@@ -1,4 +1,4 @@
-namespace learnify.ai.api.Features.Reviews.Core.Models;
+namespace learnify.ai.api.Features.Reviews;
 
 public class Review
 {

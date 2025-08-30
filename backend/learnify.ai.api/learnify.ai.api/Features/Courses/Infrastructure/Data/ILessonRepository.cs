@@ -1,7 +1,6 @@
 using learnify.ai.api.Common.Data.Repositories;
-using learnify.ai.api.Features.Courses.Core.Models;
 
-namespace learnify.ai.api.Features.Courses.Infrastructure.Data;
+namespace learnify.ai.api.Features.Courses;
 
 public interface ILessonRepository : IBaseRepository<Lesson>
 {
@@ -13,4 +12,5 @@ public interface ILessonRepository : IBaseRepository<Lesson>
     Task<int> GetTotalDurationAsync(int courseId, CancellationToken cancellationToken = default);
     Task<int> GetLessonCountAsync(int courseId, CancellationToken cancellationToken = default);
     Task<int> GetMaxOrderIndexAsync(int courseId, CancellationToken cancellationToken = default);
+    Task<int> GetTotalLessonCountByCourseAsync(int courseId, CancellationToken cancellationToken);
 }

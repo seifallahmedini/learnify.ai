@@ -1,5 +1,5 @@
-using learnify.ai.api.Features.Courses.Core.Models;
-using learnify.ai.api.Features.Users.Models;
+using learnify.ai.api.Features.Courses;
+using learnify.ai.api.Features.Users;
 
 namespace learnify.ai.api.Common.Data;
 
@@ -12,7 +12,7 @@ public static class DataSeeder
         {
             var users = new List<User>
             {
-                new()
+                new User
                 {
                     FirstName = "John",
                     LastName = "Doe",
@@ -22,7 +22,7 @@ public static class DataSeeder
                     CreatedAt = DateTime.UtcNow.AddDays(-60),
                     UpdatedAt = DateTime.UtcNow.AddDays(-10)
                 },
-                new()
+                new User
                 {
                     FirstName = "Jane",
                     LastName = "Smith",
@@ -32,7 +32,7 @@ public static class DataSeeder
                     CreatedAt = DateTime.UtcNow.AddDays(-45),
                     UpdatedAt = DateTime.UtcNow.AddDays(-5)
                 },
-                new()
+                new User
                 {
                     FirstName = "Alice",
                     LastName = "Johnson",

@@ -1,9 +1,8 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Users.Data;
 
-namespace learnify.ai.api.Features.Users.Commands.DeleteUser;
+namespace learnify.ai.api.Features.Users;
 
 public record DeleteUserCommand(int Id) : ICommand<bool>;
 

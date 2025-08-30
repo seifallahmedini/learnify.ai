@@ -1,6 +1,4 @@
-using learnify.ai.api.Features.Users.Models;
-
-namespace learnify.ai.api.Features.Users.Contracts.Requests;
+namespace learnify.ai.api.Features.Users;
 
 public record CreateUserRequest(
     string FirstName,

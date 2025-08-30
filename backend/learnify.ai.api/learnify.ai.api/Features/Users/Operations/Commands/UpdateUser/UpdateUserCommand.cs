@@ -1,11 +1,8 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Users.Data;
-using learnify.ai.api.Features.Users.Contracts.Responses;
-using learnify.ai.api.Features.Users.Models;
 
-namespace learnify.ai.api.Features.Users.Commands.UpdateUser;
+namespace learnify.ai.api.Features.Users;
 
 public record UpdateUserCommand(
     int Id,

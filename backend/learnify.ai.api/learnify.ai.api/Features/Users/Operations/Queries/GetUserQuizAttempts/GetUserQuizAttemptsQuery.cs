@@ -1,11 +1,10 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Users.Data;
-using learnify.ai.api.Features.Assessments.Infrastructure.Data;
-using learnify.ai.api.Features.Courses.Infrastructure.Data;
+using learnify.ai.api.Features.Assessments;
+using learnify.ai.api.Features.Courses;
 
-namespace learnify.ai.api.Features.Users.Queries.GetUserQuizAttempts;
+namespace learnify.ai.api.Features.Users;
 
 public record GetUserQuizAttemptsQuery(
     int UserId,

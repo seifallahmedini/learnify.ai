@@ -14,30 +14,49 @@ public class EnrollmentsController : BaseController
     /// Enroll user in course
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<object>>> EnrollInCourse([FromBody] object request)
+    public async Task<ActionResult<ApiResponse<EnrollmentResponse>>> EnrollInCourse([FromBody] EnrollInCourseRequest request)
     {
-        // TODO: Implement EnrollInCourseCommand
-        return Ok(new { Message = "Enroll in course endpoint - TODO: Implement EnrollInCourseCommand" }, "Enrollment endpoint");
+        try
+        {
+            var command = new EnrollInCourseCommand(
+                request.UserId,
+                request.CourseId,
+                request.PaymentId
+            );
+
+            var result = await Mediator.Send(command);
+            return Ok(result, "User enrolled in course successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<EnrollmentResponse>(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<EnrollmentResponse>(ex.Message);
+        }
     }
 
     /// <summary>
     /// Get enrollment details
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetEnrollment(int id)
+    public async Task<ActionResult<ApiResponse<EnrollmentDetailsResponse>>> GetEnrollment(int id)
     {
-        // TODO: Implement GetEnrollmentByIdQuery
-        var enrollment = new
+        try
         {
-            Id = id,
-            UserId = 0,
-            CourseId = 0,
-            Status = "Active",
-            Progress = 0.0,
-            Message = "Get enrollment endpoint - TODO: Implement GetEnrollmentByIdQuery"
-        };
+            var query = new GetEnrollmentByIdQuery(id);
+            var result = await Mediator.Send(query);
 
-        return Ok(enrollment, "Enrollment retrieved successfully");
+            if (result == null)
+                return NotFound<EnrollmentDetailsResponse>($"Enrollment with ID {id} not found");
+
+            return Ok(result, "Enrollment retrieved successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<EnrollmentDetailsResponse>("An error occurred while retrieving the enrollment");
+        }
     }
 
     /// <summary>
@@ -46,8 +65,20 @@ public class EnrollmentsController : BaseController
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<ApiResponse<bool>>> UnenrollFromCourse(int id)
     {
-        // TODO: Implement UnenrollFromCourseCommand
-        return Ok(false, "Unenroll endpoint - TODO: Implement UnenrollFromCourseCommand");
+        try
+        {
+            var command = new UnenrollFromCourseCommand(id);
+            var result = await Mediator.Send(command);
+
+            if (!result)
+                return NotFound<bool>($"Enrollment with ID {id} not found");
+
+            return Ok(result, "Successfully unenrolled from course");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<bool>(ex.Message);
+        }
     }
 
     #endregion
@@ -58,30 +89,54 @@ public class EnrollmentsController : BaseController
     /// Get course enrollments
     /// </summary>
     [HttpGet("course/{courseId:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCourseEnrollments(int courseId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<ApiResponse<CourseEnrollmentsResponse>>> GetCourseEnrollments(
+        int courseId, 
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10,
+        [FromQuery] EnrollmentStatus? status = null,
+        [FromQuery] DateTime? enrolledAfter = null,
+        [FromQuery] DateTime? enrolledBefore = null)
     {
-        // TODO: Implement GetCourseEnrollmentsQuery
-        var enrollments = new
+        try
         {
-            CourseId = courseId,
-            Enrollments = new object[0],
-            TotalCount = 0,
-            Page = page,
-            PageSize = pageSize,
-            Message = "Get course enrollments endpoint - TODO: Implement GetCourseEnrollmentsQuery"
-        };
+            var query = new GetCourseEnrollmentsQuery(
+                courseId,
+                page,
+                pageSize,
+                status,
+                enrolledAfter,
+                enrolledBefore
+            );
 
-        return Ok(enrollments, "Course enrollments retrieved successfully");
+            var result = await Mediator.Send(query);
+            return Ok(result, "Course enrollments retrieved successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<CourseEnrollmentsResponse>(ex.Message);
+        }
     }
 
     /// <summary>
     /// Update enrollment status
     /// </summary>
     [HttpPut("{id:int}/status")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateEnrollmentStatus(int id, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<EnrollmentResponse>>> UpdateEnrollmentStatus(int id, [FromBody] UpdateEnrollmentStatusRequest request)
     {
-        // TODO: Implement UpdateEnrollmentStatusCommand
-        return Ok(new { Message = "Update enrollment status endpoint - TODO: Implement UpdateEnrollmentStatusCommand" }, "Enrollment status update endpoint");
+        try
+        {
+            var command = new UpdateEnrollmentStatusCommand(id, request.Status);
+            var result = await Mediator.Send(command);
+
+            if (result == null)
+                return NotFound<EnrollmentResponse>($"Enrollment with ID {id} not found");
+
+            return Ok(result, "Enrollment status updated successfully");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<EnrollmentResponse>(ex.Message);
+        }
     }
 
     #endregion
@@ -92,50 +147,98 @@ public class EnrollmentsController : BaseController
     /// Get enrollment progress
     /// </summary>
     [HttpGet("{id:int}/progress")]
-    public async Task<ActionResult<ApiResponse<object>>> GetEnrollmentProgress(int id)
+    public async Task<ActionResult<ApiResponse<EnrollmentProgressResponse>>> GetEnrollmentProgress(int id)
     {
-        // TODO: Implement GetEnrollmentProgressQuery
-        var progress = new
+        try
         {
-            EnrollmentId = id,
-            OverallProgress = 0.0,
-            CompletedLessons = 0,
-            TotalLessons = 0,
-            TimeSpent = 0,
-            Message = "Get enrollment progress endpoint - TODO: Implement GetEnrollmentProgressQuery"
-        };
+            var query = new GetEnrollmentProgressQuery(id);
+            var result = await Mediator.Send(query);
 
-        return Ok(progress, "Enrollment progress retrieved successfully");
+            if (result == null)
+                return NotFound<EnrollmentProgressResponse>($"Enrollment with ID {id} not found");
+
+            return Ok(result, "Enrollment progress retrieved successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<EnrollmentProgressResponse>("An error occurred while retrieving enrollment progress");
+        }
     }
 
     /// <summary>
     /// Update enrollment progress
     /// </summary>
     [HttpPut("{id:int}/progress")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateEnrollmentProgress(int id, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<EnrollmentProgressResponse>>> UpdateEnrollmentProgress(int id, [FromBody] UpdateEnrollmentProgressRequest request)
     {
-        // TODO: Implement UpdateEnrollmentProgressCommand
-        return Ok(new { Message = "Update enrollment progress endpoint - TODO: Implement UpdateEnrollmentProgressCommand" }, "Progress update endpoint");
+        try
+        {
+            var command = new UpdateEnrollmentProgressCommand(
+                id,
+                request.LessonId,
+                request.IsCompleted,
+                request.TimeSpentMinutes
+            );
+
+            var result = await Mediator.Send(command);
+
+            if (result == null)
+                return NotFound<EnrollmentProgressResponse>($"Enrollment with ID {id} not found");
+
+            return Ok(result, "Enrollment progress updated successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<EnrollmentProgressResponse>(ex.Message);
+        }
     }
 
     /// <summary>
     /// Get completion status
     /// </summary>
     [HttpGet("{id:int}/completion")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCompletionStatus(int id)
+    public async Task<ActionResult<ApiResponse<CompletionStatusResponse>>> GetCompletionStatus(int id)
     {
-        // TODO: Implement GetCompletionStatusQuery
-        return Ok(new { Message = "Get completion status endpoint - TODO: Implement GetCompletionStatusQuery" }, "Completion status endpoint");
+        try
+        {
+            var query = new GetCompletionStatusQuery(id);
+            var result = await Mediator.Send(query);
+
+            if (result == null)
+                return NotFound<CompletionStatusResponse>($"Enrollment with ID {id} not found");
+
+            return Ok(result, "Completion status retrieved successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<CompletionStatusResponse>("An error occurred while retrieving completion status");
+        }
     }
 
     /// <summary>
     /// Generate completion certificate
     /// </summary>
     [HttpPost("{id:int}/certificate")]
-    public async Task<ActionResult<ApiResponse<object>>> GenerateCertificate(int id)
+    public async Task<ActionResult<ApiResponse<CertificateResponse>>> GenerateCertificate(int id, [FromBody] GenerateCertificateRequest? request = null)
     {
-        // TODO: Implement GenerateCertificateCommand
-        return Ok(new { Message = "Generate certificate endpoint - TODO: Implement GenerateCertificateCommand" }, "Certificate generation endpoint");
+        try
+        {
+            var command = new GenerateCertificateCommand(id, request?.CertificateTemplate);
+            var result = await Mediator.Send(command);
+
+            if (result == null)
+                return NotFound<CertificateResponse>($"Enrollment with ID {id} not found");
+
+            return Ok(result, "Certificate generated successfully");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<CertificateResponse>(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<CertificateResponse>(ex.Message);
+        }
     }
 
     #endregion
@@ -146,29 +249,40 @@ public class EnrollmentsController : BaseController
     /// Get enrollment statistics
     /// </summary>
     [HttpGet("stats")]
-    public async Task<ActionResult<ApiResponse<object>>> GetEnrollmentStatistics()
+    public async Task<ActionResult<ApiResponse<EnrollmentStatisticsResponse>>> GetEnrollmentStatistics(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] int? userId = null,
+        [FromQuery] int? courseId = null)
     {
-        // TODO: Implement GetEnrollmentStatisticsQuery
-        var stats = new
+        try
         {
-            TotalEnrollments = 0,
-            ActiveEnrollments = 0,
-            CompletedEnrollments = 0,
-            DropoutRate = 0.0,
-            Message = "Get enrollment statistics endpoint - TODO: Implement GetEnrollmentStatisticsQuery"
-        };
-
-        return Ok(stats, "Enrollment statistics retrieved successfully");
+            var query = new GetEnrollmentStatisticsQuery(startDate, endDate, userId, courseId);
+            var result = await Mediator.Send(query);
+            return Ok(result, "Enrollment statistics retrieved successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<EnrollmentStatisticsResponse>("An error occurred while retrieving enrollment statistics");
+        }
     }
 
     /// <summary>
     /// Get course completion rate
     /// </summary>
     [HttpGet("course/{courseId:int}/completion-rate")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCourseCompletionRate(int courseId)
+    public async Task<ActionResult<ApiResponse<decimal>>> GetCourseCompletionRate(int courseId)
     {
-        // TODO: Implement GetCourseCompletionRateQuery
-        return Ok(new { Message = "Get completion rate endpoint - TODO: Implement GetCourseCompletionRateQuery" }, "Course completion rate endpoint");
+        try
+        {
+            var query = new GetCourseCompletionRateQuery(courseId);
+            var result = await Mediator.Send(query);
+            return Ok(result, "Course completion rate retrieved successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<decimal>(ex.Message);
+        }
     }
 
     #endregion

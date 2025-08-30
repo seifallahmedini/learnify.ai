@@ -1,6 +1,4 @@
-using learnify.ai.api.Features.Users.Models;
-
-namespace learnify.ai.api.Features.Users.Contracts.Responses;
+namespace learnify.ai.api.Features.Users;
 
 public record UserResponse(
     int Id,

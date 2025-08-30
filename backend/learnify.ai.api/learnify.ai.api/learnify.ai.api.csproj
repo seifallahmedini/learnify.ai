@@ -24,8 +24,8 @@
   <ItemGroup>
     <Folder Include="Features\Assessments\Contracts\" />
     <Folder Include="Features\Assessments\Operations\" />
-    <Folder Include="Features\Enrollments\Contracts\" />
-    <Folder Include="Features\Enrollments\Operations\" />
+    <Folder Include="Features\Categories\Core\Models\" />
+    <Folder Include="Features\Categories\Infrastructure\Data\" />
     <Folder Include="Features\Payments\Contracts\" />
     <Folder Include="Features\Payments\Operations\" />
     <Folder Include="Features\Reviews\Contracts\" />

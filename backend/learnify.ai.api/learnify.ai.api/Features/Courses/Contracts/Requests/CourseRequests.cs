@@ -1,6 +1,4 @@
-using learnify.ai.api.Features.Courses.Core.Models;
-
-namespace learnify.ai.api.Features.Courses.Contracts.Requests;
+namespace learnify.ai.api.Features.Courses;
 
 public record CreateCourseRequest(
     string Title,

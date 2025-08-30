@@ -1,11 +1,9 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Courses.Contracts.Responses;
-using learnify.ai.api.Features.Courses.Infrastructure.Data;
-using learnify.ai.api.Features.Courses.Core.Models;
+using learnify.ai.api.Features.Users;
 
-namespace learnify.ai.api.Features.Courses.Operations.Commands.UpdateCourse;
+namespace learnify.ai.api.Features.Courses;
 
 public record UpdateCourseCommand(
     int Id,
@@ -75,10 +73,17 @@ public class UpdateCourseValidator : AbstractValidator<UpdateCourseCommand>
 public class UpdateCourseHandler : IRequestHandler<UpdateCourseCommand, CourseResponse?>
 {
     private readonly ICourseRepository _courseRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly ICategoryRepository _categoryRepository;
 
-    public UpdateCourseHandler(ICourseRepository courseRepository)
+    public UpdateCourseHandler(
+        ICourseRepository courseRepository,
+        IUserRepository userRepository,
+        ICategoryRepository categoryRepository)
     {
         _courseRepository = courseRepository;
+        _userRepository = userRepository;
+        _categoryRepository = categoryRepository;
     }
 
     public async Task<CourseResponse?> Handle(UpdateCourseCommand request, CancellationToken cancellationToken)
@@ -137,18 +142,22 @@ public class UpdateCourseHandler : IRequestHandler<UpdateCourseCommand, CourseRe
         if (!string.IsNullOrEmpty(request.LearningObjectives))
             course.LearningObjectives = request.LearningObjectives;
 
+        course.UpdatedAt = DateTime.UtcNow;
         var updatedCourse = await _courseRepository.UpdateAsync(course, cancellationToken);
 
-        // TODO: Get instructor and category names from their respective repositories
+        // Load instructor and category names
+        var instructor = await _userRepository.GetByIdAsync(updatedCourse.InstructorId, cancellationToken);
+        var category = await _categoryRepository.GetByIdAsync(updatedCourse.CategoryId, cancellationToken);
+
         return new CourseResponse(
             updatedCourse.Id,
             updatedCourse.Title,
             updatedCourse.Description,
             updatedCourse.ShortDescription,
             updatedCourse.InstructorId,
-            "Instructor Name", // TODO: Load from UserRepository
+            instructor?.GetFullName() ?? "Unknown Instructor",
             updatedCourse.CategoryId,
-            "Category Name", // TODO: Load from CategoryRepository
+            category?.Name ?? "Unknown Category",
             updatedCourse.Price,
             updatedCourse.DiscountPrice,
             updatedCourse.DurationHours,

@@ -1,12 +1,8 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Users.Models;
-using learnify.ai.api.Features.Users.Data;
-using learnify.ai.api.Features.Users.Contracts.Requests;
-using learnify.ai.api.Features.Users.Contracts.Responses;
 
-namespace learnify.ai.api.Features.Users.Commands.CreateUser;
+namespace learnify.ai.api.Features.Users;
 
 public record CreateUserCommand(
     string FirstName,

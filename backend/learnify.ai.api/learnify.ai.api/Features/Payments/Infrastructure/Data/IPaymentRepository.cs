@@ -1,7 +1,6 @@
 using learnify.ai.api.Common.Data.Repositories;
-using learnify.ai.api.Features.Payments.Core.Models;
 
-namespace learnify.ai.api.Features.Payments.Infrastructure.Data;
+namespace learnify.ai.api.Features.Payments;
 
 public interface IPaymentRepository : IBaseRepository<Payment>
 {

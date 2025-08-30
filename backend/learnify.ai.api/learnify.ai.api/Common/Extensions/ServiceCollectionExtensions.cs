@@ -1,10 +1,10 @@
 // Extension method to register all repositories and services
-using learnify.ai.api.Features.Users.Data;
-using learnify.ai.api.Features.Assessments.Infrastructure.Data;
-using learnify.ai.api.Features.Courses.Infrastructure.Data;
-using learnify.ai.api.Features.Enrollments.Infrastructure.Data;
-using learnify.ai.api.Features.Payments.Infrastructure.Data;
-using learnify.ai.api.Features.Reviews.Infrastructure.Data;
+using learnify.ai.api.Features.Users;
+using learnify.ai.api.Features.Assessments;
+using learnify.ai.api.Features.Courses;
+using learnify.ai.api.Features.Enrollments;
+using learnify.ai.api.Features.Payments;
+using learnify.ai.api.Features.Reviews;
 
 namespace learnify.ai.api.Common.Extensions;
 

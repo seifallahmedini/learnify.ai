@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using learnify.ai.api.Common.Data;
 using learnify.ai.api.Common.Data.Repositories;
-using learnify.ai.api.Features.Courses.Core.Models;
 
-namespace learnify.ai.api.Features.Courses.Infrastructure.Data;
+namespace learnify.ai.api.Features.Courses;
 
 public class LessonRepository : BaseRepository<Lesson>, ILessonRepository
 {
@@ -72,5 +71,12 @@ public class LessonRepository : BaseRepository<Lesson>, ILessonRepository
             .MaxAsync(l => (int?)l.OrderIndex, cancellationToken);
         
         return maxOrder ?? 0;
+    }
+
+    public async Task<int> GetTotalLessonCountByCourseAsync(int courseId, CancellationToken cancellationToken)
+    {
+        return await _dbSet
+            .Where(l => l.CourseId == courseId)
+            .CountAsync(cancellationToken);
     }
 }

@@ -1,6 +1,4 @@
-using learnify.ai.api.Features.Users.Models;
-
-namespace learnify.ai.api.Features.Courses.Core.Models;
+namespace learnify.ai.api.Features.Courses;
 
 public class Category
 {

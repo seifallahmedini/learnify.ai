@@ -1,12 +1,9 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Courses.Contracts.Responses;
-using learnify.ai.api.Features.Courses.Infrastructure.Data;
-using learnify.ai.api.Features.Courses.Core.Models;
-using learnify.ai.api.Features.Users.Data;
+using learnify.ai.api.Features.Users;
 
-namespace learnify.ai.api.Features.Courses.Operations.Queries.GetPopularCourses;
+namespace learnify.ai.api.Features.Courses;
 
 public record GetPopularCoursesQuery(
     int? CategoryId = null,

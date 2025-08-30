@@ -1,12 +1,11 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Courses.Infrastructure.Data;
-using learnify.ai.api.Features.Enrollments.Infrastructure.Data;
-using learnify.ai.api.Features.Reviews.Infrastructure.Data;
-using learnify.ai.api.Features.Payments.Infrastructure.Data;
+using learnify.ai.api.Features.Enrollments;
+using learnify.ai.api.Features.Reviews;
+using learnify.ai.api.Features.Payments;
 
-namespace learnify.ai.api.Features.Courses.Operations.Queries.GetCourseAnalytics;
+namespace learnify.ai.api.Features.Courses;
 
 public record GetCourseAnalyticsQuery(int CourseId) : IQuery<CourseAnalyticsResponse>;
 
@@ -66,8 +65,8 @@ public class GetCourseAnalyticsHandler : IRequestHandler<GetCourseAnalyticsQuery
         var enrollmentsList = enrollments.ToList();
         
         var totalEnrollments = enrollmentsList.Count;
-        var activeEnrollments = enrollmentsList.Count(e => e.Status == Enrollments.Core.Models.EnrollmentStatus.Active);
-        var completedEnrollments = enrollmentsList.Count(e => e.Status == Enrollments.Core.Models.EnrollmentStatus.Completed);
+        var activeEnrollments = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Active);
+        var completedEnrollments = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Completed);
         var completionRate = totalEnrollments > 0 ? (decimal)completedEnrollments / totalEnrollments * 100 : 0;
 
         // Get review statistics
@@ -78,7 +77,7 @@ public class GetCourseAnalyticsHandler : IRequestHandler<GetCourseAnalyticsQuery
 
         // Get revenue statistics
         var payments = await _paymentRepository.GetByCourseIdAsync(request.CourseId, cancellationToken);
-        var completedPayments = payments.Where(p => p.Status == Payments.Core.Models.PaymentStatus.Completed);
+        var completedPayments = payments.Where(p => p.Status == PaymentStatus.Completed);
         var totalRevenue = completedPayments.Sum(p => p.Amount);
 
         // Get last enrollment date

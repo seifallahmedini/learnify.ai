@@ -1,10 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using learnify.ai.api.Common.Data;
 using learnify.ai.api.Common.Data.Repositories;
-using learnify.ai.api.Features.Courses.Core.Models;
-using learnify.ai.api.Features.Enrollments.Core.Models;
+using learnify.ai.api.Features.Enrollments;
 
-namespace learnify.ai.api.Features.Courses.Infrastructure.Data;
+namespace learnify.ai.api.Features.Courses;
 
 public class CourseRepository : BaseRepository<Course>, ICourseRepository
 {

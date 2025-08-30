@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using learnify.ai.api.Features.Users.Models;
-using learnify.ai.api.Features.Assessments.Core.Models;
-using learnify.ai.api.Features.Courses.Core.Models;
-using learnify.ai.api.Features.Enrollments.Core.Models;
-using learnify.ai.api.Features.Payments.Core.Models;
-using learnify.ai.api.Features.Reviews.Core.Models;
+using learnify.ai.api.Features.Users;
+using learnify.ai.api.Features.Assessments;
+using learnify.ai.api.Features.Courses;
+using learnify.ai.api.Features.Enrollments;
+using learnify.ai.api.Features.Payments;
+using learnify.ai.api.Features.Reviews;
 
 namespace learnify.ai.api.Common.Data;
 

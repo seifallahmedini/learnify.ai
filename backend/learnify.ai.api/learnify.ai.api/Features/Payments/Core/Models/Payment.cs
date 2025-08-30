@@ -1,4 +1,4 @@
-namespace learnify.ai.api.Features.Payments.Core.Models;
+namespace learnify.ai.api.Features.Payments;
 
 public class Payment
 {

@@ -2,20 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using learnify.ai.api.Common.Controllers;
 using learnify.ai.api.Common.Models;
-using learnify.ai.api.Features.Users.Commands.CreateUser;
-using learnify.ai.api.Features.Users.Commands.UpdateUser;
-using learnify.ai.api.Features.Users.Commands.DeleteUser;
-using learnify.ai.api.Features.Users.Queries.GetUsers;
-using learnify.ai.api.Features.Users.Queries.GetUserById;
-using learnify.ai.api.Features.Users.Queries.GetUserEnrollments;
-using learnify.ai.api.Features.Users.Queries.GetUserQuizAttempts;
-using learnify.ai.api.Features.Users.Queries.GetUserInstructedCourses;
-using learnify.ai.api.Features.Users.Operations.Queries.GetUserDashboard;
-using learnify.ai.api.Features.Users.Operations.Queries.GetUserStatistics;
-using learnify.ai.api.Features.Users.Contracts.Requests;
-using learnify.ai.api.Features.Users.Contracts.Responses;
-using learnify.ai.api.Features.Users.Models;
-using learnify.ai.api.Features.Enrollments.Core.Models;
+using learnify.ai.api.Features.Enrollments;
 
 namespace learnify.ai.api.Features.Users;
 

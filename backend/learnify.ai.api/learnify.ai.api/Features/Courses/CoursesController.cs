@@ -1,24 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using learnify.ai.api.Common.Controllers;
 using learnify.ai.api.Common.Models;
-using learnify.ai.api.Features.Courses.Operations.Queries.GetCourses;
-using learnify.ai.api.Features.Courses.Operations.Queries.GetCourseById;
-using learnify.ai.api.Features.Courses.Operations.Queries.GetFeaturedCourses;
-using learnify.ai.api.Features.Courses.Operations.Queries.GetPopularCourses;
-using learnify.ai.api.Features.Courses.Operations.Queries.GetRecentCourses;
-using learnify.ai.api.Features.Courses.Operations.Queries.GetCourseAnalytics;
-using learnify.ai.api.Features.Courses.Operations.Queries.GetCourseStudents;
-using learnify.ai.api.Features.Courses.Operations.Queries.GetCourseCompletionRate;
-using learnify.ai.api.Features.Courses.Operations.Queries.GetCourseLessons;
-using learnify.ai.api.Features.Courses.Operations.Commands.CreateCourse;
-using learnify.ai.api.Features.Courses.Operations.Commands.UpdateCourse;
-using learnify.ai.api.Features.Courses.Operations.Commands.DeleteCourse;
-using learnify.ai.api.Features.Courses.Operations.Commands.PublishCourse;
-using learnify.ai.api.Features.Courses.Operations.Commands.UnpublishCourse;
-using learnify.ai.api.Features.Courses.Operations.Commands.FeatureCourse;
-using learnify.ai.api.Features.Courses.Contracts.Requests;
-using learnify.ai.api.Features.Courses.Contracts.Responses;
-using learnify.ai.api.Features.Courses.Core.Models;
+using learnify.ai.api.Features.Lessons;
 
 namespace learnify.ai.api.Features.Courses;
 
@@ -465,10 +448,28 @@ public class CoursesController : BaseController
     /// Add lesson to course
     /// </summary>
     [HttpPost("{courseId:int}/lessons")]
-    public async Task<ActionResult<ApiResponse<object>>> CreateCourseLesson(int courseId, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<LessonResponse>>> CreateCourseLesson(int courseId, [FromBody] CreateLessonRequest request)
     {
-        // TODO: Implement CreateLessonCommand once lesson creation is fully implemented
-        return Ok(new { Message = "Create lesson endpoint - TODO: Implement CreateLessonCommand", CourseId = courseId }, "Lesson creation endpoint");
+        var command = new CreateLessonCommand(
+            courseId,
+            request.Title,
+            request.Description,
+            request.Content,
+            request.VideoUrl,
+            request.Duration,
+            request.IsFree,
+            request.IsPublished
+        );
+
+        try
+        {
+            var result = await Mediator.Send(command);
+            return Ok(result, "Lesson created successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound<LessonResponse>(ex.Message);
+        }
     }
 
     #endregion

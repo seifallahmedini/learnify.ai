@@ -1,14 +1,11 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Courses.Contracts.Responses;
-using learnify.ai.api.Features.Users.Data;
-using learnify.ai.api.Features.Courses.Infrastructure.Data;
-using learnify.ai.api.Features.Enrollments.Infrastructure.Data;
-using learnify.ai.api.Features.Reviews.Infrastructure.Data;
-using learnify.ai.api.Features.Courses.Core.Models;
+using learnify.ai.api.Features.Users;
+using learnify.ai.api.Features.Enrollments;
+using learnify.ai.api.Features.Reviews;
 
-namespace learnify.ai.api.Features.Courses.Operations.Queries.GetCourses;
+namespace learnify.ai.api.Features.Courses;
 
 public record GetCoursesQuery(
     int? CategoryId = null,

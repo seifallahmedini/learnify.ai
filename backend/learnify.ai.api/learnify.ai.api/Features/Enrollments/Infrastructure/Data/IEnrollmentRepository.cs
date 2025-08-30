@@ -1,7 +1,6 @@
 using learnify.ai.api.Common.Data.Repositories;
-using learnify.ai.api.Features.Enrollments.Core.Models;
 
-namespace learnify.ai.api.Features.Enrollments.Infrastructure.Data;
+namespace learnify.ai.api.Features.Enrollments;
 
 public interface IEnrollmentRepository : IBaseRepository<Enrollment>
 {

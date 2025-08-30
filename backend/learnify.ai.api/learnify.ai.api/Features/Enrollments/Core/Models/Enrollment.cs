@@ -1,4 +1,4 @@
-namespace learnify.ai.api.Features.Enrollments.Core.Models;
+namespace learnify.ai.api.Features.Enrollments;
 
 public class Enrollment
 {

@@ -1,11 +1,11 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Courses.Infrastructure.Data;
-using learnify.ai.api.Features.Enrollments.Infrastructure.Data;
-using learnify.ai.api.Features.Reviews.Infrastructure.Data;
+using learnify.ai.api.Features.Courses;
+using learnify.ai.api.Features.Enrollments;
+using learnify.ai.api.Features.Reviews;
 
-namespace learnify.ai.api.Features.Users.Queries.GetUserInstructedCourses;
+namespace learnify.ai.api.Features.Users;
 
 public record GetUserInstructedCoursesQuery(
     int UserId,

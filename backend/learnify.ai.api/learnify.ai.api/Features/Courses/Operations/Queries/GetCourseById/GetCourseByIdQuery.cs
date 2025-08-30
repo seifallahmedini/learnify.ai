@@ -1,10 +1,8 @@
 using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Courses.Contracts.Responses;
-using learnify.ai.api.Features.Courses.Infrastructure.Data;
 
-namespace learnify.ai.api.Features.Courses.Operations.Queries.GetCourseById;
+namespace learnify.ai.api.Features.Courses;
 
 public record GetCourseByIdQuery(int Id) : IQuery<CourseResponse?>;
 

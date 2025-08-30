@@ -1,4 +1,4 @@
-namespace learnify.ai.api.Features.Assessments.Core.Models;
+namespace learnify.ai.api.Features.Assessments;
 
 public class Question
 {

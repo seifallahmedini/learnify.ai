@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using learnify.ai.api.Common.Data;
 using learnify.ai.api.Common.Data.Repositories;
-using learnify.ai.api.Features.Assessments.Core.Models;
 
-namespace learnify.ai.api.Features.Assessments.Infrastructure.Data;
+namespace learnify.ai.api.Features.Assessments;
 
 public class QuizRepository : BaseRepository<Quiz>, IQuizRepository
 {
