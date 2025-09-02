@@ -14,61 +14,95 @@ public class ReviewsController : BaseController
     /// Get all reviews
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<object>>> GetReviews([FromQuery] int? courseId = null, [FromQuery] int? userId = null, [FromQuery] bool? isApproved = null)
+    public async Task<ActionResult<ApiResponse<ReviewListResponse>>> GetReviews(
+        [FromQuery] int? courseId = null, 
+        [FromQuery] int? userId = null, 
+        [FromQuery] bool? isApproved = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
-        // TODO: Implement GetReviewsQuery
-        var reviews = new
+        try
         {
-            Reviews = new object[0],
-            TotalCount = 0,
-            CourseId = courseId,
-            UserId = userId,
-            IsApproved = isApproved,
-            Message = "Get reviews endpoint - TODO: Implement GetReviewsQuery"
-        };
-
-        return Ok(reviews, "Reviews retrieved successfully");
+            var query = new GetReviewsQuery(courseId, userId, isApproved, page, pageSize);
+            var result = await Mediator.Send(query);
+            return Ok(result, "Reviews retrieved successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<ReviewListResponse>("An error occurred while retrieving reviews");
+        }
     }
 
     /// <summary>
     /// Get review by ID
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetReview(int id)
+    public async Task<ActionResult<ApiResponse<ReviewResponse>>> GetReview(int id)
     {
-        // TODO: Implement GetReviewByIdQuery
-        var review = new
+        try
         {
-            Id = id,
-            CourseId = 0,
-            UserId = 0,
-            Rating = 5,
-            Comment = "Great course!",
-            IsApproved = true,
-            Message = "Get review endpoint - TODO: Implement GetReviewByIdQuery"
-        };
+            var query = new GetReviewByIdQuery(id);
+            var result = await Mediator.Send(query);
 
-        return Ok(review, "Review retrieved successfully");
+            if (result == null)
+                return NotFound<ReviewResponse>($"Review with ID {id} not found");
+
+            return Ok(result, "Review retrieved successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<ReviewResponse>("An error occurred while retrieving the review");
+        }
     }
 
     /// <summary>
     /// Create new review
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<object>>> CreateReview([FromBody] object request)
+    public async Task<ActionResult<ApiResponse<ReviewResponse>>> CreateReview([FromBody] CreateReviewRequest request)
     {
-        // TODO: Implement CreateReviewCommand
-        return Ok(new { Message = "Create review endpoint - TODO: Implement CreateReviewCommand" }, "Review creation endpoint");
+        try
+        {
+            var command = new CreateReviewCommand(
+                request.CourseId,
+                request.UserId,
+                request.Rating,
+                request.Comment
+            );
+
+            var result = await Mediator.Send(command);
+            return Ok(result, "Review created successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<ReviewResponse>(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<ReviewResponse>(ex.Message);
+        }
     }
 
     /// <summary>
     /// Update review
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateReview(int id, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<ReviewResponse>>> UpdateReview(int id, [FromBody] UpdateReviewRequest request)
     {
-        // TODO: Implement UpdateReviewCommand
-        return Ok(new { Message = "Update review endpoint - TODO: Implement UpdateReviewCommand" }, "Review update endpoint");
+        try
+        {
+            var command = new UpdateReviewCommand(id, request.Rating, request.Comment);
+            var result = await Mediator.Send(command);
+
+            if (result == null)
+                return NotFound<ReviewResponse>($"Review with ID {id} not found");
+
+            return Ok(result, "Review updated successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<ReviewResponse>(ex.Message);
+        }
     }
 
     /// <summary>
@@ -77,8 +111,20 @@ public class ReviewsController : BaseController
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteReview(int id)
     {
-        // TODO: Implement DeleteReviewCommand
-        return Ok(false, "Delete review endpoint - TODO: Implement DeleteReviewCommand");
+        try
+        {
+            var command = new DeleteReviewCommand(id);
+            var result = await Mediator.Send(command);
+
+            if (!result)
+                return NotFound<bool>($"Review with ID {id} not found");
+
+            return Ok(result, "Review deleted successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<bool>("An error occurred while deleting the review");
+        }
     }
 
     #endregion
@@ -89,39 +135,61 @@ public class ReviewsController : BaseController
     /// Get course reviews
     /// </summary>
     [HttpGet("course/{courseId:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCourseReviews(int courseId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<ApiResponse<CourseReviewsResponse>>> GetCourseReviews(
+        int courseId, 
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10,
+        [FromQuery] int? rating = null,
+        [FromQuery] bool? isApproved = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null)
     {
-        // TODO: Implement GetCourseReviewsQuery
-        return Ok(new { Message = "Get course reviews endpoint - TODO: Implement GetCourseReviewsQuery" }, "Course reviews endpoint");
+        try
+        {
+            var query = new GetCourseReviewsQuery(courseId, page, pageSize, rating, isApproved, fromDate, toDate);
+            var result = await Mediator.Send(query);
+            return Ok(result, "Course reviews retrieved successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<CourseReviewsResponse>(ex.Message);
+        }
     }
 
     /// <summary>
     /// Get course average rating
     /// </summary>
     [HttpGet("course/{courseId:int}/rating")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCourseRating(int courseId)
+    public async Task<ActionResult<ApiResponse<CourseRatingResponse>>> GetCourseRating(int courseId)
     {
-        // TODO: Implement GetCourseRatingQuery
-        var rating = new
+        try
         {
-            CourseId = courseId,
-            AverageRating = 4.5,
-            TotalReviews = 0,
-            RatingDistribution = new { },
-            Message = "Get course rating endpoint - TODO: Implement GetCourseRatingQuery"
-        };
-
-        return Ok(rating, "Course rating retrieved successfully");
+            var query = new GetCourseRatingQuery(courseId);
+            var result = await Mediator.Send(query);
+            return Ok(result, "Course rating retrieved successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<CourseRatingResponse>(ex.Message);
+        }
     }
 
     /// <summary>
     /// Get course review statistics
     /// </summary>
     [HttpGet("course/{courseId:int}/stats")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCourseReviewStats(int courseId)
+    public async Task<ActionResult<ApiResponse<CourseReviewStatsResponse>>> GetCourseReviewStats(int courseId)
     {
-        // TODO: Implement GetCourseReviewStatsQuery
-        return Ok(new { Message = "Get course review stats endpoint - TODO: Implement GetCourseReviewStatsQuery" }, "Course review stats endpoint");
+        try
+        {
+            var query = new GetCourseReviewStatsQuery(courseId);
+            var result = await Mediator.Send(query);
+            return Ok(result, "Course review statistics retrieved successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<CourseReviewStatsResponse>(ex.Message);
+        }
     }
 
     #endregion
@@ -132,20 +200,48 @@ public class ReviewsController : BaseController
     /// Get user reviews
     /// </summary>
     [HttpGet("user/{userId:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetUserReviews(int userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<ApiResponse<UserReviewsResponse>>> GetUserReviews(
+        int userId, 
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10,
+        [FromQuery] bool? isApproved = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null)
     {
-        // TODO: Implement GetUserReviewsQuery
-        return Ok(new { Message = "Get user reviews endpoint - TODO: Implement GetUserReviewsQuery" }, "User reviews endpoint");
+        try
+        {
+            var query = new GetUserReviewsQuery(userId, page, pageSize, isApproved, fromDate, toDate);
+            var result = await Mediator.Send(query);
+            return Ok(result, "User reviews retrieved successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<UserReviewsResponse>(ex.Message);
+        }
     }
 
     /// <summary>
-    /// Get reviews given by user
+    /// Get reviews given by user (alias for GetUserReviews for backward compatibility)
     /// </summary>
     [HttpGet("user/{userId:int}/given")]
-    public async Task<ActionResult<ApiResponse<object>>> GetReviewsGivenByUser(int userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<ApiResponse<UserReviewsResponse>>> GetReviewsGivenByUser(
+        int userId, 
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10,
+        [FromQuery] bool? isApproved = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null)
     {
-        // TODO: Implement GetReviewsGivenByUserQuery
-        return Ok(new { Message = "Get reviews given by user endpoint - TODO: Implement GetReviewsGivenByUserQuery" }, "Reviews given by user endpoint");
+        try
+        {
+            var query = new GetUserReviewsQuery(userId, page, pageSize, isApproved, fromDate, toDate);
+            var result = await Mediator.Send(query);
+            return Ok(result, "Reviews given by user retrieved successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<UserReviewsResponse>(ex.Message);
+        }
     }
 
     #endregion
@@ -156,30 +252,66 @@ public class ReviewsController : BaseController
     /// Approve review
     /// </summary>
     [HttpPut("{id:int}/approve")]
-    public async Task<ActionResult<ApiResponse<object>>> ApproveReview(int id)
+    public async Task<ActionResult<ApiResponse<ReviewModerationResponse>>> ApproveReview(int id)
     {
-        // TODO: Implement ApproveReviewCommand
-        return Ok(new { Message = "Approve review endpoint - TODO: Implement ApproveReviewCommand" }, "Review approval endpoint");
+        try
+        {
+            var command = new ApproveReviewCommand(id);
+            var result = await Mediator.Send(command);
+
+            if (result == null)
+                return NotFound<ReviewModerationResponse>($"Review with ID {id} not found");
+
+            return Ok(result, "Review approved successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<ReviewModerationResponse>("An error occurred while approving the review");
+        }
     }
 
     /// <summary>
     /// Reject review
     /// </summary>
     [HttpPut("{id:int}/reject")]
-    public async Task<ActionResult<ApiResponse<object>>> RejectReview(int id)
+    public async Task<ActionResult<ApiResponse<ReviewModerationResponse>>> RejectReview(int id)
     {
-        // TODO: Implement RejectReviewCommand
-        return Ok(new { Message = "Reject review endpoint - TODO: Implement RejectReviewCommand" }, "Review rejection endpoint");
+        try
+        {
+            var command = new RejectReviewCommand(id);
+            var result = await Mediator.Send(command);
+
+            if (result == null)
+                return NotFound<ReviewModerationResponse>($"Review with ID {id} not found");
+
+            return Ok(result, "Review rejected successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<ReviewModerationResponse>("An error occurred while rejecting the review");
+        }
     }
 
     /// <summary>
     /// Get pending reviews
     /// </summary>
     [HttpGet("pending")]
-    public async Task<ActionResult<ApiResponse<object>>> GetPendingReviews([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<ApiResponse<PendingReviewsResponse>>> GetPendingReviews(
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null)
     {
-        // TODO: Implement GetPendingReviewsQuery
-        return Ok(new { Message = "Get pending reviews endpoint - TODO: Implement GetPendingReviewsQuery" }, "Pending reviews endpoint");
+        try
+        {
+            var query = new GetPendingReviewsQuery(page, pageSize, fromDate, toDate);
+            var result = await Mediator.Send(query);
+            return Ok(result, "Pending reviews retrieved successfully");
+        }
+        catch (Exception)
+        {
+            return BadRequest<PendingReviewsResponse>("An error occurred while retrieving pending reviews");
+        }
     }
 
     #endregion

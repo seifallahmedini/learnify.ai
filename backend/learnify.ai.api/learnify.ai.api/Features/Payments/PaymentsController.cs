@@ -14,41 +14,68 @@ public class PaymentsController : BaseController
     /// Process payment for course
     /// </summary>
     [HttpPost("process")]
-    public async Task<ActionResult<ApiResponse<object>>> ProcessPayment([FromBody] object request)
+    public async Task<ActionResult<ApiResponse<ProcessPaymentResponse>>> ProcessPayment([FromBody] ProcessPaymentRequest request)
     {
-        // TODO: Implement ProcessPaymentCommand
-        return Ok(new { Message = "Process payment endpoint - TODO: Implement ProcessPaymentCommand" }, "Payment processing endpoint");
+        var command = new ProcessPaymentCommand(
+            request.UserId,
+            request.CourseId,
+            request.Amount,
+            request.Currency,
+            request.PaymentMethod,
+            request.PaymentMethodDetails
+        );
+
+        try
+        {
+            var result = await Mediator.Send(command);
+            return Ok(result, "Payment processed successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<ProcessPaymentResponse>(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<ProcessPaymentResponse>(ex.Message);
+        }
     }
 
     /// <summary>
     /// Get payment details
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetPayment(int id)
+    public async Task<ActionResult<ApiResponse<PaymentResponse>>> GetPayment(int id)
     {
-        // TODO: Implement GetPaymentByIdQuery
-        var payment = new
-        {
-            Id = id,
-            UserId = 0,
-            CourseId = 0,
-            Amount = 0.0m,
-            Status = "Completed",
-            PaymentDate = DateTime.UtcNow,
-            Message = "Get payment endpoint - TODO: Implement GetPaymentByIdQuery"
-        };
+        var query = new GetPaymentByIdQuery(id);
+        var result = await Mediator.Send(query);
 
-        return Ok(payment, "Payment retrieved successfully");
+        if (result == null)
+            return NotFound<PaymentResponse>($"Payment with ID {id} not found");
+
+        return Ok(result, "Payment retrieved successfully");
     }
 
     /// <summary>
     /// Process refund
     /// </summary>
     [HttpPost("{id:int}/refund")]
-    public async Task<ActionResult<ApiResponse<object>>> ProcessRefund(int id, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<RefundResponse>>> ProcessRefund(int id, [FromBody] ProcessRefundRequest request)
     {
-        // TODO: Implement ProcessRefundCommand
-        return Ok(new { Message = "Process refund endpoint - TODO: Implement ProcessRefundCommand" }, "Refund processing endpoint");
+        var command = new ProcessRefundCommand(id, request.RefundAmount, request.Reason);
+
+        try
+        {
+            var result = await Mediator.Send(command);
+            return Ok(result, "Refund processed successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<RefundResponse>(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<RefundResponse>(ex.Message);
+        }
     }
 
     #endregion
@@ -56,43 +83,73 @@ public class PaymentsController : BaseController
     #region Payment Management
 
     /// <summary>
-    /// Get user payments
+    /// Get user payments - matches /api/users/{userId}/payments from features overview
     /// </summary>
-    [HttpGet("user/{userId:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetUserPayments(int userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    [HttpGet("users/{userId:int}/payments")]
+    public async Task<ActionResult<ApiResponse<UserPaymentsResponse>>> GetUserPayments(
+        int userId,
+        [FromQuery] int? courseId = null,
+        [FromQuery] PaymentStatus? status = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
-        // TODO: Implement GetUserPaymentsQuery
-        var payments = new
-        {
-            UserId = userId,
-            Payments = new object[0],
-            TotalCount = 0,
-            Page = page,
-            PageSize = pageSize,
-            Message = "Get user payments endpoint - TODO: Implement GetUserPaymentsQuery"
-        };
+        var query = new GetUserPaymentsQuery(userId, courseId, status, fromDate, toDate, page, pageSize);
 
-        return Ok(payments, "User payments retrieved successfully");
+        try
+        {
+            var result = await Mediator.Send(query);
+            return Ok(result, "User payments retrieved successfully");
+        }
+        catch (ArgumentException)
+        {
+            return NotFound<UserPaymentsResponse>($"User with ID {userId} not found");
+        }
     }
 
     /// <summary>
-    /// Get course payments
+    /// Get course payments - matches /api/courses/{courseId}/payments from features overview
     /// </summary>
-    [HttpGet("course/{courseId:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCoursePayments(int courseId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    [HttpGet("courses/{courseId:int}/payments")]
+    public async Task<ActionResult<ApiResponse<CoursePaymentsResponse>>> GetCoursePayments(
+        int courseId,
+        [FromQuery] PaymentStatus? status = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
-        // TODO: Implement GetCoursePaymentsQuery
-        return Ok(new { Message = "Get course payments endpoint - TODO: Implement GetCoursePaymentsQuery" }, "Course payments endpoint");
+        var query = new GetCoursePaymentsQuery(courseId, status, fromDate, toDate, page, pageSize);
+
+        try
+        {
+            var result = await Mediator.Send(query);
+            return Ok(result, "Course payments retrieved successfully");
+        }
+        catch (ArgumentException)
+        {
+            return NotFound<CoursePaymentsResponse>($"Course with ID {courseId} not found");
+        }
     }
 
     /// <summary>
     /// Get all transactions
     /// </summary>
     [HttpGet("transactions")]
-    public async Task<ActionResult<ApiResponse<object>>> GetTransactions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<ApiResponse<TransactionsResponse>>> GetTransactions(
+        [FromQuery] int? userId = null,
+        [FromQuery] int? courseId = null,
+        [FromQuery] PaymentStatus? status = null,
+        [FromQuery] PaymentMethod? paymentMethod = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
-        // TODO: Implement GetTransactionsQuery
-        return Ok(new { Message = "Get transactions endpoint - TODO: Implement GetTransactionsQuery" }, "Transactions endpoint");
+        var query = new GetTransactionsQuery(userId, courseId, status, paymentMethod, fromDate, toDate, page, pageSize);
+        var result = await Mediator.Send(query);
+        return Ok(result, "Transactions retrieved successfully");
     }
 
     #endregion
@@ -103,59 +160,138 @@ public class PaymentsController : BaseController
     /// Get total revenue
     /// </summary>
     [HttpGet("revenue")]
-    public async Task<ActionResult<ApiResponse<object>>> GetTotalRevenue()
+    public async Task<ActionResult<ApiResponse<TotalRevenueResponse>>> GetTotalRevenue(
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] string? currency = null)
     {
-        // TODO: Implement GetTotalRevenueQuery
-        var revenue = new
-        {
-            TotalRevenue = 0.0m,
-            ThisMonth = 0.0m,
-            LastMonth = 0.0m,
-            GrowthRate = 0.0,
-            Message = "Get total revenue endpoint - TODO: Implement GetTotalRevenueQuery"
-        };
-
-        return Ok(revenue, "Total revenue retrieved successfully");
+        var query = new GetTotalRevenueQuery(fromDate, toDate, currency);
+        var result = await Mediator.Send(query);
+        return Ok(result, "Total revenue retrieved successfully");
     }
 
     /// <summary>
-    /// Get instructor revenue
+    /// Get instructor revenue - matches /api/payments/revenue/instructor/{id} from features overview
     /// </summary>
     [HttpGet("revenue/instructor/{instructorId:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetInstructorRevenue(int instructorId)
+    public async Task<ActionResult<ApiResponse<InstructorRevenueResponse>>> GetInstructorRevenue(
+        int instructorId,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] string? currency = null)
     {
-        // TODO: Implement GetInstructorRevenueQuery
-        return Ok(new { Message = "Get instructor revenue endpoint - TODO: Implement GetInstructorRevenueQuery" }, "Instructor revenue endpoint");
+        var query = new GetInstructorRevenueQuery(instructorId, fromDate, toDate, currency);
+
+        try
+        {
+            var result = await Mediator.Send(query);
+            return Ok(result, "Instructor revenue retrieved successfully");
+        }
+        catch (ArgumentException)
+        {
+            return NotFound<InstructorRevenueResponse>($"Instructor with ID {instructorId} not found");
+        }
+    }
+
+    ///// <summary>
+    ///// Get course revenue - matches /api/payments/revenue/course/{id} from features overview
+    ///// </summary>
+    //[HttpGet("revenue/course/{courseId:int}")]
+    //public async Task<ActionResult<ApiResponse<CourseRevenueResponse>>> GetCourseRevenue(
+    //    int courseId,
+    //    [FromQuery] DateTime? fromDate = null,
+    //    [FromQuery] DateTime? toDate = null,
+    //    [FromQuery] string? currency = null)
+    //{
+    //    var query = new GetCourseRevenueQuery(courseId, fromDate, toDate, currency);
+
+    //    try
+    //    {
+    //        var result = await Mediator.Send(query);
+    //        return Ok(result, "Course revenue retrieved successfully");
+    //    }
+    //    catch (ArgumentException)
+    //    {
+    //        return NotFound<CourseRevenueResponse>($"Course with ID {courseId} not found");
+    //    }
+    //}
+
+    ///// <summary>
+    ///// Get monthly revenue
+    ///// </summary>
+    //[HttpGet("revenue/monthly")]
+    //public async Task<ActionResult<ApiResponse<MonthlyRevenueResponse>>> GetMonthlyRevenue(
+    //    [FromQuery] int year = 0,
+    //    [FromQuery] int? month = null,
+    //    [FromQuery] string? currency = null)
+    //{
+    //    var currentYear = year == 0 ? DateTime.UtcNow.Year : year;
+    //    var query = new GetMonthlyRevenueQuery(currentYear, month, currency);
+    //    var result = await Mediator.Send(query);
+    //    return Ok(result, "Monthly revenue retrieved successfully");
+    //}
+
+    ///// <summary>
+    ///// Get payment analytics
+    ///// </summary>
+    //[HttpGet("analytics")]
+    //public async Task<ActionResult<ApiResponse<PaymentAnalyticsResponse>>> GetPaymentAnalytics(
+    //    [FromQuery] DateTime? fromDate = null,
+    //    [FromQuery] DateTime? toDate = null,
+    //    [FromQuery] string? currency = null)
+    //{
+    //    var query = new GetPaymentAnalyticsQuery(fromDate, toDate, currency);
+    //    var result = await Mediator.Send(query);
+    //    return Ok(result, "Payment analytics retrieved successfully");
+    //}
+
+    #endregion
+
+    #region Additional Payment Operations
+
+    /// <summary>
+    /// Get payment by transaction ID
+    /// </summary>
+    [HttpGet("transaction/{transactionId}")]
+    public async Task<ActionResult<ApiResponse<PaymentResponse>>> GetPaymentByTransactionId(string transactionId)
+    {
+        var query = new GetPaymentByTransactionIdQuery(transactionId);
+        var result = await Mediator.Send(query);
+
+        if (result == null)
+            return NotFound<PaymentResponse>($"Payment with transaction ID {transactionId} not found");
+
+        return Ok(result, "Payment retrieved successfully");
     }
 
     /// <summary>
-    /// Get course revenue
+    /// Get user's successful course purchases
     /// </summary>
-    [HttpGet("revenue/course/{courseId:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCourseRevenue(int courseId)
+    [HttpGet("users/{userId:int}/purchases")]
+    public async Task<ActionResult<ApiResponse<UserPaymentsResponse>>> GetUserPurchases(int userId)
     {
-        // TODO: Implement GetCourseRevenueQuery
-        return Ok(new { Message = "Get course revenue endpoint - TODO: Implement GetCourseRevenueQuery" }, "Course revenue endpoint");
+        var query = new GetUserPaymentsQuery(userId, Status: PaymentStatus.Completed);
+
+        try
+        {
+            var result = await Mediator.Send(query);
+            return Ok(result, "User purchases retrieved successfully");
+        }
+        catch (ArgumentException)
+        {
+            return NotFound<UserPaymentsResponse>($"User with ID {userId} not found");
+        }
     }
 
     /// <summary>
-    /// Get monthly revenue
+    /// Check if user has purchased a specific course
     /// </summary>
-    [HttpGet("revenue/monthly")]
-    public async Task<ActionResult<ApiResponse<object>>> GetMonthlyRevenue([FromQuery] int year = 0, [FromQuery] int month = 0)
+    [HttpGet("users/{userId:int}/courses/{courseId:int}/purchased")]
+    public async Task<ActionResult<ApiResponse<bool>>> HasUserPurchasedCourse(int userId, int courseId)
     {
-        // TODO: Implement GetMonthlyRevenueQuery
-        return Ok(new { Message = "Get monthly revenue endpoint - TODO: Implement GetMonthlyRevenueQuery" }, "Monthly revenue endpoint");
-    }
-
-    /// <summary>
-    /// Get payment analytics
-    /// </summary>
-    [HttpGet("analytics")]
-    public async Task<ActionResult<ApiResponse<object>>> GetPaymentAnalytics()
-    {
-        // TODO: Implement GetPaymentAnalyticsQuery
-        return Ok(new { Message = "Get payment analytics endpoint - TODO: Implement GetPaymentAnalyticsQuery" }, "Payment analytics endpoint");
+        var query = new HasUserPurchasedCourseQuery(userId, courseId);
+        var result = await Mediator.Send(query);
+        return Ok(result, "Purchase status retrieved successfully");
     }
 
     #endregion

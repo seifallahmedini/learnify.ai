@@ -2,6 +2,7 @@ using FluentValidation;
 using MediatR;
 using learnify.ai.api.Common.Interfaces;
 using learnify.ai.api.Features.Enrollments;
+using learnify.ai.api.Features.Users;
 using learnify.ai.api.Features.Courses;
 
 namespace learnify.ai.api.Features.Progress;
@@ -24,17 +25,20 @@ public class GetEnrollmentProgressHandler : IRequestHandler<GetEnrollmentProgres
 {
     private readonly IEnrollmentRepository _enrollmentRepository;
     private readonly IProgressRepository _progressRepository;
+    private readonly IUserRepository _userRepository;
     private readonly ICourseRepository _courseRepository;
     private readonly ILessonRepository _lessonRepository;
 
     public GetEnrollmentProgressHandler(
         IEnrollmentRepository enrollmentRepository,
         IProgressRepository progressRepository,
+        IUserRepository userRepository,
         ICourseRepository courseRepository,
         ILessonRepository lessonRepository)
     {
         _enrollmentRepository = enrollmentRepository;
         _progressRepository = progressRepository;
+        _userRepository = userRepository;
         _courseRepository = courseRepository;
         _lessonRepository = lessonRepository;
     }
@@ -45,50 +49,87 @@ public class GetEnrollmentProgressHandler : IRequestHandler<GetEnrollmentProgres
         if (enrollment == null)
             return null;
 
+        // Get related data
+        var user = await _userRepository.GetByIdAsync(enrollment.UserId, cancellationToken);
         var course = await _courseRepository.GetByIdAsync(enrollment.CourseId, cancellationToken);
-        var allProgress = await _progressRepository.GetByEnrollmentIdAsync(enrollment.Id, cancellationToken);
-        var totalTimeSpent = await _progressRepository.GetTotalTimeSpentAsync(enrollment.Id, cancellationToken);
-        var completedLessons = await _progressRepository.GetCompletedLessonsCountAsync(enrollment.Id, cancellationToken);
-        var totalLessons = await _lessonRepository.GetLessonCountAsync(enrollment.CourseId, cancellationToken);
 
-        // Build lesson progress list
-        var lessonProgressList = new List<LessonProgressResponse>();
-        foreach (var progress in allProgress)
+        if (user == null || course == null)
+            throw new InvalidOperationException("Associated user or course not found");
+
+        // Get all lessons for the course
+        var courseLessons = await _lessonRepository.GetByCourseIdAsync(enrollment.CourseId, cancellationToken);
+        var lessonsOrdered = courseLessons.OrderBy(l => l.OrderIndex).ToList();
+
+        // Get all progress for this enrollment
+        var allProgress = await _progressRepository.GetByEnrollmentIdAsync(request.EnrollmentId, cancellationToken);
+        var progressDict = allProgress.ToDictionary(p => p.LessonId);
+
+        // Build lesson progress responses
+        var lessonProgressList = new List<DetailedLessonProgressResponse>();
+        int totalTimeSpent = 0;
+        int completedLessons = 0;
+
+        foreach (var lesson in lessonsOrdered)
         {
-            var lesson = await _lessonRepository.GetByIdAsync(progress.LessonId, cancellationToken);
-            lessonProgressList.Add(new LessonProgressResponse(
-                progress.LessonId,
-                lesson?.Title ?? "Unknown Lesson",
-                progress.EnrollmentId,
-                progress.IsCompleted,
-                progress.CompletionDate,
-                progress.TimeSpent,
-                progress.GetFormattedTimeSpent(),
-                progress.LastAccessDate
-            ));
+            if (progressDict.TryGetValue(lesson.Id, out var progress))
+            {
+                lessonProgressList.Add(new DetailedLessonProgressResponse(
+                    lesson.Id,
+                    lesson.Title,
+                    request.EnrollmentId,
+                    progress.IsCompleted,
+                    progress.CompletionDate,
+                    progress.TimeSpent,
+                    progress.GetFormattedTimeSpent(),
+                    progress.LastAccessDate
+                ));
+
+                totalTimeSpent += progress.TimeSpent;
+                if (progress.IsCompleted)
+                    completedLessons++;
+            }
+            else
+            {
+                // No progress for this lesson yet
+                lessonProgressList.Add(new DetailedLessonProgressResponse(
+                    lesson.Id,
+                    lesson.Title,
+                    request.EnrollmentId,
+                    false,
+                    null,
+                    0,
+                    "0m",
+                    DateTime.UtcNow
+                ));
+            }
         }
+
+        // Calculate overall progress
+        var overallProgress = lessonsOrdered.Count > 0 
+            ? (decimal)completedLessons / lessonsOrdered.Count * 100 
+            : 0;
 
         // Format total time spent
         var hours = totalTimeSpent / 60;
         var minutes = totalTimeSpent % 60;
-        var formattedTime = hours > 0 ? $"{hours}h {minutes}m" : $"{minutes}m";
+        var formattedTotalTime = hours > 0 ? $"{hours}h {minutes}m" : $"{minutes}m";
 
         // Get last access date
         var lastAccessDate = allProgress.Any() 
-            ? allProgress.Max(p => p.LastAccessDate) 
-            : enrollment.UpdatedAt;
+            ? allProgress.Max(p => p.LastAccessDate)
+            : enrollment.CreatedAt;
 
         return new EnrollmentProgressDetailResponse(
             enrollment.Id,
             enrollment.UserId,
             enrollment.CourseId,
-            course?.Title ?? "Unknown Course",
+            course.Title,
             lessonProgressList,
-            enrollment.Progress,
+            Math.Round(overallProgress, 2),
             completedLessons,
-            totalLessons,
+            lessonsOrdered.Count,
             totalTimeSpent,
-            formattedTime,
+            formattedTotalTime,
             lastAccessDate
         );
     }

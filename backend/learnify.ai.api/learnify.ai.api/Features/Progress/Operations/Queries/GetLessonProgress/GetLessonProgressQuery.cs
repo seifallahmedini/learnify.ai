@@ -9,7 +9,7 @@ namespace learnify.ai.api.Features.Progress;
 public record GetLessonProgressQuery(
     int LessonId,
     int? EnrollmentId = null
-) : IQuery<LessonProgressResponse?>;
+) : IQuery<DetailedLessonProgressResponse?>;
 
 public class GetLessonProgressValidator : AbstractValidator<GetLessonProgressQuery>
 {
@@ -26,7 +26,7 @@ public class GetLessonProgressValidator : AbstractValidator<GetLessonProgressQue
     }
 }
 
-public class GetLessonProgressHandler : IRequestHandler<GetLessonProgressQuery, LessonProgressResponse?>
+public class GetLessonProgressHandler : IRequestHandler<GetLessonProgressQuery, DetailedLessonProgressResponse?>
 {
     private readonly IProgressRepository _progressRepository;
     private readonly ILessonRepository _lessonRepository;
@@ -42,7 +42,7 @@ public class GetLessonProgressHandler : IRequestHandler<GetLessonProgressQuery, 
         _enrollmentRepository = enrollmentRepository;
     }
 
-    public async Task<LessonProgressResponse?> Handle(GetLessonProgressQuery request, CancellationToken cancellationToken)
+    public async Task<DetailedLessonProgressResponse?> Handle(GetLessonProgressQuery request, CancellationToken cancellationToken)
     {
         var lesson = await _lessonRepository.GetByIdAsync(request.LessonId, cancellationToken);
         if (lesson == null)
@@ -72,7 +72,7 @@ public class GetLessonProgressHandler : IRequestHandler<GetLessonProgressQuery, 
         // If no progress found, create a default response
         if (progress == null)
         {
-            return new LessonProgressResponse(
+            return new DetailedLessonProgressResponse(
                 lesson.Id,
                 lesson.Title,
                 request.EnrollmentId,
@@ -84,7 +84,7 @@ public class GetLessonProgressHandler : IRequestHandler<GetLessonProgressQuery, 
             );
         }
 
-        return new LessonProgressResponse(
+        return new DetailedLessonProgressResponse(
             progress.LessonId,
             lesson.Title,
             progress.EnrollmentId,

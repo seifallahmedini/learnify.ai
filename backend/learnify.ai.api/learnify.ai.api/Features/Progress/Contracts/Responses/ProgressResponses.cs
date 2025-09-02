@@ -3,7 +3,7 @@ using learnify.ai.api.Features.Enrollments;
 namespace learnify.ai.api.Features.Progress;
 
 // Response DTOs for Progress endpoints
-public record LessonProgressResponse(
+public record DetailedLessonProgressResponse(
     int LessonId,
     string LessonTitle,
     int? EnrollmentId,
@@ -19,7 +19,7 @@ public record EnrollmentProgressDetailResponse(
     int UserId,
     int CourseId,
     string CourseTitle,
-    IEnumerable<LessonProgressResponse> LessonProgress,
+    IEnumerable<DetailedLessonProgressResponse> LessonProgress,
     decimal OverallProgress,
     int CompletedLessons,
     int TotalLessons,

@@ -8,65 +8,89 @@ namespace learnify.ai.api.Features.Assessments;
 [Route("api/[controller]")]
 public class QuizzesController : BaseController
 {
-    #region Quiz Management
+    #region Quiz CRUD Operations
 
     /// <summary>
-    /// Get all quizzes
+    /// Get all quizzes with optional filtering
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<object>>> GetQuizzes([FromQuery] int? courseId = null, [FromQuery] int? lessonId = null)
+    public async Task<ActionResult<ApiResponse<QuizListResponse>>> GetQuizzes(
+        [FromQuery] int? courseId = null,
+        [FromQuery] int? lessonId = null,
+        [FromQuery] bool? isActive = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
-        // TODO: Implement GetQuizzesQuery
-        var quizzes = new
-        {
-            Quizzes = new object[0],
-            TotalCount = 0,
-            CourseId = courseId,
-            LessonId = lessonId,
-            Message = "Get quizzes endpoint - TODO: Implement GetQuizzesQuery"
-        };
-
-        return Ok(quizzes, "Quizzes retrieved successfully");
+        var query = new GetQuizzesQuery(courseId, lessonId, isActive, page, pageSize);
+        var result = await Mediator.Send(query);
+        return Ok(result, "Quizzes retrieved successfully");
     }
 
     /// <summary>
     /// Get quiz by ID
     /// </summary>
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetQuiz(int id)
+    public async Task<ActionResult<ApiResponse<QuizResponse>>> GetQuiz(int id)
     {
-        // TODO: Implement GetQuizByIdQuery
-        var quiz = new
-        {
-            Id = id,
-            Title = "Sample Quiz",
-            Description = "Sample quiz description",
-            TimeLimit = 60,
-            PassingScore = 70,
-            Message = "Get quiz endpoint - TODO: Implement GetQuizByIdQuery"
-        };
+        var query = new GetQuizByIdQuery(id);
+        var result = await Mediator.Send(query);
 
-        return Ok(quiz, "Quiz retrieved successfully");
+        if (result == null)
+            return NotFound<QuizResponse>($"Quiz with ID {id} not found");
+
+        return Ok(result, "Quiz retrieved successfully");
     }
 
     /// <summary>
     /// Create new quiz
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<object>>> CreateQuiz([FromBody] object request)
+    public async Task<ActionResult<ApiResponse<QuizResponse>>> CreateQuiz([FromBody] CreateQuizRequest request)
     {
-        // TODO: Implement CreateQuizCommand
-        return Ok(new { Message = "Create quiz endpoint - TODO: Implement CreateQuizCommand" }, "Quiz creation endpoint");
+        var command = new CreateQuizCommand(
+            request.CourseId,
+            request.LessonId,
+            request.Title,
+            request.Description,
+            request.TimeLimit,
+            request.PassingScore,
+            request.MaxAttempts,
+            request.IsActive
+        );
+
+        try
+        {
+            var result = await Mediator.Send(command);
+            return Ok(result, "Quiz created successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<QuizResponse>(ex.Message);
+        }
     }
 
     /// <summary>
     /// Update quiz
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateQuiz(int id, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<QuizResponse>>> UpdateQuiz(int id, [FromBody] UpdateQuizRequest request)
     {
-        // TODO: Implement UpdateQuizCommand
-        return Ok(new { Message = "Update quiz endpoint - TODO: Implement UpdateQuizCommand" }, "Quiz update endpoint");
+        var command = new UpdateQuizCommand(
+            id,
+            request.Title,
+            request.Description,
+            request.TimeLimit,
+            request.PassingScore,
+            request.MaxAttempts,
+            request.IsActive
+        );
+
+        var result = await Mediator.Send(command);
+
+        if (result == null)
+            return NotFound<QuizResponse>($"Quiz with ID {id} not found");
+
+        return Ok(result, "Quiz updated successfully");
     }
 
     /// <summary>
@@ -75,8 +99,21 @@ public class QuizzesController : BaseController
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteQuiz(int id)
     {
-        // TODO: Implement DeleteQuizCommand
-        return Ok(false, "Delete quiz endpoint - TODO: Implement DeleteQuizCommand");
+        var command = new DeleteQuizCommand(id);
+
+        try
+        {
+            var result = await Mediator.Send(command);
+
+            if (!result)
+                return NotFound<bool>($"Quiz with ID {id} not found");
+
+            return Ok(result, "Quiz deleted successfully");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<bool>(ex.Message);
+        }
     }
 
     #endregion
@@ -84,43 +121,71 @@ public class QuizzesController : BaseController
     #region Quiz Organization
 
     /// <summary>
-    /// Get course quizzes
+    /// Get course quizzes - matches /api/courses/{courseId}/quizzes from features overview
     /// </summary>
-    [HttpGet("course/{courseId:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetCourseQuizzes(int courseId)
+    [HttpGet("courses/{courseId:int}/quizzes")]
+    public async Task<ActionResult<ApiResponse<CourseQuizzesResponse>>> GetCourseQuizzes(int courseId)
     {
-        // TODO: Implement GetCourseQuizzesQuery
-        return Ok(new { Message = "Get course quizzes endpoint - TODO: Implement GetCourseQuizzesQuery" }, "Course quizzes endpoint");
+        var query = new GetCourseQuizzesQuery(courseId);
+
+        try
+        {
+            var result = await Mediator.Send(query);
+            return Ok(result, "Course quizzes retrieved successfully");
+        }
+        catch (ArgumentException)
+        {
+            return NotFound<CourseQuizzesResponse>($"Course with ID {courseId} not found");
+        }
     }
 
     /// <summary>
-    /// Get lesson quizzes
+    /// Get lesson quizzes - matches /api/lessons/{lessonId}/quizzes from features overview
     /// </summary>
-    [HttpGet("lesson/{lessonId:int}")]
-    public async Task<ActionResult<ApiResponse<object>>> GetLessonQuizzes(int lessonId)
+    [HttpGet("lessons/{lessonId:int}/quizzes")]
+    public async Task<ActionResult<ApiResponse<QuizListResponse>>> GetLessonQuizzes(int lessonId)
     {
-        // TODO: Implement GetLessonQuizzesQuery
-        return Ok(new { Message = "Get lesson quizzes endpoint - TODO: Implement GetLessonQuizzesQuery" }, "Lesson quizzes endpoint");
+        var query = new GetQuizzesQuery(LessonId: lessonId);
+        var result = await Mediator.Send(query);
+        return Ok(result, "Lesson quizzes retrieved successfully");
     }
 
     /// <summary>
     /// Activate quiz
     /// </summary>
     [HttpPut("{id:int}/activate")]
-    public async Task<ActionResult<ApiResponse<object>>> ActivateQuiz(int id)
+    public async Task<ActionResult<ApiResponse<QuizResponse>>> ActivateQuiz(int id)
     {
-        // TODO: Implement ActivateQuizCommand
-        return Ok(new { Message = "Activate quiz endpoint - TODO: Implement ActivateQuizCommand" }, "Quiz activation endpoint");
+        var command = new ActivateQuizCommand(id);
+
+        try
+        {
+            var result = await Mediator.Send(command);
+
+            if (result == null)
+                return NotFound<QuizResponse>($"Quiz with ID {id} not found");
+
+            return Ok(result, "Quiz activated successfully");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<QuizResponse>(ex.Message);
+        }
     }
 
     /// <summary>
     /// Deactivate quiz
     /// </summary>
     [HttpPut("{id:int}/deactivate")]
-    public async Task<ActionResult<ApiResponse<object>>> DeactivateQuiz(int id)
+    public async Task<ActionResult<ApiResponse<QuizResponse>>> DeactivateQuiz(int id)
     {
-        // TODO: Implement DeactivateQuizCommand
-        return Ok(new { Message = "Deactivate quiz endpoint - TODO: Implement DeactivateQuizCommand" }, "Quiz deactivation endpoint");
+        var command = new DeactivateQuizCommand(id);
+        var result = await Mediator.Send(command);
+
+        if (result == null)
+            return NotFound<QuizResponse>($"Quiz with ID {id} not found");
+
+        return Ok(result, "Quiz deactivated successfully");
     }
 
     #endregion
@@ -128,23 +193,51 @@ public class QuizzesController : BaseController
     #region Question Management
 
     /// <summary>
-    /// Get quiz questions
+    /// Get quiz questions - matches /api/quizzes/{quizId}/questions from features overview
     /// </summary>
     [HttpGet("{quizId:int}/questions")]
-    public async Task<ActionResult<ApiResponse<object>>> GetQuizQuestions(int quizId)
+    public async Task<ActionResult<ApiResponse<QuizQuestionsResponse>>> GetQuizQuestions(int quizId)
     {
-        // TODO: Implement GetQuizQuestionsQuery
-        return Ok(new { Message = "Get quiz questions endpoint - TODO: Implement GetQuizQuestionsQuery" }, "Quiz questions endpoint");
+        var query = new GetQuizQuestionsQuery(quizId);
+
+        try
+        {
+            var result = await Mediator.Send(query);
+            return Ok(result, "Quiz questions retrieved successfully");
+        }
+        catch (ArgumentException)
+        {
+            return NotFound<QuizQuestionsResponse>($"Quiz with ID {quizId} not found");
+        }
     }
 
     /// <summary>
-    /// Add question to quiz
+    /// Add question to quiz - matches /api/quizzes/{quizId}/questions from features overview
     /// </summary>
     [HttpPost("{quizId:int}/questions")]
-    public async Task<ActionResult<ApiResponse<object>>> AddQuestionToQuiz(int quizId, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<QuestionSummaryResponse>>> AddQuestionToQuiz(int quizId, [FromBody] AddQuestionToQuizRequest request)
     {
-        // TODO: Implement AddQuestionToQuizCommand
-        return Ok(new { Message = "Add question endpoint - TODO: Implement AddQuestionToQuizCommand" }, "Add question endpoint");
+        var command = new AddQuestionToQuizCommand(
+            quizId,
+            request.QuestionText,
+            request.QuestionType,
+            request.Points,
+            request.OrderIndex
+        );
+
+        try
+        {
+            var result = await Mediator.Send(command);
+            return Ok(result, "Question added to quiz successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound<QuestionSummaryResponse>(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<QuestionSummaryResponse>(ex.Message);
+        }
     }
 
     #endregion
@@ -152,23 +245,48 @@ public class QuizzesController : BaseController
     #region Quiz Attempts
 
     /// <summary>
-    /// Start quiz attempt
+    /// Start quiz attempt - matches /api/quizzes/{id}/start from features overview
     /// </summary>
     [HttpPost("{id:int}/start")]
-    public async Task<ActionResult<ApiResponse<object>>> StartQuizAttempt(int id, [FromBody] object request)
+    public async Task<ActionResult<ApiResponse<StartQuizAttemptResponse>>> StartQuizAttempt(int id, [FromBody] StartQuizAttemptRequest request)
     {
-        // TODO: Implement StartQuizAttemptCommand
-        return Ok(new { Message = "Start quiz attempt endpoint - TODO: Implement StartQuizAttemptCommand" }, "Start quiz attempt endpoint");
+        var command = new StartQuizAttemptCommand(id, request.UserId);
+
+        try
+        {
+            var result = await Mediator.Send(command);
+            return Ok(result, "Quiz attempt started successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound<StartQuizAttemptResponse>(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<StartQuizAttemptResponse>(ex.Message);
+        }
     }
 
     /// <summary>
-    /// Get all quiz attempts
+    /// Get all quiz attempts - matches /api/quizzes/{id}/attempts from features overview
     /// </summary>
     [HttpGet("{id:int}/attempts")]
-    public async Task<ActionResult<ApiResponse<object>>> GetQuizAttempts(int id, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<ApiResponse<QuizAttemptsResponse>>> GetQuizAttempts(
+        int id,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
-        // TODO: Implement GetQuizAttemptsQuery
-        return Ok(new { Message = "Get quiz attempts endpoint - TODO: Implement GetQuizAttemptsQuery" }, "Quiz attempts endpoint");
+        var query = new GetQuizAttemptsQuery(id, page, pageSize);
+
+        try
+        {
+            var result = await Mediator.Send(query);
+            return Ok(result, "Quiz attempts retrieved successfully");
+        }
+        catch (ArgumentException)
+        {
+            return NotFound<QuizAttemptsResponse>($"Quiz with ID {id} not found");
+        }
     }
 
     #endregion

@@ -9,7 +9,7 @@ namespace learnify.ai.api.Features.Progress;
 public record MarkLessonCompleteCommand(
     int LessonId,
     int EnrollmentId
-) : ICommand<LessonProgressResponse?>;
+) : ICommand<DetailedLessonProgressResponse?>;
 
 public class MarkLessonCompleteValidator : AbstractValidator<MarkLessonCompleteCommand>
 {
@@ -25,7 +25,7 @@ public class MarkLessonCompleteValidator : AbstractValidator<MarkLessonCompleteC
     }
 }
 
-public class MarkLessonCompleteHandler : IRequestHandler<MarkLessonCompleteCommand, LessonProgressResponse?>
+public class MarkLessonCompleteHandler : IRequestHandler<MarkLessonCompleteCommand, DetailedLessonProgressResponse?>
 {
     private readonly IProgressRepository _progressRepository;
     private readonly IEnrollmentRepository _enrollmentRepository;
@@ -41,7 +41,7 @@ public class MarkLessonCompleteHandler : IRequestHandler<MarkLessonCompleteComma
         _lessonRepository = lessonRepository;
     }
 
-    public async Task<LessonProgressResponse?> Handle(MarkLessonCompleteCommand request, CancellationToken cancellationToken)
+    public async Task<DetailedLessonProgressResponse?> Handle(MarkLessonCompleteCommand request, CancellationToken cancellationToken)
     {
         // Verify enrollment exists
         var enrollment = await _enrollmentRepository.GetByIdAsync(request.EnrollmentId, cancellationToken);
@@ -84,7 +84,7 @@ public class MarkLessonCompleteHandler : IRequestHandler<MarkLessonCompleteComma
             await UpdateEnrollmentProgress(enrollment, cancellationToken);
         }
 
-        return new LessonProgressResponse(
+        return new DetailedLessonProgressResponse(
             progress.LessonId,
             lesson.Title,
             progress.EnrollmentId,

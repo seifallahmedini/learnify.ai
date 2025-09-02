@@ -10,7 +10,7 @@ public record TrackTimeSpentCommand(
     int LessonId,
     int EnrollmentId,
     int TimeSpentMinutes
-) : ICommand<LessonProgressResponse?>;
+) : ICommand<DetailedLessonProgressResponse?>;
 
 public class TrackTimeSpentValidator : AbstractValidator<TrackTimeSpentCommand>
 {
@@ -30,7 +30,7 @@ public class TrackTimeSpentValidator : AbstractValidator<TrackTimeSpentCommand>
     }
 }
 
-public class TrackTimeSpentHandler : IRequestHandler<TrackTimeSpentCommand, LessonProgressResponse?>
+public class TrackTimeSpentHandler : IRequestHandler<TrackTimeSpentCommand, DetailedLessonProgressResponse?>
 {
     private readonly IProgressRepository _progressRepository;
     private readonly IEnrollmentRepository _enrollmentRepository;
@@ -46,7 +46,7 @@ public class TrackTimeSpentHandler : IRequestHandler<TrackTimeSpentCommand, Less
         _lessonRepository = lessonRepository;
     }
 
-    public async Task<LessonProgressResponse?> Handle(TrackTimeSpentCommand request, CancellationToken cancellationToken)
+    public async Task<DetailedLessonProgressResponse?> Handle(TrackTimeSpentCommand request, CancellationToken cancellationToken)
     {
         // Verify enrollment exists
         var enrollment = await _enrollmentRepository.GetByIdAsync(request.EnrollmentId, cancellationToken);
@@ -83,7 +83,7 @@ public class TrackTimeSpentHandler : IRequestHandler<TrackTimeSpentCommand, Less
         progress.AddTimeSpent(request.TimeSpentMinutes);
         await _progressRepository.UpdateAsync(progress, cancellationToken);
 
-        return new LessonProgressResponse(
+        return new DetailedLessonProgressResponse(
             progress.LessonId,
             lesson.Title,
             progress.EnrollmentId,

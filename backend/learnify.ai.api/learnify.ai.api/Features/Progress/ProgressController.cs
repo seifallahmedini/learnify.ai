@@ -36,7 +36,7 @@ public class ProgressController : BaseController
     /// Get lesson progress
     /// </summary>
     [HttpGet("lesson/{lessonId:int}")]
-    public async Task<ActionResult<ApiResponse<LessonProgressResponse>>> GetLessonProgress(int lessonId, [FromQuery] int? enrollmentId = null)
+    public async Task<ActionResult<ApiResponse<DetailedLessonProgressResponse>>> GetLessonProgress(int lessonId, [FromQuery] int? enrollmentId = null)
     {
         try
         {
@@ -44,17 +44,17 @@ public class ProgressController : BaseController
             var result = await Mediator.Send(query);
 
             if (result == null)
-                return NotFound<LessonProgressResponse>($"Lesson with ID {lessonId} not found");
+                return NotFound<DetailedLessonProgressResponse>($"Lesson with ID {lessonId} not found");
 
             return Ok(result, "Lesson progress retrieved successfully");
         }
         catch (ArgumentException ex)
         {
-            return BadRequest<LessonProgressResponse>(ex.Message);
+            return BadRequest<DetailedLessonProgressResponse>(ex.Message);
         }
         catch (Exception)
         {
-            return BadRequest<LessonProgressResponse>("An error occurred while retrieving lesson progress");
+            return BadRequest<DetailedLessonProgressResponse>("An error occurred while retrieving lesson progress");
         }
     }
 
@@ -62,7 +62,7 @@ public class ProgressController : BaseController
     /// Mark lesson as complete
     /// </summary>
     [HttpPut("lesson/{lessonId:int}/complete")]
-    public async Task<ActionResult<ApiResponse<LessonProgressResponse>>> MarkLessonComplete(int lessonId, [FromBody] MarkLessonCompleteRequest request)
+    public async Task<ActionResult<ApiResponse<DetailedLessonProgressResponse>>> MarkLessonComplete(int lessonId, [FromBody] MarkLessonCompleteRequest request)
     {
         try
         {
@@ -70,17 +70,17 @@ public class ProgressController : BaseController
             var result = await Mediator.Send(command);
 
             if (result == null)
-                return NotFound<LessonProgressResponse>($"Lesson with ID {lessonId} not found");
+                return NotFound<DetailedLessonProgressResponse>($"Lesson with ID {lessonId} not found");
 
             return Ok(result, "Lesson marked as complete successfully");
         }
         catch (ArgumentException ex)
         {
-            return BadRequest<LessonProgressResponse>(ex.Message);
+            return BadRequest<DetailedLessonProgressResponse>(ex.Message);
         }
         catch (Exception)
         {
-            return BadRequest<LessonProgressResponse>("An error occurred while marking lesson as complete");
+            return BadRequest<DetailedLessonProgressResponse>("An error occurred while marking lesson as complete");
         }
     }
 
@@ -88,7 +88,7 @@ public class ProgressController : BaseController
     /// Track time spent on lesson
     /// </summary>
     [HttpPost("lesson/{lessonId:int}/time")]
-    public async Task<ActionResult<ApiResponse<LessonProgressResponse>>> TrackTimeSpent(int lessonId, [FromBody] TrackTimeSpentRequest request)
+    public async Task<ActionResult<ApiResponse<DetailedLessonProgressResponse>>> TrackTimeSpent(int lessonId, [FromBody] TrackTimeSpentRequest request)
     {
         try
         {
@@ -96,17 +96,17 @@ public class ProgressController : BaseController
             var result = await Mediator.Send(command);
 
             if (result == null)
-                return NotFound<LessonProgressResponse>($"Lesson with ID {lessonId} not found");
+                return NotFound<DetailedLessonProgressResponse>($"Lesson with ID {lessonId} not found");
 
             return Ok(result, "Time tracking updated successfully");
         }
         catch (ArgumentException ex)
         {
-            return BadRequest<LessonProgressResponse>(ex.Message);
+            return BadRequest<DetailedLessonProgressResponse>(ex.Message);
         }
         catch (Exception)
         {
-            return BadRequest<LessonProgressResponse>("An error occurred while tracking time spent");
+            return BadRequest<DetailedLessonProgressResponse>("An error occurred while tracking time spent");
         }
     }
 
