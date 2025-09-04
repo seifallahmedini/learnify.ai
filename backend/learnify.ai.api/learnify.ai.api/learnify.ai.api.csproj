@@ -22,6 +22,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Features\Analytics\Infrastructure\Data\" />
+    <Folder Include="Features\Analytics\Operations\Queries\GetCourseCompletion\" />
+    <Folder Include="Features\Analytics\Operations\Queries\GetInstructorDashboard\" />
+    <Folder Include="Features\Analytics\Operations\Queries\GetPlatformDashboard\" />
+    <Folder Include="Features\Analytics\Operations\Queries\GetStudentDashboard\" />
     <Folder Include="Features\Categories\Core\Models\" />
     <Folder Include="Features\Categories\Infrastructure\Data\" />
   </ItemGroup>

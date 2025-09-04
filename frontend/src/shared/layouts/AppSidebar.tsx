@@ -1,4 +1,4 @@
-import { Home, BookOpen, User, LogOut, GraduationCap } from "lucide-react"
+import { Home, BookOpen, User, LogOut, GraduationCap, Users } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 
 import {
@@ -27,6 +27,11 @@ const items = [
     title: "Courses",
     url: "/courses",
     icon: BookOpen,
+  },
+  {
+    title: "Users",
+    url: "/users",
+    icon: Users,
   },
   {
     title: "Profile",

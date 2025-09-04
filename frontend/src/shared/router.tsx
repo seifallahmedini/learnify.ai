@@ -4,6 +4,7 @@ import { DashboardPage } from "@/features/dashboard"
 import { CoursesPage } from "@/features/courses"
 import { ProfilePage } from "@/features/profile"
 import { LoginPage } from "@/features/auth"
+import { UsersListPage } from "@/features/users"
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
       {
         path: "profile",
         element: <ProfilePage />,
+      },
+      {
+        path: "users",
+        element: <UsersListPage />,
       },
     ],
   },
