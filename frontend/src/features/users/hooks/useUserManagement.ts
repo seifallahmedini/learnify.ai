@@ -11,8 +11,7 @@ export function useUserManagement() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
-
-  const pageSize = 10
+  const [pageSize, setPageSize] = useState(10)
 
   const loadUsers = async () => {
     try {
@@ -39,7 +38,7 @@ export function useUserManagement() {
 
   useEffect(() => {
     loadUsers()
-  }, [currentPage, selectedRole, selectedStatus])
+  }, [currentPage, selectedRole, selectedStatus, pageSize])
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -65,6 +64,11 @@ export function useUserManagement() {
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status as "all" | "active" | "inactive")
     setCurrentPage(1)
+  }
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize)
+    setCurrentPage(1) // Reset to first page when changing page size
   }
 
   const handleActivateUser = async (userId: number) => {
@@ -112,6 +116,7 @@ export function useUserManagement() {
     setSelectedRole("all")
     setSelectedStatus("all")
     setCurrentPage(1)
+    setPageSize(10)
   }
 
   return {
@@ -131,6 +136,7 @@ export function useUserManagement() {
     setCurrentPage,
     handleRoleChange,
     handleStatusChange,
+    handlePageSizeChange,
     handleActivateUser,
     handleDeactivateUser,
     handleDeleteUser,

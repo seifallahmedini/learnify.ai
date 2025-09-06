@@ -10,6 +10,8 @@ import {
 import { Users, UserPlus } from "lucide-react"
 import type { UserSummary } from "../types"
 import { UserTableRow } from "./UserTableRow"
+import { LoadingSkeleton } from "./LoadingSkeleton"
+import { Pagination } from "./Pagination"
 
 interface UserTableProps {
   users: UserSummary[]
@@ -22,6 +24,7 @@ interface UserTableProps {
   onDeactivateUser: (userId: number) => void
   onDeleteUser: (userId: number) => void
   onPageChange: (page: number) => void
+  onPageSizeChange?: (pageSize: number) => void
   onCreateUser?: () => void
   onClearFilters?: () => void
   hasFilters?: boolean
@@ -38,36 +41,11 @@ export function UserTable({
   onDeactivateUser,
   onDeleteUser,
   onPageChange,
+  onPageSizeChange,
   onCreateUser,
   onClearFilters,
   hasFilters = false,
 }: UserTableProps) {
-  const handlePreviousPage = () => {
-    onPageChange(Math.max(1, currentPage - 1))
-  }
-
-  const handleNextPage = () => {
-    onPageChange(Math.min(totalPages, currentPage + 1))
-  }
-
-  const LoadingSkeleton = () => (
-    <div className="space-y-3">
-      {Array.from({ length: 5 }).map((_, index) => (
-        <div key={index} className="flex items-center space-x-4 py-3 border-b">
-          <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
-          <div className="flex-1 space-y-2">
-            <div className="h-4 w-32 bg-muted animate-pulse rounded" />
-            <div className="h-3 w-48 bg-muted animate-pulse rounded" />
-          </div>
-          <div className="h-6 w-20 bg-muted animate-pulse rounded-full" />
-          <div className="h-6 w-16 bg-muted animate-pulse rounded-full" />
-          <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-          <div className="h-8 w-8 bg-muted animate-pulse rounded" />
-        </div>
-      ))}
-    </div>
-  )
-
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center py-16 px-4" role="status" aria-live="polite">
       <div className="rounded-full bg-primary/10 p-6 mb-6">
@@ -106,7 +84,7 @@ export function UserTable({
       </CardHeader>
       <CardContent>
         {loading ? (
-          <LoadingSkeleton />
+          <LoadingSkeleton rows={pageSize} />
         ) : users.length === 0 ? (
           <EmptyState />
         ) : (
@@ -134,35 +112,17 @@ export function UserTable({
               </TableBody>
             </Table>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-4">
-                <div className="text-sm text-muted-foreground">
-                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} users
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePreviousPage}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </Button>
-                  <span className="text-sm">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            )}
+            {/* Enhanced Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              pageSize={pageSize}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              showPageSizeSelector={true}
+              pageSizeOptions={[5, 10, 20, 50]}
+            />
           </>
         )}
       </CardContent>

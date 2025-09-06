@@ -45,7 +45,7 @@ class UsersApiService {
   // User CRUD Operations
   async getUsers(filters?: UserFilterRequest): Promise<UserListResponse> {
     const params = new URLSearchParams();
-    if (filters?.role) params.append('role', filters.role);
+    if (filters?.role) params.append('role', filters.role.toString());
     if (filters?.isActive !== undefined) params.append('isActive', filters.isActive.toString());
     if (filters?.searchTerm) params.append('searchTerm', filters.searchTerm);
     if (filters?.page) params.append('page', filters.page.toString());
@@ -200,7 +200,7 @@ class UsersApiService {
   ): Promise<UserListResponse> {
     const params = new URLSearchParams();
     params.append('searchTerm', searchTerm);
-    if (role) params.append('role', role);
+    if (role) params.append('role', role.toString());
     if (isActive !== undefined) params.append('isActive', isActive.toString());
     params.append('page', page.toString());
     params.append('pageSize', pageSize.toString());

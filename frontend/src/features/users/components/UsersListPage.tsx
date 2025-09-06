@@ -25,6 +25,7 @@ export function UsersListPage() {
     setCurrentPage,
     handleRoleChange,
     handleStatusChange,
+    handlePageSizeChange,
     handleActivateUser,
     handleDeactivateUser,
     handleDeleteUser,
@@ -100,6 +101,7 @@ export function UsersListPage() {
         onDeactivateUser={handleDeactivateUser}
         onDeleteUser={handleDeleteUser}
         onPageChange={setCurrentPage}
+        onPageSizeChange={handlePageSizeChange}
         onCreateUser={() => setShowCreateDialog(true)}
         onClearFilters={clearFilters}
         hasFilters={searchTerm.trim() !== "" || selectedRole !== "all" || selectedStatus !== "all"}
