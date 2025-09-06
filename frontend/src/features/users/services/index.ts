@@ -1,7 +1,7 @@
 import {
   UserRole,
   EnrollmentStatus
-} from './types';
+} from '../types';
 import type {
   UserListResponse,
   UserResponse,
@@ -13,9 +13,9 @@ import type {
   GetUserEnrollmentsResponse,
   GetUserQuizAttemptsResponse,
   GetUserInstructedCoursesResponse,
-} from './types';
+} from '../types';
 
-const API_BASE_URL = 'http://localhost:5000/api/users';
+const API_BASE_URL = 'http://localhost:5271/api/users';
 
 interface ApiResponse<T> {
   data: T;

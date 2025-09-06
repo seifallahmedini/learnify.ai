@@ -1,33 +1,54 @@
 // User-related types and interfaces based on the UsersController.cs
+
+// API Response wrapper
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+  errors?: string[];
+}
+
 export interface User {
   id: number;
   firstName: string;
   lastName: string;
+  fullName: string;
   email: string;
   role: UserRole;
+  isActive: boolean;
+  profilePicture?: string;
   bio?: string;
   dateOfBirth?: string;
   phoneNumber?: string;
-  isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  avatarUrl?: string;
 }
 
 export const UserRole = {
-  Student: 'Student',
-  Instructor: 'Instructor',
-  Admin: 'Admin'
+  Student: 1,
+  Instructor: 2,
+  Admin: 3
 } as const;
 
 export type UserRole = typeof UserRole[keyof typeof UserRole];
 
+export interface UserSummary {
+  id: number;
+  fullName: string;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  createdAt: string;
+}
+
 export interface UserListResponse {
-  users: User[];
+  users: UserSummary[];
   totalCount: number;
   page: number;
   pageSize: number;
   totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 export interface UserResponse {
