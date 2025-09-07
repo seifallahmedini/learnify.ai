@@ -8,10 +8,10 @@ import {
   TableRow,
 } from "@/shared/components/ui/table"
 import { Users, UserPlus } from "lucide-react"
-import type { UserSummary } from "../types"
+import type { UserSummary } from "../../types"
 import { UserTableRow } from "./UserTableRow"
-import { LoadingSkeleton } from "./LoadingSkeleton"
-import { Pagination } from "./Pagination"
+import { LoadingSkeleton } from "../shared/LoadingSkeleton"
+import { Pagination } from "../shared/Pagination"
 
 interface UserTableProps {
   users: UserSummary[]

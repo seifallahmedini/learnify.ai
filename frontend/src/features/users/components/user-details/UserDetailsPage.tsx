@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/shared/components/ui/button'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { UserDetails } from './UserDetails'
-import { usersApi } from '../services'
-import type { User } from '../types'
+import { usersApi } from '../../services'
+import type { User } from '../../types'
 
 export function UserDetailsPage() {
   const { userId } = useParams<{ userId: string }>()

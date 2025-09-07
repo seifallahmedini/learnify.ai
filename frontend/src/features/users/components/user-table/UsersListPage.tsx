@@ -4,9 +4,9 @@ import { Button } from "@/shared/components/ui/button"
 import { UserPlus } from "lucide-react"
 import { UserFilters } from "./UserFilters"
 import { UserTable } from "./UserTable"
-import { CreateUserDialog } from "./CreateUserDialog"
-import { useUserManagement } from "../hooks/useUserManagement"
-import { useCreateUserForm } from "../hooks/useCreateUserForm"
+import { CreateUserDialog } from "../dialogs/CreateUserDialog"
+import { useUserManagement } from "../../hooks/useUserManagement"
+import { useCreateUserForm } from "../../hooks/useCreateUserForm"
 
 export function UsersListPage() {
   const navigate = useNavigate()

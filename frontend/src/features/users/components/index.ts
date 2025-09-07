@@ -1,9 +1,11 @@
-export { UsersListPage } from "./UsersListPage"
-export { UserTable } from "./UserTable"
-export { UserTableRow } from "./UserTableRow"
-export { UserFilters } from "./UserFilters"
-export { CreateUserDialog } from "./CreateUserDialog"
-export { UserDetails } from "./UserDetails"
-export { UserDetailsPage } from "./UserDetailsPage"
-export { UserRoleBadge } from "./UserRoleBadge"
-export { UserStatusBadge } from "./UserStatusBadge"
+// User Table Components
+export { UsersListPage, UserTable, UserTableRow, UserFilters } from './user-table'
+
+// User Details Components
+export { UserDetails, UserDetailsPage } from './user-details'
+
+// Dialog Components
+export { CreateUserDialog } from './dialogs'
+
+// Shared Components
+export { UserRoleBadge, UserStatusBadge, LoadingSkeleton, Pagination } from './shared'

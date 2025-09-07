@@ -15,8 +15,9 @@ import type {
   GetUserInstructedCoursesResponse,
   User,
 } from '../types';
+import ApiClient from '../../../lib/api-client';
 
-const API_BASE_URL = 'http://localhost:5271/api/users';
+const API_BASE_URL = ApiClient.getUrl('users');
 
 interface ApiResponse<T> {
   data: T;

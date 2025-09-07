@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select"
 import { Search } from "lucide-react"
-import type { UserRole } from "../types"
+import type { UserRole } from "../../types"
 
 interface UserFiltersProps {
   searchTerm: string

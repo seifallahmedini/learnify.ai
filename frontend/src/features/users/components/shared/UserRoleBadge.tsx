@@ -1,8 +1,8 @@
 import { Badge } from "@/shared/components/ui/badge"
 import { Shield } from "lucide-react"
-import type { UserRole } from "../types"
-import { UserRole as UserRoleEnum } from "../types"
-import { useUserUtils } from "../hooks/useUserUtils"
+import type { UserRole } from "../../types"
+import { UserRole as UserRoleEnum } from "../../types"
+import { useUserUtils } from "../../hooks/useUserUtils"
 
 interface UserRoleBadgeProps {
   role: UserRole

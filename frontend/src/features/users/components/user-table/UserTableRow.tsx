@@ -10,9 +10,9 @@ import {
 } from "@/shared/components/ui/dropdown-menu"
 import { Button } from "@/shared/components/ui/button"
 import { MoreHorizontal, Eye, Edit, UserCheck, UserX, Trash2 } from "lucide-react"
-import type { UserSummary } from "../types"
-import { UserRoleBadge } from "./UserRoleBadge"
-import { UserStatusBadge } from "./UserStatusBadge"
+import type { UserSummary } from "../../types"
+import { UserRoleBadge } from "../shared/UserRoleBadge"
+import { UserStatusBadge } from "../shared/UserStatusBadge"
 
 interface UserTableRowProps {
   user: UserSummary

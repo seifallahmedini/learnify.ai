@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select"
-import type { CreateUserRequest } from "../types"
+import type { CreateUserRequest } from "../../types"
 
 interface CreateUserDialogProps {
   open: boolean

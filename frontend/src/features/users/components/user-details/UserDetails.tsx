@@ -25,9 +25,9 @@ import {
   DropdownMenuSeparator
 } from '@/shared/components/ui/dropdown-menu'
 import { useState } from 'react'
-import type { User as UserType } from '../types'
-import { UserRoleBadge } from './UserRoleBadge'
-import { UserStatusBadge } from './UserStatusBadge'
+import type { User as UserType } from '../../types'
+import { UserRoleBadge } from '../shared/UserRoleBadge'
+import { UserStatusBadge } from '../shared/UserStatusBadge'
 
 interface UserDetailsProps {
   user: UserType
