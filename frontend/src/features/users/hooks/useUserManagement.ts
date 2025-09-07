@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import type { UserSummary, UserListResponse, UserFilterRequest, CreateUserRequest, UserRole } from "../types"
 import { usersApi } from "../services"
 
@@ -12,6 +12,7 @@ export function useUserManagement() {
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [pageSize, setPageSize] = useState(10)
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
   const loadUsers = async () => {
     try {
@@ -21,7 +22,7 @@ export function useUserManagement() {
         pageSize,
       }
 
-      if (searchTerm) filters.searchTerm = searchTerm
+      if (searchTerm.trim()) filters.searchTerm = searchTerm
       if (selectedRole !== "all") filters.role = selectedRole as UserRole
       if (selectedStatus !== "all") filters.isActive = selectedStatus === "active"
 
@@ -30,27 +31,38 @@ export function useUserManagement() {
       setTotalCount(response.totalCount)
       setTotalPages(response.totalPages)
     } catch (error) {
-      console.error("Failed to load users:", error)
+      console.error("❌ Failed to load users:", error)
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => {
-    loadUsers()
-  }, [currentPage, selectedRole, selectedStatus, pageSize])
+  // Single useEffect to handle ALL data loading scenarios
+  useEffect(() => {    
+    // Clear any existing debounce timer
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+      debounceRef.current = null
+    }
 
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      if (currentPage === 1) {
+    // If there's a search term, debounce it
+    if (searchTerm.trim() !== "") {
+      debounceRef.current = setTimeout(() => {
         loadUsers()
-      } else {
-        setCurrentPage(1)
-      }
-    }, 500)
+      }, 500)
+    } else {
+      // No search term, load immediately
+      loadUsers()
+    }
 
-    return () => clearTimeout(debounceTimer)
-  }, [searchTerm])
+    // Cleanup function
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+        debounceRef.current = null
+      }
+    }
+  }, [currentPage, selectedRole, selectedStatus, pageSize, searchTerm])
 
   const handleRoleChange = (role: string) => {
     if (role === "all") {
