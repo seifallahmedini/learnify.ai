@@ -8,4 +8,4 @@ export { UserDetails, UserDetailsPage } from './user-details'
 export { CreateUserDialog } from './dialogs'
 
 // Shared Components
-export { UserRoleBadge, UserStatusBadge, LoadingSkeleton, Pagination } from './shared'
+export { UserRoleBadge, UserStatusBadge, LoadingSkeleton, Pagination, EditUser } from './shared'
