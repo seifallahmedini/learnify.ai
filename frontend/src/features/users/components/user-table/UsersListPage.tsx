@@ -5,6 +5,7 @@ import { UserPlus } from "lucide-react"
 import { UserFilters } from "./UserFilters"
 import { UserTable } from "./UserTable"
 import { CreateUserDialog } from "../dialogs/CreateUserDialog"
+import { DeleteUserDialog } from "../dialogs/DeleteUserDialog"
 import { EditUser } from "../shared/EditUser"
 import { useUserManagement } from "../../hooks/useUserManagement"
 import { useCreateUserForm } from "../../hooks/useCreateUserForm"
@@ -20,6 +21,10 @@ export function UsersListPage() {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [isLoadingUser, setIsLoadingUser] = useState(false)
+  
+  // Delete user state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
 
   const {
     users,
@@ -38,7 +43,6 @@ export function UsersListPage() {
     handlePageSizeChange,
     handleActivateUser,
     handleDeactivateUser,
-    handleDeleteUser,
     handleCreateUser,
     clearFilters,
     loadUsers,
@@ -105,6 +109,33 @@ export function UsersListPage() {
     }
   }
 
+  const handleDeleteUserClick = async (userId: number) => {
+    try {
+      setIsLoadingUser(true)
+      const user = await usersApi.getUserById(userId)
+      if (user) {
+        setUserToDelete(user)
+        setShowDeleteDialog(true)
+      }
+    } catch (error) {
+      console.error('Failed to load user for deletion:', error)
+    } finally {
+      setIsLoadingUser(false)
+    }
+  }
+
+  const handleUserDeleted = async (_deletedUserId: number) => {
+    // Refresh the users list after deletion
+    await loadUsers()
+  }
+
+  const handleDeleteDialogClose = (open: boolean) => {
+    setShowDeleteDialog(open)
+    if (!open) {
+      setUserToDelete(null)
+    }
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
       {/* Header */}
@@ -141,7 +172,7 @@ export function UsersListPage() {
         pageSize={pageSize}
         onActivateUser={handleActivateUser}
         onDeactivateUser={handleDeactivateUser}
-        onDeleteUser={handleDeleteUser}
+        onDeleteUser={handleDeleteUserClick}
         onViewUser={handleViewUser}
         onEditUser={handleEditUser}
         onPageChange={setCurrentPage}
@@ -170,6 +201,14 @@ export function UsersListPage() {
           onUserUpdated={handleUserUpdated}
         />
       )}
+
+      {/* Delete User Dialog */}
+      <DeleteUserDialog
+        user={userToDelete}
+        open={showDeleteDialog}
+        onOpenChange={handleDeleteDialogClose}
+        onUserDeleted={handleUserDeleted}
+      />
       
       {/* Loading state for edit user */}
       {isLoadingUser && (
