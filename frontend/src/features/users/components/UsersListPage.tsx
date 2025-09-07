@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/shared/components/ui/button"
 import { UserPlus } from "lucide-react"
 import { UserFilters } from "./UserFilters"
@@ -8,6 +9,7 @@ import { useUserManagement } from "../hooks/useUserManagement"
 import { useCreateUserForm } from "../hooks/useCreateUserForm"
 
 export function UsersListPage() {
+  const navigate = useNavigate()
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
 
@@ -63,6 +65,16 @@ export function UsersListPage() {
     }
   }
 
+  const handleViewUser = (userId: number) => {
+    navigate(`/users/${userId}`)
+  }
+
+  const handleEditUser = (userId: number) => {
+    console.log('Edit user:', userId)
+    // For now just log, can implement edit dialog or navigation later
+    // navigate(`/users/${userId}/edit`)
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
       {/* Header */}
@@ -100,6 +112,8 @@ export function UsersListPage() {
         onActivateUser={handleActivateUser}
         onDeactivateUser={handleDeactivateUser}
         onDeleteUser={handleDeleteUser}
+        onViewUser={handleViewUser}
+        onEditUser={handleEditUser}
         onPageChange={setCurrentPage}
         onPageSizeChange={handlePageSizeChange}
         onCreateUser={() => setShowCreateDialog(true)}

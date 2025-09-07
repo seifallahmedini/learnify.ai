@@ -1,4 +1,3 @@
-import { Badge } from "@/shared/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar"
 import { TableCell, TableRow } from "@/shared/components/ui/table"
 import {
@@ -12,7 +11,8 @@ import {
 import { Button } from "@/shared/components/ui/button"
 import { MoreHorizontal, Eye, Edit, UserCheck, UserX, Trash2 } from "lucide-react"
 import type { UserSummary } from "../types"
-import { useUserUtils } from "../hooks/useUserUtils"
+import { UserRoleBadge } from "./UserRoleBadge"
+import { UserStatusBadge } from "./UserStatusBadge"
 
 interface UserTableRowProps {
   user: UserSummary
@@ -31,8 +31,6 @@ export function UserTableRow({
   onEdit, 
   onView 
 }: UserTableRowProps) {
-  const { getRoleIcon, getRoleColor, getRoleName } = useUserUtils()
-
   return (
     <TableRow>
       <TableCell>
@@ -53,17 +51,10 @@ export function UserTableRow({
         </div>
       </TableCell>
       <TableCell>
-        <Badge className={getRoleColor(user.role)} variant="secondary">
-          <span className="flex items-center gap-1">
-            {getRoleIcon(user.role)}
-            {getRoleName(user.role)}
-          </span>
-        </Badge>
+        <UserRoleBadge role={user.role} />
       </TableCell>
       <TableCell>
-        <Badge variant={user.isActive ? "default" : "secondary"}>
-          {user.isActive ? "Active" : "Inactive"}
-        </Badge>
+        <UserStatusBadge isActive={user.isActive} />
       </TableCell>
       <TableCell>
         {new Date(user.createdAt).toLocaleDateString()}

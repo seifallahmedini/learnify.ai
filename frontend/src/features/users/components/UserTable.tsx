@@ -23,6 +23,8 @@ interface UserTableProps {
   onActivateUser: (userId: number) => void
   onDeactivateUser: (userId: number) => void
   onDeleteUser: (userId: number) => void
+  onViewUser?: (userId: number) => void
+  onEditUser?: (userId: number) => void
   onPageChange: (page: number) => void
   onPageSizeChange?: (pageSize: number) => void
   onCreateUser?: () => void
@@ -40,6 +42,8 @@ export function UserTable({
   onActivateUser,
   onDeactivateUser,
   onDeleteUser,
+  onViewUser,
+  onEditUser,
   onPageChange,
   onPageSizeChange,
   onCreateUser,
@@ -107,6 +111,8 @@ export function UserTable({
                     onActivate={onActivateUser}
                     onDeactivate={onDeactivateUser}
                     onDelete={onDeleteUser}
+                    onView={onViewUser}
+                    onEdit={onEditUser}
                   />
                 ))}
               </TableBody>

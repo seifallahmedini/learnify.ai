@@ -13,6 +13,7 @@ import type {
   GetUserEnrollmentsResponse,
   GetUserQuizAttemptsResponse,
   GetUserInstructedCoursesResponse,
+  User,
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:5271/api/users';
@@ -56,8 +57,8 @@ class UsersApiService {
     return this.request<UserListResponse>(endpoint);
   }
 
-  async getUserById(id: number): Promise<UserResponse> {
-    return this.request<UserResponse>(`/${id}`);
+  async getUserById(id: number): Promise<User> {
+    return this.request<User>(`/${id}`);
   }
 
   async createUser(userData: CreateUserRequest): Promise<UserResponse> {
