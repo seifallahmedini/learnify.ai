@@ -138,22 +138,68 @@ export const EnrollmentStatus = {
 
 export type EnrollmentStatus = typeof EnrollmentStatus[keyof typeof EnrollmentStatus];
 
+export interface UserEnrollment {
+  id: number;
+  courseId: number;
+  courseName: string;
+  courseTitle: string;
+  instructorName: string;
+  status: EnrollmentStatus;
+  progress: number;
+  enrolledAt: string;
+  completedAt?: string;
+  lastAccessedAt?: string;
+  totalLessons: number;
+  completedLessons: number;
+}
+
 export interface GetUserEnrollmentsResponse {
-  enrollments: any[];
+  enrollments: UserEnrollment[];
   totalCount: number;
   page: number;
   pageSize: number;
+}
+
+export interface UserQuizAttempt {
+  id: number;
+  quizId: number;
+  quizTitle: string;
+  courseId: number;
+  courseName: string;
+  score: number;
+  maxScore: number;
+  percentage: number;
+  isPassed: boolean;
+  attemptedAt: string;
+  completedAt?: string;
+  timeSpent: number;
+  totalQuestions: number;
+  correctAnswers: number;
 }
 
 export interface GetUserQuizAttemptsResponse {
-  quizAttempts: any[];
+  quizAttempts: UserQuizAttempt[];
   totalCount: number;
   page: number;
   pageSize: number;
 }
 
+export interface UserInstructedCourse {
+  id: number;
+  title: string;
+  description: string;
+  isPublished: boolean;
+  totalStudents: number;
+  averageRating: number;
+  totalLessons: number;
+  createdAt: string;
+  updatedAt: string;
+  category: string;
+  price: number;
+}
+
 export interface GetUserInstructedCoursesResponse {
-  courses: any[];
+  courses: UserInstructedCourse[];
   totalCount: number;
   page: number;
   pageSize: number;

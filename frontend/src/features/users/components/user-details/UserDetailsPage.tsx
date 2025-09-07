@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/shared/components/ui/button'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { UserDetails } from './UserDetails'
+import { UserLearningData } from './UserLearningData'
 import { usersApi } from '../../services'
 import type { User } from '../../types'
 
@@ -110,17 +111,14 @@ export function UserDetailsPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={handleBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Users
-          </Button>
-        </div>
-        <div className="flex items-center justify-center py-12">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Loading user details...</span>
+      <div className="min-h-screen bg-gray-50/40 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+          <div>
+            <h3 className="text-lg font-medium">Loading user details...</h3>
+            <p className="text-sm text-muted-foreground">Please wait while we fetch the information</p>
           </div>
         </div>
       </div>
@@ -129,47 +127,95 @@ export function UserDetailsPage() {
 
   if (error || !user) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={handleBack}>
+      <div className="min-h-screen bg-gray-50/40 flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-md mx-auto px-4">
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold">User not found</h3>
+            <p className="text-muted-foreground">{error || 'The requested user could not be found.'}</p>
+          </div>
+          <Button onClick={handleBack} variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Users
           </Button>
-        </div>
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <p className="text-lg font-medium">User not found</p>
-            <p className="text-muted-foreground">{error || 'The requested user could not be found.'}</p>
-          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" onClick={handleBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Users
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">User Details</h1>
-          <p className="text-muted-foreground">
-            View and manage user information
-          </p>
+    <div className="min-h-screen bg-gray-50/40">
+      {/* Header Section with Better Spacing */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" onClick={handleBack} className="hover:bg-muted">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Users
+              </Button>
+              <div className="h-6 w-px bg-border" />
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">User Details</h1>
+                <p className="text-sm text-muted-foreground">
+                  View and manage {user.fullName}'s information and learning progress
+                </p>
+              </div>
+            </div>
+            
+            {/* Quick Actions in Header */}
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleEdit}>
+                Edit Profile
+              </Button>
+              {user.isActive ? (
+                <Button variant="outline" size="sm" onClick={handleDeactivate}>
+                  Deactivate
+                </Button>
+              ) : (
+                <Button variant="default" size="sm" onClick={handleActivate}>
+                  Activate
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* User Details */}
-      <UserDetails
-        user={user}
-        onEdit={handleEdit}
-        onActivate={handleActivate}
-        onDeactivate={handleDeactivate}
-        onDelete={handleDelete}
-      />
+      {/* Main Content with Improved Layout */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* User Profile Section - Sidebar on large screens */}
+          <div className="lg:col-span-4 xl:col-span-3">
+            <div className="sticky top-24">
+              <UserDetails
+                user={user}
+                onEdit={handleEdit}
+                onActivate={handleActivate}
+                onDeactivate={handleDeactivate}
+                onDelete={handleDelete}
+              />
+            </div>
+          </div>
+
+          {/* Learning Data Section - Main content area */}
+          <div className="lg:col-span-8 xl:col-span-9">
+            <div className="space-y-6">
+              {/* Section Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold tracking-tight">Learning Progress</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Track {user.fullName}'s educational journey and achievements
+                  </p>
+                </div>
+              </div>
+
+              {/* Learning Data Component */}
+              <UserLearningData user={user} />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

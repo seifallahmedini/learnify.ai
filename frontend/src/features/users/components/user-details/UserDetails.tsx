@@ -7,23 +7,14 @@ import {
   Mail, 
   Phone, 
   Calendar, 
-  Shield, 
   Clock,
   Edit,
-  MoreHorizontal,
   UserCheck,
   UserX,
   Trash2,
   Copy,
   CheckCircle
 } from 'lucide-react'
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator
-} from '@/shared/components/ui/dropdown-menu'
 import { useState } from 'react'
 import type { User as UserType } from '../../types'
 import { UserRoleBadge } from '../shared/UserRoleBadge'
@@ -44,7 +35,7 @@ export function UserDetails({
   onActivate, 
   onDeactivate, 
   onDelete,
-  className = '' 
+  className = ''
 }: UserDetailsProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null)
 
@@ -127,132 +118,81 @@ export function UserDetails({
   )
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* User Profile Header */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            <div className="flex flex-col sm:flex-row items-start gap-6">
-              <div className="relative">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={user.profilePicture} alt={user.fullName} />
-                  <AvatarFallback className="text-lg font-medium">
-                    {getUserInitials(user.fullName)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className={`absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-2 border-background ${
-                  user.isActive ? 'bg-green-500' : 'bg-gray-400'
-                }`} />
+    <div className={`space-y-4 ${className}`}>
+      {/* Compact User Profile Header */}
+      <Card className="border-l-4 border-l-primary">
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="relative">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={user.profilePicture} alt={user.fullName} />
+                <AvatarFallback className="text-lg font-medium">
+                  {getUserInitials(user.fullName)}
+                </AvatarFallback>
+              </Avatar>
+              <div className={`absolute -bottom-1 -right-1 h-6 w-6 rounded-full border-2 border-background flex items-center justify-center ${
+                user.isActive ? 'bg-green-500' : 'bg-gray-400'
+              }`}>
+                {user.isActive ? (
+                  <UserCheck className="h-3 w-3 text-white" />
+                ) : (
+                  <UserX className="h-3 w-3 text-white" />
+                )}
+              </div>
+            </div>
+            
+            <div className="space-y-2 w-full">
+              <h2 className="text-xl font-bold">{user.fullName}</h2>
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Mail className="h-3 w-3" />
+                <span className="truncate">{user.email}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 w-5 p-0"
+                  onClick={() => copyToClipboard(user.email, 'email')}
+                >
+                  {copiedField === 'email' ? (
+                    <CheckCircle className="h-3 w-3 text-green-600" />
+                  ) : (
+                    <Copy className="h-3 w-3" />
+                  )}
+                </Button>
               </div>
               
-              <div className="space-y-2 flex-1">
-                <div className="space-y-1">
-                  <h1 className="text-2xl font-bold">{user.fullName}</h1>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Mail className="h-4 w-4" />
-                    <span>{user.email}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                      onClick={() => copyToClipboard(user.email, 'email')}
-                    >
-                      {copiedField === 'email' ? (
-                        <CheckCircle className="h-3 w-3 text-green-600" />
-                      ) : (
-                        <Copy className="h-3 w-3" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-2">
                   <UserRoleBadge role={user.role} />
                   <UserStatusBadge isActive={user.isActive} />
-                  <span className="text-sm text-muted-foreground">
-                    Joined {getRelativeTime(user.createdAt)}
-                  </span>
                 </div>
+                <span className="text-xs text-muted-foreground">
+                  Joined {getRelativeTime(user.createdAt)}
+                </span>
               </div>
             </div>
-            
-            <div className="flex gap-2">
-              {onEdit && (
-                <Button variant="outline" size="sm" onClick={onEdit}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-              )}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <MoreHorizontal className="h-4 w-4" />
-                    More
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  {user.isActive ? (
-                    onDeactivate && (
-                      <DropdownMenuItem onClick={onDeactivate} className="text-orange-600">
-                        <UserX className="mr-2 h-4 w-4" />
-                        Deactivate User
-                      </DropdownMenuItem>
-                    )
-                  ) : (
-                    onActivate && (
-                      <DropdownMenuItem onClick={onActivate} className="text-green-600">
-                        <UserCheck className="mr-2 h-4 w-4" />
-                        Activate User
-                      </DropdownMenuItem>
-                    )
-                  )}
-                  <DropdownMenuSeparator />
-                  {onDelete && (
-                    <DropdownMenuItem onClick={onDelete} className="text-red-600">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete User
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
           </div>
-        </CardHeader>
+        </CardContent>
       </Card>
 
-      {/* Personal Information */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Personal Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InfoItem 
-                label="First Name" 
-                value={user.firstName} 
-                copyable 
-              />
-              <InfoItem 
-                label="Last Name" 
-                value={user.lastName} 
-                copyable 
-              />
-            </div>
-            
+      {/* Essential Information */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <User className="h-4 w-4" />
+            Essential Info
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-3">
             <InfoItem 
-              label="Email Address" 
-              value={user.email} 
-              icon={Mail}
+              label="User ID" 
+              value={`#${user.id}`} 
               copyable 
             />
             
             {user.phoneNumber && (
               <InfoItem 
-                label="Phone Number" 
+                label="Phone" 
                 value={user.phoneNumber} 
                 icon={Phone}
                 copyable 
@@ -261,96 +201,64 @@ export function UserDetails({
             
             {user.dateOfBirth && (
               <InfoItem 
-                label="Date of Birth" 
+                label="Birth Date" 
                 value={formatDate(user.dateOfBirth)} 
                 icon={Calendar}
               />
             )}
             
-            {user.bio && (
-              <>
-                <Separator />
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Bio
-                  </label>
-                  <p className="text-sm p-3 rounded-md bg-muted/50">
-                    {user.bio}
-                  </p>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Account Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Account Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InfoItem 
-                label="User ID" 
-                value={`#${user.id}`} 
-                copyable 
-              />
-              <InfoItem 
-                label="Role" 
-                value={<UserRoleBadge role={user.role} showIcon={false} />}
-              />
-            </div>
-            
             <InfoItem 
-              label="Account Status" 
-              value={<UserStatusBadge isActive={user.isActive} showIcon={false} />}
+              label="Member Since" 
+              value={formatDate(user.createdAt)}
+              icon={Clock}
             />
-            
-            <Separator />
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InfoItem 
-                label="Member Since" 
-                value={formatDate(user.createdAt)}
-                icon={Clock}
-              />
-              <InfoItem 
-                label="Last Updated" 
-                value={formatDate(user.updatedAt)}
-                icon={Clock}
-              />
-            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Biography */}
+      {user.bio && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">About</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {user.bio}
+            </p>
           </CardContent>
         </Card>
-      </div>
+      )}
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Compact */}
       <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-3">
+          <div className="space-y-2">
             {onEdit && (
               <Button 
                 variant="outline" 
                 onClick={onEdit}
+                className="w-full justify-start"
+                size="sm"
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Profile
               </Button>
             )}
+            
             {user.isActive ? (
               onDeactivate && (
                 <Button 
                   variant="outline" 
                   onClick={onDeactivate}
+                  className="w-full justify-start text-orange-600 hover:text-orange-700"
+                  size="sm"
                 >
                   <UserX className="h-4 w-4 mr-2" />
-                  Deactivate User
+                  Deactivate
                 </Button>
               )
             ) : (
@@ -358,20 +266,28 @@ export function UserDetails({
                 <Button 
                   variant="outline" 
                   onClick={onActivate}
+                  className="w-full justify-start text-green-600 hover:text-green-700"
+                  size="sm"
                 >
                   <UserCheck className="h-4 w-4 mr-2" />
-                  Activate User
+                  Activate
                 </Button>
               )
             )}
+
             {onDelete && (
-              <Button 
-                variant="outline" 
-                onClick={onDelete}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete User
-              </Button>
+              <>
+                <Separator className="my-2" />
+                <Button 
+                  variant="outline" 
+                  onClick={onDelete}
+                  className="w-full justify-start text-red-600 hover:text-red-700"
+                  size="sm"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete User
+                </Button>
+              </>
             )}
           </div>
         </CardContent>
