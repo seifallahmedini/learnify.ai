@@ -24,11 +24,11 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build backend with dotnet
-        working-directory: ./backend/learnify.ai.api
+        working-directory: ./backend/learnify.ai.api/learnify.ai.api
         run: dotnet build --configuration Release learnify.ai.api.csproj
 
       - name: dotnet publish backend
-        working-directory: ./backend/learnify.ai.api
+        working-directory: ./backend/learnify.ai.api/learnify.ai.api
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp" learnify.ai.api.csproj
 
       - name: Upload artifact for deployment job
@@ -64,5 +64,6 @@ jobs:
           app-name: 'learnify-ai-api'
           slot-name: 'Production'
           package: .
+
 
 
