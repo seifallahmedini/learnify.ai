@@ -34,7 +34,7 @@ jobs:
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
+          name: dotnet-app
           path: ${{env.DOTNET_ROOT}}/myapp
 
   deploy:
@@ -48,23 +48,24 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
-      
+          name: dotnet-app
+          path: ./deploy-package
+
+      - name: Verify downloaded artifact (debug)
+        run: |
+          echo "PWD: %cd%"
+          dir /a /s .\deploy-package
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_90BB4A84368744D385E63305879B190F }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C2E5F4F7FEE046909DC56FB770A35924 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A159469A60A44C8FA21D52864B770655 }}
-      
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'learnify-ai-api'
           slot-name: 'Production'
-          package: ./.net-app
-
-
-
-
-
+          package: ./deploy-package
