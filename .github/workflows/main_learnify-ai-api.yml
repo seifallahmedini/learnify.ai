@@ -64,3 +64,4 @@ jobs:
           app-name: 'learnify-ai-api'
           slot-name: 'Production'
           package: .
+
