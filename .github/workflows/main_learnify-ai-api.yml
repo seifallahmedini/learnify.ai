@@ -53,9 +53,10 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_93C047AC89E94F1790DAB83D400163B8 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1B6F57EA4D714B3CA8E473B3C7B3D25B }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2559FA006FC743D8AC5BD7E1BCC5BFD8
+ }}
       
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -63,5 +64,6 @@ jobs:
           app-name: 'learnify-ai-api'
           slot-name: 'Production'
           package: ./.net-app
+
 
 
