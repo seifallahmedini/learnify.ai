@@ -51,9 +51,10 @@ jobs:
           name: dotnet-app
           path: ./deploy-package
 
-      - name: Verify downloaded artifact (debug)
+      - name: Verify downloaded artifact (cmd)
+        shell: cmd
         run: |
-          echo "PWD: %cd%"
+          echo PWD: %cd%
           dir /a /s .\deploy-package
 
       - name: Login to Azure
@@ -69,3 +70,4 @@ jobs:
           app-name: 'learnify-ai-api'
           slot-name: 'Production'
           package: ./deploy-package
+
