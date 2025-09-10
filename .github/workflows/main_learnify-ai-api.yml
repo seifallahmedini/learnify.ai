@@ -37,7 +37,7 @@ jobs:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
 
-deploy:
+ deploy:
     runs-on: windows-latest
     needs: build
     permissions:
@@ -64,6 +64,7 @@ deploy:
           app-name: 'learnify-ai-api'
           slot-name: 'Production'
           package: .
+
 
 
 
