@@ -1,0 +1,73 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy ASP.Net Core app to Azure Web App - learnify-ai-api
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Build backend with dotnet
+        working-directory: ./backend/learnify.ai.api/learnify.ai.api
+        run: dotnet build --configuration Release learnify.ai.api.csproj
+
+      - name: dotnet publish backend
+        working-directory: ./backend/learnify.ai.api/learnify.ai.api
+        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp" learnify.ai.api.csproj
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-app
+          path: ${{env.DOTNET_ROOT}}/myapp
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: dotnet-app
+          path: ./deploy-package
+
+      - name: Verify downloaded artifact (cmd)
+        shell: cmd
+        run: |
+          echo PWD: %cd%
+          dir /a /s .\deploy-package
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_90BB4A84368744D385E63305879B190F }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C2E5F4F7FEE046909DC56FB770A35924 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A159469A60A44C8FA21D52864B770655 }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'learnify-ai-api'
+          slot-name: 'Production'
+          package: ./deploy-package
+
