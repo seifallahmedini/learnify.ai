@@ -1,21 +1,30 @@
 import { useState } from 'react';
-import { Plus, Search, Filter, Download } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Badge } from '@/shared/components/ui/badge';
-import { useCourseManagement } from '../../hooks';
-import { CourseTable } from './CourseTable';
+import { Plus, List, Grid } from 'lucide-react';
 import { CourseFilters } from './CourseFilters';
+import { CourseTable } from './CourseTable';
+import { CourseCardGrid } from './CourseCardGrid';
 import { CreateCourseDialog } from '../dialogs/CreateCourseDialog';
 import { DeleteCourseDialog } from '../dialogs/DeleteCourseDialog';
-import type { CourseFilterRequest, CourseSummary, Course } from '../../types';
+import { useCourseManagement } from '../../hooks';
+import type { CourseSummary } from '../../types';
+
+type ViewMode = 'list' | 'grid';
 
 export function CoursesListPage() {
-  const [selectedCourse, setSelectedCourse] = useState<CourseSummary | null>(null);
+  const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  
+  // Edit course state
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<CourseSummary | null>(null);
+  const [isLoadingCourse, setIsLoadingCourse] = useState(false);
+  
+  // Delete course state
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [quickSearch, setQuickSearch] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<CourseSummary | null>(null);
 
   const {
     courses,
@@ -29,59 +38,62 @@ export function CoursesListPage() {
     refreshCourses,
   } = useCourseManagement();
 
-  // const { formatPrice, formatDuration } = useCourseUtils();
-
-  const handleSearch = (searchTerm: string) => {
-    setQuickSearch(searchTerm);
-    updateFilters({ ...filters, searchTerm, page: 1 });
+  const clearFilters = () => {
+    updateFilters({ page: 1, pageSize: filters.pageSize });
   };
 
-  const handleFilterChange = (newFilters: CourseFilterRequest) => {
-    updateFilters({ ...newFilters, page: 1 });
-    setShowFilters(false);
-  };
-
-  const handleEditCourse = (course: CourseSummary) => {
-    setSelectedCourse(course);
-    // Navigate to edit page or open edit dialog
-    console.log('Edit course:', course);
-  };
-
-  const handleDeleteCourse = (course: CourseSummary) => {
-    setSelectedCourse(course);
-    setShowDeleteDialog(true);
-  };
-
-  const handleCourseCreated = (_newCourse: Course) => {
-    setShowCreateDialog(false);
-    refreshCourses();
-  };
-
-  const handleCourseDeleted = () => {
-    setShowDeleteDialog(false);
-    setSelectedCourse(null);
-    refreshCourses();
-  };
-
-  // Table-specific handlers
-  const handleTogglePublished = (course: CourseSummary) => {
-    // This would call the API to toggle published status
+  const handleTogglePublish = (course: CourseSummary) => {
     console.log('Toggle published for course:', course.id);
     refreshCourses();
   };
 
-  const handleToggleFeatured = (course: CourseSummary) => {
-    // This would call the API to toggle featured status
+  const handleToggleFeature = (course: CourseSummary) => {
     console.log('Toggle featured for course:', course.id);
     refreshCourses();
   };
 
-  const handleExportCourses = async () => {
+  const handleCreateDialogClose = (open: boolean) => {
+    setShowCreateDialog(open);
+  };
+
+  const handleViewCourse = (courseId: number) => {
+    navigate(`/courses/${courseId}`);
+  };
+
+  const handleEditCourse = async (course: CourseSummary) => {
     try {
-      // This would be implemented with the courses API
-      console.log('Export courses with filters:', filters);
+      setIsLoadingCourse(true);
+      // This would load the full course data
+      setSelectedCourse(course);
+      setShowEditDialog(true);
     } catch (error) {
-      console.error('Failed to export courses:', error);
+      console.error('Failed to load course for editing:', error);
+    } finally {
+      setIsLoadingCourse(false);
+    }
+  };
+
+  const handleDeleteCourseClick = async (course: CourseSummary) => {
+    try {
+      setIsLoadingCourse(true);
+      setCourseToDelete(course);
+      setShowDeleteDialog(true);
+    } catch (error) {
+      console.error('Failed to load course for deletion:', error);
+    } finally {
+      setIsLoadingCourse(false);
+    }
+  };
+
+  const handleCourseDeleted = async (_deletedCourseId: number) => {
+    // Refresh the courses list after deletion
+    refreshCourses();
+  };
+
+  const handleDeleteDialogClose = (open: boolean) => {
+    setShowDeleteDialog(open);
+    if (!open) {
+      setCourseToDelete(null);
     }
   };
 
@@ -109,15 +121,27 @@ export function CoursesListPage() {
             Manage and organize your course catalog
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={handleExportCourses}
-            className="flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
+        <div className="flex items-center gap-3">
+          {/* View Mode Toggle */}
+          <div className="flex border border-input rounded-md">
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="rounded-r-none"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className="rounded-l-none"
+            >
+              <Grid className="h-4 w-4" />
+            </Button>
+          </div>
+          
           <Button onClick={() => setShowCreateDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Add Course
@@ -126,74 +150,90 @@ export function CoursesListPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg border shadow-sm p-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search courses by title, description, or instructor..."
-              value={quickSearch}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-            {Object.keys(filters).filter(key => 
-              key !== 'page' && key !== 'pageSize' && filters[key as keyof CourseFilterRequest]
-            ).length > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-1 text-xs">
-                {Object.keys(filters).filter(key => 
-                  key !== 'page' && key !== 'pageSize' && filters[key as keyof CourseFilterRequest]
-                ).length}
-              </Badge>
-            )}
-          </Button>
-        </div>
-
-        {/* Filters Panel */}
-        {showFilters && (
-          <div className="mt-6 pt-6 border-t">
-            <CourseFilters
-              filters={filters}
-              onFiltersChange={handleFilterChange}
-              onClearFilters={() => handleFilterChange({})}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Course Table */}
-      <CourseTable
-        courses={courses}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalCount={totalCount}
-        onPageChange={goToPage}
-        onEditCourse={handleEditCourse}
-        onDeleteCourse={handleDeleteCourse}
-        onTogglePublish={handleTogglePublished}
-        onToggleFeature={handleToggleFeatured}
+      <CourseFilters
+        filters={filters}
+        onFiltersChange={(newFilters) => updateFilters({ ...newFilters, page: 1 })}
+        onClearFilters={clearFilters}
       />
 
-      {/* Dialogs */}
+      {/* Courses Content */}
+      {viewMode === 'list' ? (
+        <CourseTable
+          courses={courses}
+          totalCount={totalCount}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onTogglePublish={handleTogglePublish}
+          onToggleFeature={handleToggleFeature}
+          onDeleteCourse={handleDeleteCourseClick}
+          onViewCourse={(course) => handleViewCourse(course.id)}
+          onEditCourse={handleEditCourse}
+          onPageChange={goToPage}
+        />
+      ) : (
+        <CourseCardGrid
+          courses={courses}
+          totalCount={totalCount}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onTogglePublish={handleTogglePublish}
+          onToggleFeature={handleToggleFeature}
+          onDeleteCourse={handleDeleteCourseClick}
+          onViewCourse={(course) => handleViewCourse(course.id)}
+          onEditCourse={handleEditCourse}
+          onPageChange={goToPage}
+        />
+      )}
+
+      {/* Create Course Dialog */}
       <CreateCourseDialog
         open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-        onCourseCreated={handleCourseCreated}
+        onOpenChange={handleCreateDialogClose}
+        onCourseCreated={(_course) => {
+          setShowCreateDialog(false);
+          refreshCourses();
+        }}
       />
 
+      {/* Edit Course Dialog - Placeholder */}
+      {selectedCourse && showEditDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Edit Course</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Editing: {selectedCourse.title}
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => {
+                setShowEditDialog(false);
+                refreshCourses();
+              }}>
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Course Dialog */}
       <DeleteCourseDialog
-        course={selectedCourse}
+        course={courseToDelete}
         open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
+        onOpenChange={handleDeleteDialogClose}
         onCourseDeleted={handleCourseDeleted}
       />
+      
+      {/* Loading state for edit course */}
+      {isLoadingCourse && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg">
+            Loading course data...
+          </div>
+        </div>
+      )}
     </div>
   );
 }
