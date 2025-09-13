@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { getCourseLevelLabel, getCourseLevelColor, formatCoursePrice } from "../../types";
 import type { CourseSummary } from "../../types";
+import { CourseFeatureBadge } from "../shared";
 
 interface CourseCardGridProps {
   courses: CourseSummary[];
@@ -156,10 +157,7 @@ export function CourseCardGrid({
                 {/* Feature Badge */}
                 {course.isFeatured && (
                   <div className="absolute top-3 left-3">
-                    <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg border-0">
-                      <Star className="h-3 w-3 mr-1.5 fill-current" />
-                      Featured
-                    </Badge>
+                    <CourseFeatureBadge isFeatured={course.isFeatured} className="shadow-lg" />
                   </div>
                 )}
                 

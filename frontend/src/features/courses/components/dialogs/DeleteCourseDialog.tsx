@@ -42,6 +42,14 @@ export function DeleteCourseDialog({
   const { deleteCourse } = useCourseOperations();
   const { getCourseInitials, formatPrice } = useCourseUtils();
 
+  // Early return to prevent any processing if no course
+  if (!course) return null;
+
+  // Simple computed values (avoid complex hooks that might cause re-renders)
+  const courseInitials = getCourseInitials(course.title || '');
+  const formattedPrice = formatPrice(course.price || 0);
+  const formattedEffectivePrice = formatPrice(course.effectivePrice || 0);
+
   const handleDelete = async () => {
     if (!course) return;
 
@@ -70,8 +78,6 @@ export function DeleteCourseDialog({
     onOpenChange(false);
   };
 
-  if (!course) return null;
-
   return (
     <AlertDialog open={open && !!course} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-md">
@@ -80,71 +86,72 @@ export function DeleteCourseDialog({
             <AlertTriangle className="h-5 w-5" />
             Delete Course
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-4">
-            <div className="text-sm text-muted-foreground">
-              Are you sure you want to permanently delete this course? This action cannot be undone.
-            </div>
+          <AlertDialogDescription className="text-sm text-muted-foreground">
+            Are you sure you want to permanently delete this course? This action cannot be undone.
+          </AlertDialogDescription>
+          
+          <div className="space-y-4">
             
             {/* Course Preview */}
             <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
               <Avatar className="h-16 w-16 flex-shrink-0">
                 <AvatarImage src={course.thumbnailUrl} alt={course.title} />
                 <AvatarFallback className="text-sm font-medium bg-red-100 text-red-700">
-                  {getCourseInitials(course.title)}
+                  {courseInitials}
                 </AvatarFallback>
               </Avatar>
               
               <div className="flex-1 space-y-2 min-w-0">
                 <div>
-                  <h4 className="font-medium text-sm line-clamp-2">{course.title}</h4>
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                    {course.shortDescription}
-                  </p>
+                  <div className="font-medium text-sm line-clamp-2">{course.title || 'Untitled Course'}</div>
+                  <div className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                    {course.shortDescription || 'No description available'}
+                  </div>
                 </div>
                 
                 <div className="flex items-center gap-2 text-xs">
                   <Badge variant="outline" className="text-xs">
-                    {course.categoryName}
+                    {course.categoryName || 'Uncategorized'}
                   </Badge>
-                  <CourseLevelBadge level={course.level} className="text-xs" />
+                  {course.level && <CourseLevelBadge level={course.level} className="text-xs" />}
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="flex items-center gap-1">
                     <Users className="h-3 w-3" />
-                    <span>{course.totalStudents} students</span>
+                    <span>{course.totalStudents || 0} students</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Star className="h-3 w-3" />
-                    <span>{course.averageRating.toFixed(1)} rating</span>
+                    <span>{course.averageRating?.toFixed(1) || '0.0'} rating</span>
                   </div>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CourseStatusBadge isPublished={course.isPublished} />
-                    <CourseFeatureBadge isFeatured={course.isFeatured} />
+                    <CourseStatusBadge isPublished={course.isPublished ?? false} />
+                    <CourseFeatureBadge isFeatured={course.isFeatured ?? false} />
                   </div>
                   <div className="text-sm font-medium text-right">
                     {course.isDiscounted ? (
                       <div className="space-y-0.5">
                         <div className="text-red-600 font-semibold">
-                          {formatPrice(course.effectivePrice)}
+                          {formattedEffectivePrice}
                         </div>
                         <div className="text-xs text-muted-foreground line-through">
-                          {formatPrice(course.price)}
+                          {formattedPrice}
                         </div>
                       </div>
                     ) : (
                       <div className="text-gray-900">
-                        {formatPrice(course.price)}
+                        {formattedPrice}
                       </div>
                     )}
                   </div>
                 </div>
                 
                 <div className="text-xs text-muted-foreground">
-                  Instructor: {course.instructorName}
+                  Instructor: {course.instructorName || 'Unknown Instructor'}
                 </div>
               </div>
             </div>
@@ -170,7 +177,7 @@ export function DeleteCourseDialog({
                   <div className="text-xs text-amber-800">
                     <div className="font-medium">High Impact Warning!</div>
                     <div className="mt-1">
-                      This course has <strong>{course.totalStudents} enrolled students</strong> who will 
+                      This course has <strong>{course.totalStudents || 0} enrolled students</strong> who will 
                       lose access to their course content and progress. Consider archiving the course 
                       instead of deleting it.
                     </div>
@@ -199,7 +206,7 @@ export function DeleteCourseDialog({
                 {error}
               </div>
             )}
-          </AlertDialogDescription>
+          </div>
         </AlertDialogHeader>
         
         <AlertDialogFooter className="gap-2">

@@ -78,29 +78,29 @@ export function CourseTable({
     <div className="space-y-4">
       {/* Enhanced Bulk Actions */}
       {selectedCourses.length > 0 && (
-        <div className="flex items-center justify-between p-4 bg-primary/5 border border-primary/20 rounded-lg border-l-4 border-l-primary">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full">
-              <span className="text-sm font-semibold text-primary">{selectedCourses.length}</span>
+        <div className="flex items-center justify-between p-3 bg-primary/5 border border-primary/20 rounded-lg border-l-4 border-l-primary">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded-full">
+              <span className="text-xs font-semibold text-primary">{selectedCourses.length}</span>
             </div>
             <span className="text-sm font-medium">
               {selectedCourses.length} course{selectedCourses.length > 1 ? 's' : ''} selected
             </span>
           </div>
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" className="h-8">
+          <div className="flex gap-1">
+            <Button size="sm" variant="outline" className="h-7 text-xs px-2">
               <Edit className="h-3 w-3 mr-1" />
               Edit
             </Button>
-            <Button size="sm" variant="outline" className="h-8">
+            <Button size="sm" variant="outline" className="h-7 text-xs px-2">
               <Play className="h-3 w-3 mr-1" />
               Publish
             </Button>
-            <Button size="sm" variant="outline" className="h-8">
+            <Button size="sm" variant="outline" className="h-7 text-xs px-2">
               <Star className="h-3 w-3 mr-1" />
               Feature
             </Button>
-            <Button size="sm" variant="destructive" className="h-8">
+            <Button size="sm" variant="destructive" className="h-7 text-xs px-2">
               <Trash2 className="h-3 w-3 mr-1" />
               Delete
             </Button>
@@ -113,7 +113,7 @@ export function CourseTable({
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
-              <TableHead className="w-12">
+              <TableHead className="w-10 py-2">
                 <div className="flex items-center justify-center">
                   <input
                     type="checkbox"
@@ -124,14 +124,14 @@ export function CourseTable({
                   />
                 </div>
               </TableHead>
-              <TableHead className="font-semibold">Course</TableHead>
-              <TableHead className="font-semibold">Instructor</TableHead>
-              <TableHead className="font-semibold">Level</TableHead>
-              <TableHead className="font-semibold">Price</TableHead>
-              <TableHead className="font-semibold">Students</TableHead>
-              <TableHead className="font-semibold">Rating</TableHead>
-              <TableHead className="font-semibold">Status</TableHead>
-              <TableHead className="w-12 font-semibold">Actions</TableHead>
+              <TableHead className="font-semibold py-2">Course</TableHead>
+              <TableHead className="font-semibold py-2">Instructor</TableHead>
+              <TableHead className="font-semibold py-2">Level</TableHead>
+              <TableHead className="font-semibold py-2">Price</TableHead>
+              <TableHead className="font-semibold py-2">Students</TableHead>
+              <TableHead className="font-semibold py-2">Rating</TableHead>
+              <TableHead className="font-semibold py-2">Status</TableHead>
+              <TableHead className="w-10 font-semibold py-2">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -153,8 +153,8 @@ export function CourseTable({
       </div>
 
       {/* Enhanced Pagination */}
-      <div className="flex items-center justify-between py-4 px-2">
-        <div className="text-sm text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-md border">
+      <div className="flex items-center justify-between py-2 px-2">
+        <div className="text-sm text-muted-foreground bg-muted/30 px-2 py-1 rounded-md border">
           Showing <span className="font-medium text-foreground">{((currentPage - 1) * 10) + 1}</span> to{' '}
           <span className="font-medium text-foreground">{Math.min(currentPage * 10, totalCount)}</span> of{' '}
           <span className="font-medium text-foreground">{totalCount}</span> courses
@@ -165,14 +165,14 @@ export function CourseTable({
             size="sm"
             onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="h-9"
+            className="h-8 px-3"
           >
             Previous
           </Button>
           
           <div className="flex items-center gap-1">
             <span className="text-sm text-muted-foreground">Page</span>
-            <div className="bg-primary text-primary-foreground px-2 py-1 rounded text-sm font-medium min-w-8 text-center">
+            <div className="bg-primary text-primary-foreground px-2 py-0.5 rounded text-sm font-medium min-w-6 text-center">
               {currentPage}
             </div>
             <span className="text-sm text-muted-foreground">of {totalPages}</span>
@@ -183,7 +183,7 @@ export function CourseTable({
             size="sm"
             onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
-            className="h-9"
+            className="h-8 px-3"
           >
             Next
           </Button>

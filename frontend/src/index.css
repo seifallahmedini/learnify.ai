@@ -124,3 +124,67 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom animations for enhanced UX */
+@layer components {
+  /* Smooth transitions for all interactive elements */
+  .sidebar-item {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  /* Loading pulse animation */
+  .loading-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  /* Smooth fade in animation */
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  /* Slide in from left animation */
+  .slide-in-left {
+    animation: slideInLeft 0.3s ease-out;
+  }
+  
+  /* Scale on hover */
+  .scale-hover:hover {
+    transform: scale(1.02);
+  }
+  
+  /* Subtle glow effect for active items */
+  .active-glow {
+    box-shadow: 0 0 0 1px hsl(var(--primary)), 0 0 20px -12px hsl(var(--primary));
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

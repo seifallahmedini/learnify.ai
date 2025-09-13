@@ -20,7 +20,6 @@ export function CoursesListPage() {
   // Edit course state
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<CourseSummary | null>(null);
-  const [isLoadingCourse, setIsLoadingCourse] = useState(false);
   
   // Delete course state
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -60,29 +59,14 @@ export function CoursesListPage() {
     navigate(`/courses/${courseId}`);
   };
 
-  const handleEditCourse = async (course: CourseSummary) => {
-    try {
-      setIsLoadingCourse(true);
-      // This would load the full course data
-      setSelectedCourse(course);
-      setShowEditDialog(true);
-    } catch (error) {
-      console.error('Failed to load course for editing:', error);
-    } finally {
-      setIsLoadingCourse(false);
-    }
+  const handleEditCourse = (course: CourseSummary) => {
+    setSelectedCourse(course);
+    setShowEditDialog(true);
   };
 
-  const handleDeleteCourseClick = async (course: CourseSummary) => {
-    try {
-      setIsLoadingCourse(true);
-      setCourseToDelete(course);
-      setShowDeleteDialog(true);
-    } catch (error) {
-      console.error('Failed to load course for deletion:', error);
-    } finally {
-      setIsLoadingCourse(false);
-    }
+  const handleDeleteCourseClick = (course: CourseSummary) => {
+    setCourseToDelete(course);
+    setShowDeleteDialog(true);
   };
 
   const handleCourseDeleted = async (_deletedCourseId: number) => {
@@ -225,15 +209,6 @@ export function CoursesListPage() {
         onOpenChange={handleDeleteDialogClose}
         onCourseDeleted={handleCourseDeleted}
       />
-      
-      {/* Loading state for edit course */}
-      {isLoadingCourse && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg">
-            Loading course data...
-          </div>
-        </div>
-      )}
     </div>
   );
 }

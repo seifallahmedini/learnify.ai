@@ -38,7 +38,7 @@ export const useCourseManagement = (initialFilters?: CourseFilterRequest) => {
     } finally {
       setIsLoading(false);
     }
-  }, [filters]);
+  }, []); // Remove filters dependency to prevent infinite re-creation
 
   const updateFilters = useCallback((newFilters: CourseFilterRequest) => {
     setFilters(newFilters);
@@ -47,8 +47,9 @@ export const useCourseManagement = (initialFilters?: CourseFilterRequest) => {
 
   const goToPage = useCallback((page: number) => {
     const newFilters = { ...filters, page };
-    updateFilters(newFilters);
-  }, [filters, updateFilters]);
+    setFilters(newFilters);
+    loadCourses(newFilters);
+  }, [loadCourses]);
 
   const refreshCourses = useCallback(() => {
     loadCourses();
