@@ -23,7 +23,7 @@ interface CourseTableProps {
   totalCount: number;
   onPageChange: (page: number) => void;
   onEditCourse: (course: CourseSummary) => void;
-  onDeleteCourse: (course: CourseSummary) => void;
+  onDeleteCourse?: (course: CourseSummary) => void;
   onViewCourse?: (course: CourseSummary) => void;
   onTogglePublish?: (course: CourseSummary) => void;
   onToggleFeature?: (course: CourseSummary) => void;

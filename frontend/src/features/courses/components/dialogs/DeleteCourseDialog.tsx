@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,7 +9,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/shared/components/ui/alert-dialog';
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
 import { 
   Trash2,
@@ -17,38 +16,42 @@ import {
   Loader2,
   BookOpen,
   Users,
-  Star,
+  Calendar,
+  DollarSign
 } from 'lucide-react';
-import { useCourseOperations, useCourseUtils } from '../../hooks';
-import { CourseLevelBadge, CourseStatusBadge, CourseFeatureBadge } from '../shared';
 import type { CourseSummary } from '../../types';
+import { CourseFeatureBadge } from '../shared';
 
 interface DeleteCourseDialogProps {
-  course: CourseSummary | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCourseDeleted: (deletedCourseId: number) => void;
+  course: CourseSummary | null;
+  onCourseDeleted: (course: CourseSummary) => void;
 }
 
 export function DeleteCourseDialog({ 
-  course, 
   open, 
   onOpenChange, 
+  course, 
   onCourseDeleted 
 }: DeleteCourseDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { deleteCourse } = useCourseOperations();
-  const { getCourseInitials, formatPrice } = useCourseUtils();
+  // Reset error state when dialog opens/closes or course changes
+  useEffect(() => {
+    if (!open || !course) {
+      setError(null);
+      setIsDeleting(false);
+    }
+  }, [open, course]);
 
-  // Early return to prevent any processing if no course
-  if (!course) return null;
-
-  // Simple computed values (avoid complex hooks that might cause re-renders)
-  const courseInitials = getCourseInitials(course.title || '');
-  const formattedPrice = formatPrice(course.price || 0);
-  const formattedEffectivePrice = formatPrice(course.effectivePrice || 0);
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price);
+  };
 
   const handleDelete = async () => {
     if (!course) return;
@@ -57,17 +60,19 @@ export function DeleteCourseDialog({
       setIsDeleting(true);
       setError(null);
 
-      const success = await deleteCourse(course.id);
+      // TODO: Replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      if (success) {
-        onCourseDeleted(course.id);
-        onOpenChange(false);
-      } else {
-        setError('Failed to delete course. Please try again.');
+      // Simulate potential error for courses with students
+      if (course.totalStudents > 0) {
+        throw new Error('Cannot delete course with enrolled students. Please unenroll all students first.');
       }
+
+      onCourseDeleted(course);
+      onOpenChange(false);
     } catch (err) {
       console.error('Failed to delete course:', err);
-      setError('Failed to delete course. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to delete course');
     } finally {
       setIsDeleting(false);
     }
@@ -81,156 +86,115 @@ export function DeleteCourseDialog({
   return (
     <AlertDialog open={open && !!course} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-md">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2 text-red-600">
-            <AlertTriangle className="h-5 w-5" />
-            Delete Course
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-sm text-muted-foreground">
-            Are you sure you want to permanently delete this course? This action cannot be undone.
-          </AlertDialogDescription>
-          
-          <div className="space-y-4">
-            
-            {/* Course Preview */}
-            <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <Avatar className="h-16 w-16 flex-shrink-0">
-                <AvatarImage src={course.thumbnailUrl} alt={course.title} />
-                <AvatarFallback className="text-sm font-medium bg-red-100 text-red-700">
-                  {courseInitials}
-                </AvatarFallback>
-              </Avatar>
-              
-              <div className="flex-1 space-y-2 min-w-0">
-                <div>
-                  <div className="font-medium text-sm line-clamp-2">{course.title || 'Untitled Course'}</div>
-                  <div className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                    {course.shortDescription || 'No description available'}
-                  </div>
+        {course && (
+          <>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="h-5 w-5" />
+                Delete Course
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-4">
+                <div className="text-sm text-muted-foreground">
+                  Are you sure you want to permanently delete this course? This action cannot be undone.
                 </div>
                 
-                <div className="flex items-center gap-2 text-xs">
-                  <Badge variant="outline" className="text-xs">
-                    {course.categoryName || 'Uncategorized'}
-                  </Badge>
-                  {course.level && <CourseLevelBadge level={course.level} className="text-xs" />}
-                </div>
-                
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    <span>{course.totalStudents || 0} students</span>
+                {/* Course Preview */}
+                <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <BookOpen className="h-6 w-6 text-red-600" />
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3 w-3" />
-                    <span>{course.averageRating?.toFixed(1) || '0.0'} rating</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CourseStatusBadge isPublished={course.isPublished ?? false} />
-                    <CourseFeatureBadge isFeatured={course.isFeatured ?? false} />
-                  </div>
-                  <div className="text-sm font-medium text-right">
-                    {course.isDiscounted ? (
-                      <div className="space-y-0.5">
-                        <div className="text-red-600 font-semibold">
-                          {formattedEffectivePrice}
-                        </div>
-                        <div className="text-xs text-muted-foreground line-through">
-                          {formattedPrice}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-gray-900">
-                        {formattedPrice}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="text-xs text-muted-foreground">
-                  Instructor: {course.instructorName || 'Unknown Instructor'}
-                </div>
-              </div>
-            </div>
-
-            {/* Warning Information */}
-            <div className="space-y-3 text-sm">
-              <div className="font-medium text-red-700">This will permanently delete:</div>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-2 text-xs">
-                <li>Course content and materials</li>
-                <li>All lessons and modules</li>
-                <li>Student enrollment data</li>
-                <li>Progress tracking information</li>
-                <li>Course reviews and ratings</li>
-                <li>Associated assignments and quizzes</li>
-              </ul>
-            </div>
-
-            {/* Impact Warning */}
-            {course.totalStudents > 0 && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-xs text-amber-800">
-                    <div className="font-medium">High Impact Warning!</div>
-                    <div className="mt-1">
-                      This course has <strong>{course.totalStudents || 0} enrolled students</strong> who will 
-                      lose access to their course content and progress. Consider archiving the course 
-                      instead of deleting it.
+                  <div className="flex-1 space-y-1">
+                    <h4 className="font-medium text-sm">{course.title}</h4>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      Created: {new Date(course.createdAt).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {course.isFeatured && <CourseFeatureBadge isFeatured={course.isFeatured} />}
+                      <Badge 
+                        variant={course.isPublished ? 'default' : 'secondary'} 
+                        className="text-xs"
+                      >
+                        {course.isPublished ? 'Published' : 'Draft'}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        ID: #{course.id}
+                      </Badge>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
 
-            {/* Alternative Suggestion */}
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-start gap-2">
-                <BookOpen className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div className="text-xs text-blue-800">
-                  <div className="font-medium">Alternative Options:</div>
-                  <div className="mt-1">
-                    Consider <strong>unpublishing</strong> the course instead of deleting it. 
-                    This hides the course from new students while preserving existing enrollments 
-                    and data.
+                {/* Course Stats */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="flex items-center gap-1">
+                    <Users className="h-3 w-3 text-gray-500" />
+                    <span>{course.totalStudents} students</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3 text-gray-500" />
+                    <span>{formatPrice(course.price)}</span>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-                {error}
-              </div>
-            )}
-          </div>
-        </AlertDialogHeader>
-        
-        <AlertDialogFooter className="gap-2">
-          <AlertDialogCancel 
-            onClick={handleCancel}
-            disabled={isDeleting}
-            className="flex items-center gap-2"
-          >
-            <BookOpen className="h-4 w-4" />
-            Keep Course
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="bg-red-600 hover:bg-red-700 focus:ring-red-600 flex items-center gap-2"
-          >
-            {isDeleting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-            {isDeleting ? 'Deleting...' : 'Delete Course'}
-          </AlertDialogAction>
-        </AlertDialogFooter>
+                {/* Warning Information */}
+                <div className="space-y-2 text-sm">
+                  <div className="font-medium text-red-700">This will permanently delete:</div>
+                  <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-2">
+                    <li>Course content and materials</li>
+                    <li>Student enrollments and progress data</li>
+                    <li>Quiz attempts and assessment results</li>
+                    <li>Reviews and ratings for this course</li>
+                    <li>All associated lesson content</li>
+                  </ul>
+                </div>
+
+                {course.totalStudents > 0 && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-amber-800">
+                        <div className="font-medium">Cannot Delete:</div>
+                        <div className="mt-1">
+                          This course has <strong>{course.totalStudents} enrolled student{course.totalStudents !== 1 ? 's' : ''}</strong>. 
+                          You must unenroll all students before deleting this course.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {error && (
+                  <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                    {error}
+                  </div>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            
+            <AlertDialogFooter className="gap-2">
+              <AlertDialogCancel 
+                onClick={handleCancel}
+                disabled={isDeleting}
+                className="flex items-center gap-2"
+              >
+                <BookOpen className="h-4 w-4" />
+                Keep Course
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                disabled={isDeleting || !course || course.totalStudents > 0}
+                className="bg-red-600 hover:bg-red-700 focus:ring-red-600 flex items-center gap-2"
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+                {isDeleting ? 'Deleting...' : 'Delete Course'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </>
+        )}
       </AlertDialogContent>
     </AlertDialog>
   );

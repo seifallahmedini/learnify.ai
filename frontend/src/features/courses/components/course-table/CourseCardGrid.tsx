@@ -34,7 +34,7 @@ interface CourseCardGridProps {
   totalPages: number;
   pageSize?: number;
   onEditCourse: (course: CourseSummary) => void;
-  onDeleteCourse: (course: CourseSummary) => void;
+  onDeleteCourse?: (course: CourseSummary) => void;
   onViewCourse?: (course: CourseSummary) => void;
   onTogglePublish?: (course: CourseSummary) => void;
   onToggleFeature?: (course: CourseSummary) => void;
@@ -238,14 +238,18 @@ export function CourseCardGrid({
                           Feature Course
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => onDeleteCourse(course)}
-                        className="flex items-center gap-2 cursor-pointer text-red-600 hover:bg-red-50 transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Delete Course
-                      </DropdownMenuItem>
+                      {onDeleteCourse && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => onDeleteCourse(course)}
+                            className="flex items-center gap-2 cursor-pointer text-red-600 hover:bg-red-50 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete Course
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

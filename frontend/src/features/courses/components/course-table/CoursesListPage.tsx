@@ -5,8 +5,7 @@ import { Plus, List, Grid } from 'lucide-react';
 import { CourseFilters } from './CourseFilters';
 import { CourseTable } from './CourseTable';
 import { CourseCardGrid } from './CourseCardGrid';
-import { CreateCourseDialog } from '../dialogs/CreateCourseDialog';
-import { DeleteCourseDialog } from '../dialogs/DeleteCourseDialog';
+import { CreateCourseDialog, DeleteCourseDialog } from '../dialogs';
 import { useCourseManagement } from '../../hooks';
 import type { CourseSummary } from '../../types';
 
@@ -20,7 +19,7 @@ export function CoursesListPage() {
   // Edit course state
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<CourseSummary | null>(null);
-  
+
   // Delete course state
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<CourseSummary | null>(null);
@@ -64,21 +63,16 @@ export function CoursesListPage() {
     setShowEditDialog(true);
   };
 
-  const handleDeleteCourseClick = (course: CourseSummary) => {
+  const handleDeleteCourse = (course: CourseSummary) => {
     setCourseToDelete(course);
     setShowDeleteDialog(true);
   };
 
-  const handleCourseDeleted = async (_deletedCourseId: number) => {
-    // Refresh the courses list after deletion
+  const handleCourseDeleted = (_deletedCourse: CourseSummary) => {
+    // Refresh the courses list
     refreshCourses();
-  };
-
-  const handleDeleteDialogClose = (open: boolean) => {
-    setShowDeleteDialog(open);
-    if (!open) {
-      setCourseToDelete(null);
-    }
+    // Clear the dialog state
+    setCourseToDelete(null);
   };
 
   if (error) {
@@ -149,9 +143,9 @@ export function CoursesListPage() {
           totalPages={totalPages}
           onTogglePublish={handleTogglePublish}
           onToggleFeature={handleToggleFeature}
-          onDeleteCourse={handleDeleteCourseClick}
           onViewCourse={(course) => handleViewCourse(course.id)}
           onEditCourse={handleEditCourse}
+          onDeleteCourse={handleDeleteCourse}
           onPageChange={goToPage}
         />
       ) : (
@@ -162,9 +156,9 @@ export function CoursesListPage() {
           totalPages={totalPages}
           onTogglePublish={handleTogglePublish}
           onToggleFeature={handleToggleFeature}
-          onDeleteCourse={handleDeleteCourseClick}
           onViewCourse={(course) => handleViewCourse(course.id)}
           onEditCourse={handleEditCourse}
+          onDeleteCourse={handleDeleteCourse}
           onPageChange={goToPage}
         />
       )}
@@ -177,6 +171,14 @@ export function CoursesListPage() {
           setShowCreateDialog(false);
           refreshCourses();
         }}
+      />
+
+      {/* Delete Course Dialog */}
+      <DeleteCourseDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        course={courseToDelete}
+        onCourseDeleted={handleCourseDeleted}
       />
 
       {/* Edit Course Dialog - Placeholder */}
@@ -201,14 +203,6 @@ export function CoursesListPage() {
           </div>
         </div>
       )}
-
-      {/* Delete Course Dialog */}
-      <DeleteCourseDialog
-        course={courseToDelete}
-        open={showDeleteDialog}
-        onOpenChange={handleDeleteDialogClose}
-        onCourseDeleted={handleCourseDeleted}
-      />
     </div>
   );
 }

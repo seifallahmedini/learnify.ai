@@ -29,7 +29,7 @@ interface CourseTableRowProps {
   selectedCourses: number[]
   onSelectCourse: (courseId: number, checked: boolean) => void
   onEditCourse: (course: CourseSummary) => void
-  onDeleteCourse: (course: CourseSummary) => void
+  onDeleteCourse?: (course: CourseSummary) => void
   onViewCourse?: (course: CourseSummary) => void
   onTogglePublish?: (course: CourseSummary) => void
   onToggleFeature?: (course: CourseSummary) => void
@@ -263,15 +263,19 @@ export function CourseTableRow({
               </DropdownMenuItem>
             )}
             
-            <DropdownMenuSeparator />
-            
-            <DropdownMenuItem 
-              onClick={() => onDeleteCourse(course)}
-              className="flex items-center gap-2 cursor-pointer text-sm text-red-600 focus:text-red-600 focus:bg-red-50"
-            >
-              <Trash2 className="h-3 w-3" />
-              <span>Delete</span>
-            </DropdownMenuItem>
+            {onDeleteCourse && (
+              <>
+                <DropdownMenuSeparator />
+                
+                <DropdownMenuItem 
+                  onClick={() => onDeleteCourse(course)}
+                  className="flex items-center gap-2 cursor-pointer text-sm text-red-600 focus:text-red-600 focus:bg-red-50"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  <span>Delete</span>
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
