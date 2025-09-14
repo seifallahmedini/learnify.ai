@@ -12,7 +12,8 @@ import {
   Filter
 } from 'lucide-react';
 import { CreateCourseDialog } from '../dialogs';
-import { CourseCard } from './CourseCard';
+import { CourseGridCard } from './CourseGridCard';
+import { CourseTable } from './CourseTable';
 import { useCourseManagement } from '../../hooks';
 import type { CourseSummary } from '../../types';
 
@@ -20,9 +21,8 @@ type ViewMode = 'list' | 'grid';
 
 export function CoursesListPage() {
   const navigate = useNavigate();
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   const {
     courses,
@@ -160,10 +160,17 @@ export function CoursesListPage() {
             </div>
           </div>
           
-          <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Create Course
-          </Button>
+          <CreateCourseDialog
+            onCourseCreated={(_course) => {
+              refreshCourses();
+            }}
+            trigger={
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                Create Course
+              </Button>
+            }
+          />
         </div>
       </div>
 
@@ -208,10 +215,17 @@ export function CoursesListPage() {
                   Clear Search
                 </Button>
               ) : null}
-              <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Create Your First Course
-              </Button>
+              <CreateCourseDialog
+                onCourseCreated={(_course) => {
+                  refreshCourses();
+                }}
+                trigger={
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Create Your First Course
+                  </Button>
+                }
+              />
             </div>
           </CardContent>
         </Card>
@@ -229,23 +243,27 @@ export function CoursesListPage() {
             </span>
           </div>
 
-          {/* Course Grid */}
-          <div className={`grid gap-6 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-              : 'grid-cols-1'
-          }`}>
-            {filteredCourses.map((course) => (
-              <CourseCard
-                key={course.id}
-                course={course}
-                viewMode={viewMode}
-                onView={() => handleViewCourse(course.id)}
-                onEdit={() => handleEditCourse(course)}
-                onDelete={() => handleDeleteCourse(course)}
-              />
-            ))}
-          </div>
+          {/* Course Grid/Table */}
+          {viewMode === 'list' ? (
+            <CourseTable 
+              courses={filteredCourses}
+              onView={(course) => handleViewCourse(course.id)}
+              onEdit={(course) => handleEditCourse(course)}
+              onDelete={(course) => handleDeleteCourse(course)}
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredCourses.map((course) => (
+                <CourseGridCard
+                  key={course.id}
+                  course={course}
+                  onView={() => handleViewCourse(course.id)}
+                  onEdit={() => handleEditCourse(course)}
+                  onDelete={() => handleDeleteCourse(course)}
+                />
+              ))}
+            </div>
+          )}
         </>
       )}
 
@@ -256,16 +274,6 @@ export function CoursesListPage() {
             <span>Page {currentPage} of {totalPages}</span>
           </div>
         </div>
-      )}
-
-      {/* Create Course Dialog */}
-      {showCreateDialog && (
-        <CreateCourseDialog
-          onCourseCreated={(_course) => {
-            setShowCreateDialog(false);
-            refreshCourses();
-          }}
-        />
       )}
     </div>
   );

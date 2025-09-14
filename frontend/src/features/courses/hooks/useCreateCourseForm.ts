@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { CreateCourseRequest } from '../types';
 import { CourseLevel } from '../types';
+import { coursesApi } from '../services';
 
 // Validation schema for course creation
 const createCourseSchema = z.object({
@@ -54,8 +55,8 @@ export const useCreateCourseForm = () => {
       shortDescription: '',
       description: '',
       learningObjectives: '',
-      categoryId: 0,
-      instructorId: 0,
+      categoryId: 1, // Default to first category instead of 0
+      instructorId: 1, // Default to first instructor instead of 0  
       level: CourseLevel.Beginner,
       price: 0,
       discountPrice: undefined,
@@ -92,21 +93,14 @@ export const useCreateCourseForm = () => {
         maxStudents: data.maxStudents,
         language: data.language?.trim() || undefined,
         prerequisites: data.prerequisites?.trim() || undefined,
+        isPublished: data.isPublished,
+        isFeatured: data.isFeatured,
       };
 
-      // Note: This would be replaced with actual API call
-      // const response = await coursesApi.createCourse(requestData);
-      
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const mockResponse = { 
-        id: Date.now(), 
-        ...requestData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      // Call the actual API
+      const response = await coursesApi.createCourse(requestData);
 
-      onSuccess?.(mockResponse);
+      onSuccess?.(response);
       form.reset();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create course';

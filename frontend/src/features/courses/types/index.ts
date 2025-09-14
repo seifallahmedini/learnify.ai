@@ -108,6 +108,8 @@ export interface CreateCourseRequest {
   instructorId: number;
   prerequisites?: string;
   learningObjectives: string;
+  isPublished: boolean;
+  isFeatured: boolean;
 }
 
 export interface UpdateCourseRequest extends Partial<CreateCourseRequest> {}

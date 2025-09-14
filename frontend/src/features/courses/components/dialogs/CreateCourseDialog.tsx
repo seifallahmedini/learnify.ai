@@ -39,16 +39,25 @@ interface CreateCourseDialogProps {
 
 export function CreateCourseDialog({ onCourseCreated, trigger }: CreateCourseDialogProps) {
   const [open, setOpen] = useState(false);
-  const { form, isSubmitting, submitError, submitForm } = useCreateCourseForm();
+  const { form, isSubmitting, submitError, submitForm, resetForm } = useCreateCourseForm();
 
   const handleSubmit = async (data: any) => {
     try {
       await submitForm(data, (newCourse) => {
         onCourseCreated?.(newCourse);
         setOpen(false);
+        resetForm(); // Reset form after successful submission
       });
     } catch (error) {
       // Error is handled by the form hook
+    }
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      // Reset form when dialog closes
+      resetForm();
     }
   };
 
@@ -60,7 +69,7 @@ export function CreateCourseDialog({ onCourseCreated, trigger }: CreateCourseDia
   );
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
@@ -293,6 +302,41 @@ export function CreateCourseDialog({ onCourseCreated, trigger }: CreateCourseDia
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="language"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Language</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select language" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="English">English</SelectItem>
+                        <SelectItem value="Spanish">Spanish</SelectItem>
+                        <SelectItem value="French">French</SelectItem>
+                        <SelectItem value="German">German</SelectItem>
+                        <SelectItem value="Italian">Italian</SelectItem>
+                        <SelectItem value="Portuguese">Portuguese</SelectItem>
+                        <SelectItem value="Chinese">Chinese</SelectItem>
+                        <SelectItem value="Japanese">Japanese</SelectItem>
+                        <SelectItem value="Korean">Korean</SelectItem>
+                        <SelectItem value="Arabic">Arabic</SelectItem>
+                        <SelectItem value="Russian">Russian</SelectItem>
+                        <SelectItem value="Hindi">Hindi</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      The primary language used in the course
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             {/* Learning Content */}
@@ -389,7 +433,7 @@ export function CreateCourseDialog({ onCourseCreated, trigger }: CreateCourseDia
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
+                onClick={() => handleOpenChange(false)}
                 disabled={isSubmitting}
               >
                 Cancel

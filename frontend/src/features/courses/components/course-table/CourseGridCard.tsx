@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
-import { CourseLevelBadge, CourseRating } from '../shared';
+import { CourseLevelBadge, CourseRating, CourseFeatureBadge } from '../shared';
 import type { CourseSummary } from '../../types';
 
 interface CourseGridCardProps {
@@ -36,8 +36,9 @@ export function CourseGridCard({ course, onView, onEdit, onDelete }: CourseGridC
             {course.isPublished ? 'Published' : 'Draft'}
           </Badge>
         </div>
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 flex gap-2">
           <CourseLevelBadge level={course.level} />
+          <CourseFeatureBadge isFeatured={course.isFeatured} size="sm" />
         </div>
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
           <Button 
