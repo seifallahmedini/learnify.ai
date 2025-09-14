@@ -14,7 +14,8 @@ import {
 import { CreateCourseDialog } from '../dialogs';
 import { CourseGridCard } from './CourseGridCard';
 import { CourseTable } from './CourseTable';
-import { useCourseManagement } from '../../hooks';
+import { BulkActionBar } from '../shared';
+import { useCourseManagement, useSelectionManager } from '../../hooks';
 import type { CourseSummary } from '../../types';
 
 type ViewMode = 'list' | 'grid';
@@ -22,7 +23,7 @@ type ViewMode = 'list' | 'grid';
 export function CoursesListPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const {
     courses,
@@ -41,6 +42,12 @@ export function CoursesListPage() {
     course.instructorName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Selection management
+  const selection = useSelectionManager({
+    items: filteredCourses,
+    getItemId: (course) => course.id,
+  });
+
   const handleViewCourse = (courseId: number) => {
     navigate(`/courses/${courseId}`);
   };
@@ -53,6 +60,21 @@ export function CoursesListPage() {
   const handleDeleteCourse = (course: CourseSummary) => {
     console.log('Delete course:', course.id);
     // TODO: Implement delete functionality
+  };
+
+  const handleBulkEdit = () => {
+    console.log('Bulk edit courses:', selection.selectedIds);
+    // TODO: Implement bulk edit functionality
+  };
+
+  const handleBulkDelete = () => {
+    console.log('Bulk delete courses:', selection.selectedIds);
+    // TODO: Implement bulk delete functionality
+  };
+
+  // Handle select all for grid view
+  const handleSelectAllGrid = () => {
+    selection.handleSelectAll(true);
   };
 
   if (isLoading) {
@@ -191,6 +213,16 @@ export function CoursesListPage() {
         </Button>
       </div>
 
+      {/* Selection Summary and Bulk Actions */}
+      <BulkActionBar
+        selectedCount={selection.selectedCount}
+        totalCount={filteredCourses.length}
+        onClearSelection={selection.clearSelection}
+        onSelectAll={viewMode === 'grid' ? handleSelectAllGrid : undefined}
+        onBulkEdit={handleBulkEdit}
+        onBulkDelete={handleBulkDelete}
+      />
+
       {/* Courses Content */}
       {filteredCourses.length === 0 ? (
         <Card className="border-dashed border-2 py-16">
@@ -247,16 +279,21 @@ export function CoursesListPage() {
           {viewMode === 'list' ? (
             <CourseTable 
               courses={filteredCourses}
+              selectedCourses={selection.selectedIds}
+              onSelectionChange={selection.handleBulkSelection}
               onView={(course) => handleViewCourse(course.id)}
               onEdit={(course) => handleEditCourse(course)}
               onDelete={(course) => handleDeleteCourse(course)}
             />
           ) : (
+            /* Course Grid - Selection handled individually by each card */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredCourses.map((course) => (
                 <CourseGridCard
                   key={course.id}
                   course={course}
+                  isSelected={selection.isSelected(course.id)}
+                  onSelectionChange={selection.handleItemSelection}
                   onView={() => handleViewCourse(course.id)}
                   onEdit={() => handleEditCourse(course)}
                   onDelete={() => handleDeleteCourse(course)}

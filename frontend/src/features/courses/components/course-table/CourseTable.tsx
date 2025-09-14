@@ -1,5 +1,6 @@
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
+import { Checkbox } from '@/shared/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -32,18 +33,59 @@ import type { CourseSummary } from '../../types';
 
 interface CourseTableProps {
   courses: CourseSummary[];
+  selectedCourses?: number[];
+  onSelectionChange?: (selectedIds: number[]) => void;
   onView: (course: CourseSummary) => void;
   onEdit: (course: CourseSummary) => void;
   onDelete: (course: CourseSummary) => void;
 }
 
-export function CourseTable({ courses, onView, onEdit, onDelete }: CourseTableProps) {
+export function CourseTable({ 
+  courses, 
+  selectedCourses = [], 
+  onSelectionChange,
+  onView, 
+  onEdit, 
+  onDelete 
+}: CourseTableProps) {
+  // Handle individual row selection
+  const handleRowSelection = (courseId: number, checked: boolean) => {
+    if (!onSelectionChange) return;
+    
+    const newSelection = checked
+      ? [...selectedCourses, courseId]
+      : selectedCourses.filter(id => id !== courseId);
+    
+    onSelectionChange(newSelection);
+  };
+
+  // Handle select all functionality
+  const handleSelectAll = (checked: boolean) => {
+    if (!onSelectionChange) return;
+    
+    const newSelection = checked ? courses.map(course => course.id) : [];
+    onSelectionChange(newSelection);
+  };
+
+  const isAllSelected = selectedCourses.length === courses.length && courses.length > 0;
+  const isIndeterminate = selectedCourses.length > 0 && selectedCourses.length < courses.length;
   return (
     <TooltipProvider>
       <div className="rounded-md border">
         <Table>
         <TableHeader>
           <TableRow>
+            {onSelectionChange && (
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={isAllSelected}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all courses"
+                  className="data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground"
+                  {...(isIndeterminate && { 'data-state': 'indeterminate' })}
+                />
+              </TableHead>
+            )}
             <TableHead className="w-[300px]">Course</TableHead>
             <TableHead>Instructor</TableHead>
             <TableHead className="w-[140px]">Category</TableHead>
@@ -59,6 +101,15 @@ export function CourseTable({ courses, onView, onEdit, onDelete }: CourseTablePr
         <TableBody>
           {courses.map((course) => (
             <TableRow key={course.id} className="hover:bg-muted/50">
+              {onSelectionChange && (
+                <TableCell className="py-4">
+                  <Checkbox
+                    checked={selectedCourses.includes(course.id)}
+                    onCheckedChange={(checked) => handleRowSelection(course.id, checked as boolean)}
+                    aria-label={`Select course ${course.title}`}
+                  />
+                </TableCell>
+              )}
               <TableCell className="py-4">
                 <div className="space-y-1 max-w-[300px]">
                   <Tooltip>
