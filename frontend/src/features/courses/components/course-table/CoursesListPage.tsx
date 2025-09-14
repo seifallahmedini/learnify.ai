@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
@@ -8,14 +8,16 @@ import {
   List, 
   Grid, 
   BookOpen, 
-  Search, 
-  Filter
+  Search
 } from 'lucide-react';
 import { CreateCourseDialog } from '../dialogs';
 import { CourseGridCard } from './CourseGridCard';
 import { CourseTable } from './CourseTable';
+import { CourseFilters } from './CourseFilters';
 import { BulkActionBar } from '../shared';
 import { useCourseManagement, useSelectionManager } from '../../hooks';
+import type { UIFilters } from './filterMapping';
+import { defaultUIFilters, mapUIFiltersToAPI } from './filterMapping';
 import type { CourseSummary } from '../../types';
 
 type ViewMode = 'list' | 'grid';
@@ -24,6 +26,7 @@ export function CoursesListPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [filters, setFilters] = useState<UIFilters>(defaultUIFilters);
 
   const {
     courses,
@@ -33,19 +36,36 @@ export function CoursesListPage() {
     currentPage,
     totalPages,
     refreshCourses,
+    updateFilters,
   } = useCourseManagement();
 
-  // Filter courses based on search term
-  const filteredCourses = courses.filter(course =>
-    course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.shortDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.instructorName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Debounced filter application to API
+  const applyFiltersToAPI = useCallback((uiFilters: UIFilters, searchText: string) => {
+    const apiFilters = mapUIFiltersToAPI({ ...uiFilters, searchTerm: searchText });
+    updateFilters(apiFilters);
+  }, [updateFilters]);
 
-  // Selection management
+  // Apply filters when they change
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      applyFiltersToAPI(filters, searchTerm);
+    }, 300); // Debounce API calls
+
+    return () => clearTimeout(timeoutId);
+  }, [filters, searchTerm, applyFiltersToAPI]);
+
+  // Get unique categories from all courses for filter options
+  const categories = courses.reduce((acc, course) => {
+    if (!acc.some(cat => cat.name === course.categoryName)) {
+      acc.push({ id: course.categoryName, name: course.categoryName });
+    }
+    return acc;
+  }, [] as Array<{ id: string; name: string }>).sort((a, b) => a.name.localeCompare(b.name));
+
+  // Selection management (use courses directly since they're already filtered by API)
   const selection = useSelectionManager({
-    items: filteredCourses,
-    getItemId: (course) => course.id,
+    items: courses,
+    getItemId: (course: CourseSummary) => course.id,
   });
 
   const handleViewCourse = (courseId: number) => {
@@ -207,16 +227,17 @@ export function CoursesListPage() {
             className="pl-10"
           />
         </div>
-        <Button variant="outline" className="gap-2 sm:w-auto w-full">
-          <Filter className="h-4 w-4" />
-          Filters
-        </Button>
+        <CourseFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          categories={categories}
+        />
       </div>
 
       {/* Selection Summary and Bulk Actions */}
       <BulkActionBar
         selectedCount={selection.selectedCount}
-        totalCount={filteredCourses.length}
+        totalCount={courses.length}
         onClearSelection={selection.clearSelection}
         onSelectAll={viewMode === 'grid' ? handleSelectAllGrid : undefined}
         onBulkEdit={handleBulkEdit}
@@ -224,7 +245,7 @@ export function CoursesListPage() {
       />
 
       {/* Courses Content */}
-      {filteredCourses.length === 0 ? (
+      {courses.length === 0 ? (
         <Card className="border-dashed border-2 py-16">
           <CardContent className="text-center space-y-6">
             <div className="mx-auto h-16 w-16 rounded-full bg-muted flex items-center justify-center">
@@ -266,7 +287,7 @@ export function CoursesListPage() {
           {/* Results Summary */}
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
-              Showing {filteredCourses.length} of {totalCount} courses
+              Showing {courses.length} of {totalCount} courses
               {searchTerm && (
                 <span className="ml-1">
                   for "<span className="text-foreground font-medium">{searchTerm}</span>"
@@ -278,7 +299,7 @@ export function CoursesListPage() {
           {/* Course Grid/Table */}
           {viewMode === 'list' ? (
             <CourseTable 
-              courses={filteredCourses}
+              courses={courses}
               selectedCourses={selection.selectedIds}
               onSelectionChange={selection.handleBulkSelection}
               onView={(course) => handleViewCourse(course.id)}
@@ -288,7 +309,7 @@ export function CoursesListPage() {
           ) : (
             /* Course Grid - Selection handled individually by each card */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredCourses.map((course) => (
+              {courses.map((course: CourseSummary) => (
                 <CourseGridCard
                   key={course.id}
                   course={course}
