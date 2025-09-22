@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type {
   Course,
   CourseSummary,
@@ -14,15 +14,22 @@ import { coursesApi } from '../services';
 export const useCourseManagement = (initialFilters?: CourseFilterRequest) => {
   const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [filters, setFilters] = useState<CourseFilterRequest>(initialFilters || {});
+  const [searchTerm, setSearchTerm] = useState(initialFilters?.searchTerm || '');
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  const loadCourses = useCallback(async (newFilters?: CourseFilterRequest) => {
+  const loadCourses = useCallback(async (newFilters?: CourseFilterRequest, isSearchRequest = false) => {
     try {
-      setIsLoading(true);
+      if (isSearchRequest) {
+        setIsSearching(true);
+      } else {
+        setIsLoading(true);
+      }
       setError(null);
       
       const currentFilters = newFilters || filters;
@@ -36,9 +43,13 @@ export const useCourseManagement = (initialFilters?: CourseFilterRequest) => {
       setError(err instanceof Error ? err.message : 'Failed to load courses');
       setCourses([]);
     } finally {
-      setIsLoading(false);
+      if (isSearchRequest) {
+        setIsSearching(false);
+      } else {
+        setIsLoading(false);
+      }
     }
-  }, []);
+  }, [filters]);
 
   const updateFilters = useCallback((newFilters: CourseFilterRequest) => {
     setFilters(newFilters);
@@ -55,6 +66,51 @@ export const useCourseManagement = (initialFilters?: CourseFilterRequest) => {
     loadCourses();
   }, [loadCourses]);
 
+  // Handle search with debouncing
+  const handleSearchChange = useCallback((newSearchTerm: string) => {
+    setSearchTerm(newSearchTerm);
+    
+    // Clear existing debounce timeout
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    
+    // Set new debounce timeout
+    debounceRef.current = setTimeout(() => {
+      setFilters(currentFilters => {
+        const newFilters = { 
+          ...currentFilters, 
+          searchTerm: newSearchTerm.trim() || undefined,
+          page: 1 // Reset to first page when searching
+        };
+        loadCourses(newFilters, true); // Mark as search request
+        return newFilters;
+      });
+    }, 300); // 300ms debounce delay - more responsive
+  }, [loadCourses]);
+
+  // Clear search
+  const clearSearch = useCallback(() => {
+    setSearchTerm('');
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    setFilters(currentFilters => {
+      const newFilters = { ...currentFilters, searchTerm: undefined, page: 1 };
+      loadCourses(newFilters, true); // Mark as search request
+      return newFilters;
+    });
+  }, [loadCourses]);
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     loadCourses();
   }, []);
@@ -62,14 +118,18 @@ export const useCourseManagement = (initialFilters?: CourseFilterRequest) => {
   return {
     courses,
     isLoading,
+    isSearching,
     error,
     totalCount,
     currentPage,
     totalPages,
     filters,
+    searchTerm,
     updateFilters,
     goToPage,
     refreshCourses,
+    handleSearchChange,
+    clearSearch,
   };
 };
 

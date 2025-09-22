@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
@@ -13,54 +13,29 @@ import {
 import { CreateCourseDialog } from '../dialogs';
 import { CourseGridCard } from './CourseGridCard';
 import { CourseTable } from './CourseTable';
-import { CourseFilters } from './CourseFilters';
 import { BulkActionBar } from '../shared';
 import { useCourseManagement, useSelectionManager } from '../../hooks';
-import type { UIFilters } from './filterMapping';
-import { defaultUIFilters, mapUIFiltersToAPI } from './filterMapping';
 import type { CourseSummary } from '../../types';
 
 type ViewMode = 'list' | 'grid';
 
 export function CoursesListPage() {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [filters, setFilters] = useState<UIFilters>(defaultUIFilters);
 
   const {
     courses,
     isLoading,
+    isSearching,
     error,
     totalCount,
     currentPage,
     totalPages,
+    searchTerm,
     refreshCourses,
-    updateFilters,
+    handleSearchChange,
+    clearSearch
   } = useCourseManagement();
-
-  // Debounced filter application to API
-  const applyFiltersToAPI = useCallback((uiFilters: UIFilters, searchText: string) => {
-    const apiFilters = mapUIFiltersToAPI({ ...uiFilters, searchTerm: searchText });
-    updateFilters(apiFilters);
-  }, [updateFilters]);
-
-  // Apply filters when they change
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      applyFiltersToAPI(filters, searchTerm);
-    }, 300); // Debounce API calls
-
-    return () => clearTimeout(timeoutId);
-  }, [filters, searchTerm, applyFiltersToAPI]);
-
-  // Get unique categories from all courses for filter options
-  const categories = courses.reduce((acc, course) => {
-    if (!acc.some(cat => cat.name === course.categoryName)) {
-      acc.push({ id: course.categoryName, name: course.categoryName });
-    }
-    return acc;
-  }, [] as Array<{ id: string; name: string }>).sort((a, b) => a.name.localeCompare(b.name));
 
   // Selection management (use courses directly since they're already filtered by API)
   const selection = useSelectionManager({
@@ -223,15 +198,16 @@ export function CoursesListPage() {
           <Input
             placeholder="Search courses, instructors, or descriptions..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="pl-10 pr-10"
           />
+          {/* Search loading indicator - doesn't interfere with typing */}
+          {isSearching && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            </div>
+          )}
         </div>
-        <CourseFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-          categories={categories}
-        />
       </div>
 
       {/* Selection Summary and Bulk Actions */}
@@ -264,7 +240,7 @@ export function CoursesListPage() {
             </div>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               {searchTerm ? (
-                <Button variant="outline" onClick={() => setSearchTerm('')}>
+                <Button variant="outline" onClick={clearSearch}>
                   Clear Search
                 </Button>
               ) : null}
