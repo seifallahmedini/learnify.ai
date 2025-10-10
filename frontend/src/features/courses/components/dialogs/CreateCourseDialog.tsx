@@ -30,7 +30,8 @@ import {
 import { Switch } from '@/shared/components/ui/switch';
 import { Plus } from 'lucide-react';
 import { useCreateCourseForm } from '../../hooks';
-import { CourseLevel, getCourseLevelLabel } from '../../types';
+import { CourseLevel } from '../../types';
+import { getCourseLevelLabel } from '../../lib';
 
 interface CreateCourseDialogProps {
   onCourseCreated?: (course: any) => void;

@@ -10,18 +10,23 @@ import {
   BookOpen, 
   Search
 } from 'lucide-react';
-import { CreateCourseDialog } from '../dialogs';
+import { CreateCourseDialog, EditCourseDialog } from '../dialogs';
 import { CourseGridCard } from './CourseGridCard';
 import { CourseTable } from './CourseTable';
 import { BulkActionBar } from '../shared';
 import { useCourseManagement, useSelectionManager } from '../../hooks';
-import type { CourseSummary } from '../../types';
+import { coursesApi } from '../../services';
+import type { CourseSummary, Course } from '../../types';
 
 type ViewMode = 'list' | 'grid';
 
 export function CoursesListPage() {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  
+  // Edit course state
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
   const {
     courses,
@@ -47,9 +52,81 @@ export function CoursesListPage() {
     navigate(`/courses/${courseId}`);
   };
 
-  const handleEditCourse = (course: CourseSummary) => {
-    console.log('Edit course:', course.id);
-    // TODO: Implement edit functionality
+  const handleEditCourse = async (course: CourseSummary) => {
+    try {
+      console.log('handleEditCourse called with:', course.title);
+      
+      // Fetch the complete course details from the API
+      console.log('Fetching complete course details for ID:', course.id);
+      const fullCourseData = await coursesApi.getCourseById(course.id);
+      
+      console.log('Retrieved full course data:', fullCourseData);
+      console.log('Setting editing course and showing dialog');
+      setEditingCourse(fullCourseData);
+      setShowEditDialog(true);
+      
+    } catch (error) {
+      console.error('Failed to fetch course details:', error);
+      // Fallback to using the summary data if API call fails
+      const fallbackCourse: Course = {
+        ...course,
+        description: course.shortDescription, // Use shortDescription as fallback
+        thumbnailUrl: course.thumbnailUrl || '',
+        language: 'English', // Default fallback
+        categoryId: 1, // Default fallback - should ideally come from API
+        instructorId: 1, // Default fallback - should ideally come from API
+        maxStudents: undefined, // Not available in summary
+        prerequisites: '', // Default empty string
+        learningObjectives: '', // Default empty string
+        updatedAt: course.createdAt, // Use createdAt as fallback
+      };
+      console.log('Using fallback course data due to API error');
+      setEditingCourse(fallbackCourse);
+      setShowEditDialog(true);
+    }
+  };
+
+  const handleEditDialogClose = (open: boolean) => {
+    setShowEditDialog(open);
+    if (!open) {
+      setEditingCourse(null);
+    }
+  };
+
+  const handleCourseUpdate = async (updatedCourse: Course) => {
+    try {
+      console.log('Updating course with data:', updatedCourse);
+      
+      // Call the API service to update the course
+      const result = await coursesApi.updateCourse(updatedCourse.id, {
+        title: updatedCourse.title,
+        shortDescription: updatedCourse.shortDescription,
+        description: updatedCourse.description,
+        price: updatedCourse.price,
+        discountPrice: updatedCourse.discountPrice,
+        level: updatedCourse.level,
+        durationHours: updatedCourse.durationHours,
+        maxStudents: updatedCourse.maxStudents,
+        prerequisites: updatedCourse.prerequisites,
+        learningObjectives: updatedCourse.learningObjectives,
+        isPublished: updatedCourse.isPublished,
+        isFeatured: updatedCourse.isFeatured,
+      });
+      
+      console.log('Course updated successfully:', result);
+      
+      // Refresh the courses list to show the updated data
+      await refreshCourses();
+      
+      // Close the dialog
+      setShowEditDialog(false);
+      setEditingCourse(null);
+      
+    } catch (error) {
+      console.error('Failed to update course:', error);
+      // The error will be handled by the EditCourseDialog's form hook
+      throw error;
+    }
   };
 
   const handleDeleteCourse = (course: CourseSummary) => {
@@ -308,6 +385,16 @@ export function CoursesListPage() {
             <span>Page {currentPage} of {totalPages}</span>
           </div>
         </div>
+      )}
+      
+      {/* Edit Course Dialog */}
+      {editingCourse && (
+        <EditCourseDialog
+          course={editingCourse}
+          open={showEditDialog}
+          onOpenChange={handleEditDialogClose}
+          onCourseUpdated={handleCourseUpdate}
+        />
       )}
     </div>
   );

@@ -5,7 +5,7 @@ import {
   getCourseLevelColor, 
   formatCoursePrice, 
   formatCourseDuration 
-} from '../types';
+} from '../lib';
 
 // Hook for course utility functions
 export const useCourseUtils = () => {

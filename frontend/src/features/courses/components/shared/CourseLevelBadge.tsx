@@ -1,6 +1,7 @@
 import { Badge } from '@/shared/components/ui/badge';
 import { TrendingUp, Users, Award, Zap } from 'lucide-react';
-import { CourseLevel, getCourseLevelLabel } from '../../types';
+import { CourseLevel } from '../../types';
+import { getCourseLevelLabel } from '../../lib';
 
 interface CourseLevelBadgeProps {
   level: CourseLevel;

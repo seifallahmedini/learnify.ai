@@ -173,7 +173,23 @@ export function CourseTable({
                             </div>
                             <div className="space-y-1">
                               <span className="text-muted-foreground">Price</span>
-                              <p className="font-semibold text-primary">${course.effectivePrice}</p>
+                              {course.discountPrice && course.discountPrice < course.price ? (
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-muted-foreground line-through">
+                                      ${course.price.toFixed(2)}
+                                    </span>
+                                    <span className="inline-flex items-center rounded-md bg-destructive/10 px-1.5 py-0.5 text-xs font-medium text-destructive">
+                                      -{Math.round(((course.price - course.discountPrice) / course.price) * 100)}%
+                                    </span>
+                                  </div>
+                                  <p className="font-semibold text-primary">${course.discountPrice.toFixed(2)}</p>
+                                </div>
+                              ) : (
+                                <p className="font-semibold text-primary">
+                                  {course.price === 0 ? 'Free' : `$${course.price.toFixed(2)}`}
+                                </p>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -216,12 +232,55 @@ export function CourseTable({
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
-                <span className="font-semibold text-primary">
-                  ${course.effectivePrice}
-                </span>
+                <div className="flex flex-col items-end space-y-0.5 min-w-[100px]">
+                  {course.discountPrice && course.discountPrice < course.price ? (
+                    <>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-muted-foreground/70 line-through">
+                          ${course.price.toFixed(2)}
+                        </span>
+                        <div className="relative">
+                          <span className="inline-flex items-center rounded-full bg-gradient-to-r from-red-50 to-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700 ring-1 ring-red-200 hover:scale-105 transition-transform duration-200">
+                            -{Math.round(((course.price - course.discountPrice) / course.price) * 100)}%
+                          </span>
+                          <div className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 bg-red-500 rounded-full animate-pulse"></div>
+                        </div>
+                      </div>
+                      <div className="relative group">
+                        <span className="font-bold text-lg text-primary group-hover:text-primary/80 transition-colors duration-200">
+                          ${course.discountPrice.toFixed(2)}
+                        </span>
+                        <div className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></div>
+                      </div>
+                      <span className="text-xs text-green-600 font-medium bg-green-50 px-1.5 py-0.5 rounded-full">
+                        Save ${(course.price - course.discountPrice).toFixed(2)}
+                      </span>
+                    </>
+                  ) : (
+                    <div className="relative group">
+                      {course.price === 0 ? (
+                        <div className="flex flex-col items-end space-y-0.5">
+                          <span className="font-bold text-lg bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent group-hover:from-green-500 group-hover:to-emerald-500 transition-all duration-300">
+                            FREE
+                          </span>
+                          <span className="text-xs text-green-600 font-medium bg-green-50 px-1.5 py-0.5 rounded-full">
+                            No cost
+                          </span>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="font-bold text-lg text-primary group-hover:text-primary/80 transition-colors duration-200">
+                            ${course.price.toFixed(2)}
+                          </span>
+                          <div className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
               </TableCell>
               <TableCell>
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                       <MoreHorizontal className="h-4 w-4" />
@@ -233,7 +292,12 @@ export function CourseTable({
                       <Eye className="mr-2 h-4 w-4" />
                       View Details
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onEdit(course)}>
+                    <DropdownMenuItem 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onEdit(course);
+                      }}
+                    >
                       <Edit className="mr-2 h-4 w-4" />
                       Edit Course
                     </DropdownMenuItem>

@@ -288,6 +288,7 @@ public static class DataSeeder
                     InstructorId = johnDoe.Id,
                     CategoryId = programmingCategory.Id,
                     Price = 99.99m,
+                    DiscountPrice = 79.99m, // 20% discount
                     DurationHours = 40,
                     Level = CourseLevel.Beginner,
                     Language = "English",
@@ -304,6 +305,7 @@ public static class DataSeeder
                     InstructorId = janeSmith.Id,
                     CategoryId = programmingCategory.Id,
                     Price = 199.99m,
+                    DiscountPrice = 149.99m, // 25% discount
                     DurationHours = 60,
                     Level = CourseLevel.Advanced,
                     Language = "English",
@@ -320,6 +322,7 @@ public static class DataSeeder
                     InstructorId = janeSmith.Id,
                     CategoryId = webDevCategory.Id,
                     Price = 149.99m,
+                    DiscountPrice = 119.99m, // 20% discount
                     DurationHours = 35,
                     Level = CourseLevel.Intermediate,
                     Language = "English",
@@ -336,6 +339,7 @@ public static class DataSeeder
                     InstructorId = aliceJohnson.Id,
                     CategoryId = databaseCategory.Id,
                     Price = 179.99m,
+                    DiscountPrice = null, // No discount - full price
                     DurationHours = 50,
                     Level = CourseLevel.Intermediate,
                     Language = "English",
@@ -352,6 +356,7 @@ public static class DataSeeder
                     InstructorId = michaelBrown.Id,
                     CategoryId = programmingCategory.Id,
                     Price = 249.99m,
+                    DiscountPrice = 199.99m, // 20% discount
                     DurationHours = 45,
                     Level = CourseLevel.Advanced,
                     Language = "English",
@@ -368,6 +373,7 @@ public static class DataSeeder
                     InstructorId = sarahWilson.Id,
                     CategoryId = webDevCategory.Id,
                     Price = 189.99m,
+                    DiscountPrice = 139.99m, // 26% discount - limited time offer
                     DurationHours = 55,
                     Level = CourseLevel.Intermediate,
                     Language = "English",

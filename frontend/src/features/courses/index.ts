@@ -1,11 +1,19 @@
-// Export all course-related types
-export * from './types';
+// Public API - selective exports only
+// Page components for routing
+export { CoursesListPage, CourseDetailsPage } from './components';
 
-// Export all course-related services  
-export * from './services';
+// Main management hook for other features if needed
+export { useCourseManagement } from './hooks';
 
-// Export all course-related hooks
-export * from './hooks';
+// Essential types for cross-feature communication
+export type { Course, CourseSummary, CourseLevel, CreateCourseRequest } from './types';
 
-// Export all course-related components
-export * from './components';
+// Utility functions for cross-feature use
+export { 
+  getCourseLevelLabel, 
+  getCourseLevelColor, 
+  formatCoursePrice, 
+  formatCourseDuration 
+} from './lib';
+
+// DO NOT export: internal components, services, utility hooks, form types

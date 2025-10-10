@@ -160,34 +160,4 @@ export interface CourseSortOptions {
   direction: 'asc' | 'desc';
 }
 
-// Helper functions
-export const getCourseLevelLabel = (level: CourseLevel): string => {
-  switch (level) {
-    case CourseLevel.Beginner: return 'Beginner';
-    case CourseLevel.Intermediate: return 'Intermediate';
-    case CourseLevel.Advanced: return 'Advanced';
-    case CourseLevel.Expert: return 'Expert';
-    default: return 'Unknown';
-  }
-};
-
-export const getCourseLevelColor = (level: CourseLevel): string => {
-  switch (level) {
-    case CourseLevel.Beginner: return 'bg-green-100 text-green-700';
-    case CourseLevel.Intermediate: return 'bg-blue-100 text-blue-700';
-    case CourseLevel.Advanced: return 'bg-orange-100 text-orange-700';
-    case CourseLevel.Expert: return 'bg-red-100 text-red-700';
-    default: return 'bg-gray-100 text-gray-700';
-  }
-};
-
-export const formatCoursePrice = (price: number): string => {
-  return price === 0 ? 'Free' : `$${price.toFixed(2)}`;
-};
-
-export const formatCourseDuration = (hours: number): string => {
-  if (hours < 1) {
-    return `${Math.round(hours * 60)} minutes`;
-  }
-  return `${hours}h`;
-};
+// Types only - utility functions moved to separate utils file

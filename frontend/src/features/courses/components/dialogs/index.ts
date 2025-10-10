@@ -1,2 +1,2 @@
 export { CreateCourseDialog } from './CreateCourseDialog';
-export { DeleteCourseDialog } from './DeleteCourseDialog';
+export { EditCourseDialog } from './EditCourseDialog';
