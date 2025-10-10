@@ -10,7 +10,7 @@ import {
   BookOpen, 
   Search
 } from 'lucide-react';
-import { CreateCourseDialog, EditCourseDialog } from '../dialogs';
+import { CreateCourseDialog, EditCourseDialog, DeleteCourseDialog } from '../dialogs';
 import { CourseGridCard } from './CourseGridCard';
 import { CourseTable } from './CourseTable';
 import { BulkActionBar } from '../shared';
@@ -27,6 +27,10 @@ export function CoursesListPage() {
   // Edit course state
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  
+  // Delete course state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingCourse, setDeletingCourse] = useState<CourseSummary | null>(null);
 
   const {
     courses,
@@ -130,8 +134,25 @@ export function CoursesListPage() {
   };
 
   const handleDeleteCourse = (course: CourseSummary) => {
-    console.log('Delete course:', course.id);
-    // TODO: Implement delete functionality
+    console.log('handleDeleteCourse called with:', course.title);
+    setDeletingCourse(course);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteDialogClose = (open: boolean) => {
+    setShowDeleteDialog(open);
+    if (!open) {
+      setDeletingCourse(null);
+    }
+  };
+
+  const handleCourseDeleted = async () => {
+    console.log('Course deleted successfully');
+    // Refresh the courses list to remove the deleted course
+    await refreshCourses();
+    // Close the dialog
+    setShowDeleteDialog(false);
+    setDeletingCourse(null);
   };
 
   const handleBulkEdit = () => {
@@ -394,6 +415,16 @@ export function CoursesListPage() {
           open={showEditDialog}
           onOpenChange={handleEditDialogClose}
           onCourseUpdated={handleCourseUpdate}
+        />
+      )}
+      
+      {/* Delete Course Dialog */}
+      {deletingCourse && (
+        <DeleteCourseDialog
+          course={deletingCourse}
+          open={showDeleteDialog}
+          onOpenChange={handleDeleteDialogClose}
+          onCourseDeleted={handleCourseDeleted}
         />
       )}
     </div>

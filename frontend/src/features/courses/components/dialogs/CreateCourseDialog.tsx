@@ -28,7 +28,21 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Switch } from '@/shared/components/ui/switch';
-import { Plus } from 'lucide-react';
+import { Badge } from '@/shared/components/ui/badge';
+import { Separator } from '@/shared/components/ui/separator';
+import { 
+  Plus, 
+  BookOpen, 
+  Users, 
+  Clock, 
+  DollarSign, 
+  Target, 
+  Settings, 
+  X,
+  Save,
+  AlertCircle,
+  Sparkles
+} from 'lucide-react';
 import { useCreateCourseForm } from '../../hooks';
 import { CourseLevel } from '../../types';
 import { getCourseLevelLabel } from '../../lib';
@@ -74,150 +88,220 @@ export function CreateCourseDialog({ onCourseCreated, trigger }: CreateCourseDia
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create New Course</DialogTitle>
-          <DialogDescription>
-            Fill in the course details to create a new course.
-          </DialogDescription>
+      <DialogContent className="w-[75vw] max-w-[1400px] min-w-[800px] max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="space-y-6 pb-8 relative overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-green-500/5 -z-10" />
+          
+          <div className="flex items-center justify-between relative">
+            <div className="flex items-center space-x-4">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-green-500/20 to-green-500/10 flex items-center justify-center border border-green-500/20 shadow-sm">
+                <Sparkles className="h-7 w-7 text-green-600" />
+              </div>
+              <div className="space-y-1">
+                <DialogTitle className="text-2xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+                  Create New Course
+                </DialogTitle>
+                <DialogDescription className="text-base text-muted-foreground">
+                  Build and launch your next educational masterpiece
+                </DialogDescription>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Badge variant="outline" className="bg-gradient-to-r from-green-50 to-green-100 text-green-700 border-green-200 px-4 py-2 font-medium shadow-sm">
+                New Course
+              </Badge>
+            </div>
+          </div>
+          
+          {/* Course Creation Preview */}
+          <div className="bg-gradient-to-r from-card via-card/80 to-card rounded-2xl p-6 border border-border/50 shadow-sm backdrop-blur-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              <div className="lg:col-span-8 space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Ready to Create</span>
+                </div>
+                <h4 className="text-xl font-bold text-foreground leading-tight">Your Course Journey Starts Here</h4>
+                <p className="text-sm text-muted-foreground opacity-80 leading-relaxed">Fill in the details below to create an engaging learning experience for your students</p>
+              </div>
+              <div className="lg:col-span-4 grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-xl border border-blue-500/20">
+                  <BookOpen className="h-5 w-5 text-blue-600 mx-auto mb-2" />
+                  <p className="text-lg font-bold text-foreground">New</p>
+                  <p className="text-xs text-muted-foreground font-medium">Course</p>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-br from-purple-500/10 to-purple-500/5 rounded-xl border border-purple-500/20">
+                  <Target className="h-5 w-5 text-purple-600 mx-auto mb-2" />
+                  <p className="text-lg font-bold text-foreground">Draft</p>
+                  <p className="text-xs text-muted-foreground font-medium">Status</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Basic Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Basic Information</h3>
+        <div className="flex-1 overflow-y-auto px-2 py-2">
+          <div className="max-w-none mx-auto">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-12">
+                {/* Basic Information Section */}
+                <div className="space-y-8 relative">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-transparent rounded-2xl -z-10" />
+                    <div className="flex items-center space-x-4 p-6 rounded-2xl border border-green-500/20 bg-gradient-to-r from-green-50/50 to-transparent">
+                      <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-green-100 to-green-50 flex items-center justify-center border border-green-200 shadow-sm">
+                        <BookOpen className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-foreground flex items-center space-x-2">
+                          <span>Basic Information</span>
+                          <div className="h-1 w-12 bg-gradient-to-r from-green-500 to-green-300 rounded-full" />
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">Essential course details and descriptions</p>
+                      </div>
+                      <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 px-3 py-1">Required</Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-8">
               
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Course Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter course title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel className="text-base font-semibold text-foreground flex items-center space-x-2">
+                            <span>Course Title</span>
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative group">
+                              <Input 
+                                placeholder="Enter a compelling and descriptive course title..." 
+                                className="h-14 text-base border-2 rounded-xl bg-gradient-to-r from-background to-background/50 transition-all duration-300 focus:border-primary/50 focus:shadow-lg focus:shadow-primary/10 group-hover:border-border/80"
+                                {...field} 
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none" />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <FormField
-                control={form.control}
-                name="shortDescription"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Short Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Brief description of the course"
-                        className="min-h-[80px]"
-                        {...field} 
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                      <FormField
+                        control={form.control}
+                        name="shortDescription"
+                        render={({ field }) => (
+                          <FormItem className="space-y-3">
+                            <FormLabel className="text-base font-semibold text-foreground flex items-center space-x-2">
+                              <span>Short Description</span>
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative group">
+                                <Textarea 
+                                  placeholder="Write a compelling brief description that attracts students..."
+                                  className="min-h-[130px] resize-none border-2 rounded-xl bg-gradient-to-br from-background to-background/50 transition-all duration-300 focus:border-primary/50 focus:shadow-lg focus:shadow-primary/10 pr-20"
+                                  maxLength={500}
+                                  {...field} 
+                                />
+                                <div className="absolute bottom-4 right-4 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-border/50 text-xs font-medium text-muted-foreground shadow-sm">
+                                  {field.value?.length || 0}/500
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none" />
+                              </div>
+                            </FormControl>
+                            <FormDescription className="text-sm text-muted-foreground">
+                              This appears in course listings and search results
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Detailed description of the course content"
-                        className="min-h-[120px]"
-                        {...field} 
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem className="space-y-3">
+                            <FormLabel className="text-base font-semibold text-foreground flex items-center space-x-2">
+                              <span>Full Description</span>
+                              <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative group">
+                                <Textarea 
+                                  placeholder="Detailed description of the course content and benefits..."
+                                  className="min-h-[130px] resize-none border-2 rounded-xl bg-gradient-to-br from-background to-background/50 transition-all duration-300 focus:border-primary/50 focus:shadow-lg focus:shadow-primary/10"
+                                  {...field} 
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none" />
+                              </div>
+                            </FormControl>
+                            <FormDescription className="text-sm text-muted-foreground">
+                              Provide comprehensive details about what students will learn
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    </div>
+                  </div>
+                </div>
 
-            {/* Course Details */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Course Details</h3>
+                <Separator className="my-8" />
+
+                {/* Course Details Section */}
+                <div className="space-y-8 relative">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent rounded-2xl -z-10" />
+                    <div className="flex items-center space-x-4 p-6 rounded-2xl border border-blue-500/20 bg-gradient-to-r from-blue-50/50 to-transparent">
+                      <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center border border-blue-200 shadow-sm">
+                        <Settings className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-foreground flex items-center space-x-2">
+                          <span>Course Details</span>
+                          <div className="h-1 w-12 bg-gradient-to-r from-blue-500 to-blue-300 rounded-full" />
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">Pricing, duration, and enrollment configuration</p>
+                      </div>
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 px-3 py-1">Settings</Badge>
+                    </div>
+                  </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="categoryId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <Select onValueChange={(value) => field.onChange(parseInt(value))}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="1">Web Development</SelectItem>
-                          <SelectItem value="2">Mobile Development</SelectItem>
-                          <SelectItem value="3">Data Science</SelectItem>
-                          <SelectItem value="4">Design</SelectItem>
-                          <SelectItem value="5">Business</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="instructorId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Instructor</FormLabel>
-                      <Select onValueChange={(value) => field.onChange(parseInt(value))}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select instructor" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="1">John Doe</SelectItem>
-                          <SelectItem value="2">Jane Smith</SelectItem>
-                          <SelectItem value="3">Mike Johnson</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="level"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Course Level</FormLabel>
-                      <Select onValueChange={(value) => field.onChange(parseInt(value))}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select level" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Object.entries(CourseLevel).map(([, value]) => (
-                            <SelectItem key={value} value={value.toString()}>
-                              {getCourseLevelLabel(value)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="level"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel className="text-sm font-semibold text-foreground flex items-center space-x-2">
+                            <Target className="h-4 w-4 text-primary" />
+                            <span>Level</span>
+                            <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                            <FormControl>
+                              <SelectTrigger className="h-12 border-2 rounded-xl bg-gradient-to-r from-background to-background/50 transition-all duration-300 focus:border-primary/50 focus:shadow-lg focus:shadow-primary/10">
+                                <SelectValue placeholder="Choose difficulty" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {Object.entries(CourseLevel).map(([, value]) => (
+                                <SelectItem key={value} value={value.toString()}>
+                                  {getCourseLevelLabel(value)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                 <FormField
                   control={form.control}
@@ -381,73 +465,142 @@ export function CreateCourseDialog({ onCourseCreated, trigger }: CreateCourseDia
               />
             </div>
 
-            {/* Settings */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Course Settings</h3>
-              
-              <div className="flex items-center space-x-6">
-                <FormField
-                  control={form.control}
-                  name="isPublished"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2">
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel className="text-sm font-normal">
-                        Publish immediately
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
+                <Separator className="my-8" />
 
-                <FormField
-                  control={form.control}
-                  name="isFeatured"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2">
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel className="text-sm font-normal">
-                        Mark as featured
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
-              </div>
+                {/* Publication Settings Section */}
+                <div className="space-y-8 relative">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent rounded-2xl -z-10" />
+                    <div className="flex items-center space-x-4 p-6 rounded-2xl border border-orange-500/20 bg-gradient-to-r from-orange-50/50 to-transparent">
+                      <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center border border-orange-200 shadow-sm">
+                        <Settings className="h-6 w-6 text-orange-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-foreground flex items-center space-x-2">
+                          <span>Publication Settings</span>
+                          <div className="h-1 w-12 bg-gradient-to-r from-orange-500 to-orange-300 rounded-full" />
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">Visibility and promotional controls</p>
+                      </div>
+                      <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200 px-3 py-1">Publishing</Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <FormField
+                      control={form.control}
+                      name="isPublished"
+                      render={({ field }) => (
+                        <FormItem className="group">
+                          <div className="flex items-center justify-between p-6 border-2 border-border rounded-2xl bg-gradient-to-br from-card via-card/80 to-card/60 transition-all duration-300 hover:border-green-500/30 hover:shadow-lg hover:shadow-green-500/10">
+                            <div className="space-y-2">
+                              <FormLabel className="text-base font-semibold text-foreground flex items-center space-x-3">
+                                <div className={`h-3 w-3 rounded-full transition-colors duration-300 ${field.value ? 'bg-green-500 shadow-lg shadow-green-500/30' : 'bg-gray-400'}`} />
+                                <span>Published Status</span>
+                              </FormLabel>
+                              <FormDescription className="text-sm text-muted-foreground">
+                                {field.value ? '✨ Course will be live and discoverable by students' : '📝 Course will be in draft mode and hidden from students'}
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <div className="relative">
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                  className="data-[state=checked]:bg-green-500 scale-125 transition-transform duration-300 hover:scale-[1.3]"
+                                />
+                              </div>
+                            </FormControl>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="isFeatured"
+                      render={({ field }) => (
+                        <FormItem className="group">
+                          <div className="flex items-center justify-between p-6 border-2 border-border rounded-2xl bg-gradient-to-br from-card via-card/80 to-card/60 transition-all duration-300 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10">
+                            <div className="space-y-2">
+                              <FormLabel className="text-base font-semibold text-foreground flex items-center space-x-3">
+                                <div className={`h-3 w-3 rounded-full transition-colors duration-300 ${field.value ? 'bg-blue-500 shadow-lg shadow-blue-500/30' : 'bg-gray-400'}`} />
+                                <span>Featured Course</span>
+                              </FormLabel>
+                              <FormDescription className="text-sm text-muted-foreground">
+                                {field.value ? '🌟 Course will be highlighted prominently on the platform' : '📋 Regular course listing without special promotion'}
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <div className="relative">
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                  className="data-[state=checked]:bg-blue-500 scale-125 transition-transform duration-300 hover:scale-[1.3]"
+                                />
+                              </div>
+                            </FormControl>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {submitError && (
+                  <div className="flex items-start space-x-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-medium text-red-800">Error creating course</h4>
+                      <p className="text-sm text-red-700 mt-1">{submitError}</p>
+                    </div>
+                  </div>
+                )}
+              </form>
+            </Form>
+          </div>
+        </div>
+
+        {/* Modern Fluid Footer */}
+        <div className="relative border-t-2 border-gradient-to-r from-border/50 to-border bg-gradient-to-r from-muted/40 via-muted/20 to-muted/40 px-8 py-6 mt-8">
+          <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 via-transparent to-blue-500/5 opacity-50" />
+          <DialogFooter className="gap-6 flex justify-between items-center relative">
+            <div className="flex items-center space-x-3 text-sm text-muted-foreground">
+              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="font-medium">Ready to launch your course</span>
             </div>
-
-            {submitError && (
-              <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                {submitError}
-              </div>
-            )}
-
-            <DialogFooter>
+            <div className="flex items-center gap-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
                 disabled={isSubmitting}
+                className="h-12 px-8 rounded-xl border-2 transition-all duration-300 hover:border-red-300 hover:text-red-600 hover:bg-red-50 hover:shadow-lg"
               >
+                <X className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
+                className="h-12 px-10 rounded-xl bg-gradient-to-r from-green-600 via-green-500 to-green-600 hover:from-green-500 hover:via-green-600 hover:to-green-500 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                onClick={form.handleSubmit(handleSubmit)}
               >
-                {isSubmitting ? 'Creating...' : 'Create Course'}
+                {isSubmitting ? (
+                  <>
+                    <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Create Course
+                  </>
+                )}
               </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            </div>
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

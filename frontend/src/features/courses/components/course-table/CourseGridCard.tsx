@@ -174,7 +174,7 @@ export function CourseGridCard({
             </div>
           </div>
           
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
