@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
-import { ArrowLeft, Edit, Trash2, BookOpen, Users } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, BookOpen } from 'lucide-react';
 import { useCategoryManagement } from '../../hooks';
 import { CategoryIcon } from '../shared/CategoryIcon';
 import { CategoryStatusBadge } from '../shared/CategoryStatusBadge';
@@ -68,13 +68,12 @@ export function CategoryDetailsPage() {
           </Button>
           <div className="flex items-center gap-3">
             <CategoryIcon 
-              icon={selectedCategory.icon} 
-              color={selectedCategory.color}
+              iconUrl={selectedCategory.iconUrl}
               className="h-12 w-12"
             />
             <div>
               <h1 className="text-3xl font-bold">{selectedCategory.name}</h1>
-              <p className="text-muted-foreground">#{selectedCategory.slug}</p>
+              <p className="text-muted-foreground">ID: {selectedCategory.id}</p>
             </div>
           </div>
         </div>
@@ -101,25 +100,19 @@ export function CategoryDetailsPage() {
                 <label className="text-sm font-medium text-muted-foreground">Description</label>
                 <p className="text-sm mt-1">{selectedCategory.description}</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Status</label>
                   <div className="mt-1">
                     <CategoryStatusBadge isActive={selectedCategory.isActive} />
                   </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Sort Order</label>
-                  <div className="mt-1">
-                    <Badge variant="outline">{selectedCategory.sortOrder}</Badge>
-                  </div>
-                </div>
               </div>
-              {selectedCategory.parentName && (
+              {selectedCategory.parentCategoryName && (
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Parent Category</label>
                   <div className="mt-1">
-                    <Badge variant="secondary">{selectedCategory.parentName}</Badge>
+                    <Badge variant="secondary">{selectedCategory.parentCategoryName}</Badge>
                   </div>
                 </div>
               )}
@@ -145,13 +138,6 @@ export function CategoryDetailsPage() {
                 </div>
                 <span className="font-bold">{selectedCategory.courseCount}</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Students</span>
-                </div>
-                <span className="font-bold">{selectedCategory.totalStudents}</span>
-              </div>
             </div>
           </div>
 
@@ -161,10 +147,6 @@ export function CategoryDetailsPage() {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Created</span>
                 <span>{new Date(selectedCategory.createdAt).toLocaleDateString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Updated</span>
-                <span>{new Date(selectedCategory.updatedAt).toLocaleDateString()}</span>
               </div>
             </div>
           </div>

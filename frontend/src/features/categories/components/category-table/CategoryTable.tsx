@@ -111,11 +111,9 @@ export function CategoryTable({
               <TableHead className="w-[50px]">Icon</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Description</TableHead>
-              <TableHead>Parent</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-center">Courses</TableHead>
-              <TableHead className="text-center">Students</TableHead>
-              <TableHead>Sort Order</TableHead>
+              <TableHead>Created</TableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -124,30 +122,20 @@ export function CategoryTable({
               <TableRow key={category.id}>
                 <TableCell>
                   <CategoryIcon 
-                    icon={category.icon} 
-                    color={category.color}
+                    iconUrl={category.iconUrl}
                     className="h-8 w-8"
                   />
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
                     <p className="font-medium">{category.name}</p>
-                    <p className="text-xs text-muted-foreground">#{category.slug}</p>
+                    <p className="text-xs text-muted-foreground">ID: {category.id}</p>
                   </div>
                 </TableCell>
                 <TableCell>
                   <p className="text-sm text-muted-foreground max-w-xs truncate">
                     {category.description}
                   </p>
-                </TableCell>
-                <TableCell>
-                  {category.parentName ? (
-                    <Badge variant="secondary" className="text-xs">
-                      {category.parentName}
-                    </Badge>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">Root</span>
-                  )}
                 </TableCell>
                 <TableCell>
                   <CategoryStatusBadge isActive={category.isActive} />
@@ -158,16 +146,10 @@ export function CategoryTable({
                     <span className="font-medium">{category.courseCount}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-center">
-                  <div className="flex items-center justify-center space-x-1">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{category.totalStudents}</span>
-                  </div>
-                </TableCell>
                 <TableCell>
-                  <Badge variant="outline" className="text-xs">
-                    {category.sortOrder}
-                  </Badge>
+                  <span className="text-sm text-muted-foreground">
+                    {new Date(category.createdAt).toLocaleDateString()}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

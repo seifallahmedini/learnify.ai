@@ -7,116 +7,147 @@ export interface ApiResponse<T> {
   success: boolean;
 }
 
+// Main category interface matching CategoryResponse from backend
 export interface Category {
   id: number;
   name: string;
   description: string;
-  slug: string;
-  icon?: string;
-  color?: string;
+  iconUrl?: string;
+  parentCategoryId?: number;
+  parentCategoryName?: string;
   isActive: boolean;
-  sortOrder: number;
   courseCount: number;
-  totalStudents: number;
-  parentId?: number;
-  parentName?: string;
+  subcategoryCount: number;
   createdAt: string;
   updatedAt: string;
+  isRootCategory: boolean;
 }
 
+// Category summary matching CategorySummaryResponse from backend
 export interface CategorySummary {
   id: number;
   name: string;
   description: string;
-  slug: string;
-  icon?: string;
-  color?: string;
+  iconUrl?: string;
+  parentCategoryId?: number;
   isActive: boolean;
-  sortOrder: number;
   courseCount: number;
-  totalStudents: number;
-  parentName?: string;
+  createdAt: string;
 }
 
+// Category list response matching CategoryListResponse from backend
 export interface CategoryListResponse {
   categories: CategorySummary[];
   totalCount: number;
   page: number;
   pageSize: number;
   totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
-export interface CategoryDetailResponse extends Category {
-  subcategories: CategorySummary[];
-  topCourses: CategoryCourse[];
-  statistics: CategoryStatistics;
-}
-
-export interface CategoryCourse {
+// Category hierarchy for tree display
+export interface CategoryHierarchy {
   id: number;
-  title: string;
-  thumbnailUrl?: string;
-  price: number;
-  averageRating?: number;
-  totalStudents: number;
-  instructorName: string;
+  name: string;
+  description: string;
+  iconUrl?: string;
+  isActive: boolean;
+  courseCount: number;
+  children: CategoryHierarchy[];
 }
 
-export interface CategoryStatistics {
-  totalCourses: number;
-  totalStudents: number;
+// Breadcrumb navigation
+export interface CategoryBreadcrumb {
+  breadcrumbs: CategoryBreadcrumbItem[];
+}
+
+export interface CategoryBreadcrumbItem {
+  id: number;
+  name: string;
+  iconUrl?: string;
+}
+
+// Analytics data
+export interface CategoryAnalytics {
+  categoryId: number;
+  categoryName: string;
+  directCourseCount: number;
+  totalCourseCount: number;
+  subcategoryCount: number;
+  totalEnrollments: number;
   averageRating: number;
-  popularityRank: number;
+  analyticsDate: string;
+}
+
+// Trending categories
+export interface TrendingCategory {
+  id: number;
+  name: string;
+  description: string;
+  iconUrl?: string;
+  courseCount: number;
+  recentEnrollments: number;
   growthRate: number;
+  averageRating: number;
+}
+
+// Course count analytics
+export interface CategoryCoursesCount {
+  categoryId: number;
+  categoryName: string;
+  directCourseCount: number;
+  totalCourseCount: number;
+  subcategoryCount: number;
 }
 
 // Request Types
 export interface CreateCategoryRequest {
   name: string;
   description: string;
-  slug: string;
-  icon?: string;
-  color?: string;
-  isActive: boolean;
-  sortOrder: number;
-  parentId?: number;
+  iconUrl?: string;
+  parentCategoryId?: number;
+  isActive?: boolean;
 }
 
-export interface UpdateCategoryRequest extends Partial<CreateCategoryRequest> {}
+export interface UpdateCategoryRequest {
+  name?: string;
+  description?: string;
+  iconUrl?: string;
+  parentCategoryId?: number;
+  isActive?: boolean;
+}
 
 export interface CategoryFilterRequest {
-  parentId?: number | null;
   isActive?: boolean;
+  parentCategoryId?: number;
+  rootOnly?: boolean;
   searchTerm?: string;
-  sortBy?: 'name' | 'courseCount' | 'sortOrder' | 'createdAt';
-  sortDirection?: 'asc' | 'desc';
   page?: number;
   pageSize?: number;
 }
 
-// Form Types
+// Form Types for UI components
 export interface CreateCategoryFormData {
   name: string;
   description: string;
-  slug: string;
-  icon?: string;
-  color?: string;
+  iconUrl?: string;
+  parentCategoryId: number | '';
   isActive: boolean;
-  sortOrder: string;
-  parentId: number | '';
 }
 
 export interface UpdateCategoryFormData extends Partial<CreateCategoryFormData> {}
 
-// Utility Types
+// Utility Types for frontend state management
 export interface CategoryFilters {
-  parent?: number | null;
-  status?: 'active' | 'inactive';
+  parentCategoryId?: number | null;
+  isActive?: boolean;
+  rootOnly?: boolean;
   searchTerm?: string;
 }
 
 export interface CategorySortOptions {
-  field: 'name' | 'courseCount' | 'sortOrder' | 'createdAt';
+  field: 'name' | 'courseCount' | 'createdAt';
   direction: 'asc' | 'desc';
 }
 

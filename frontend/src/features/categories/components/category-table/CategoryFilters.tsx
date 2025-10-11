@@ -20,8 +20,7 @@ interface CategoryFiltersProps {
 export function CategoryFilters({ onFiltersChange, totalCount }: CategoryFiltersProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('name');
-  const [sortDirection, setSortDirection] = useState<string>('asc');
+  const [parentFilter, setParentFilter] = useState<string>('all');
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -39,18 +38,11 @@ export function CategoryFilters({ onFiltersChange, totalCount }: CategoryFilters
     });
   };
 
-  const handleSortChange = (field: string) => {
-    setSortBy(field);
+  const handleParentChange = (value: string) => {
+    setParentFilter(value);
     onFiltersChange({ 
-      sortBy: field as 'name' | 'courseCount' | 'sortOrder' | 'createdAt',
-      page: 1 
-    });
-  };
-
-  const handleSortDirectionChange = (direction: string) => {
-    setSortDirection(direction);
-    onFiltersChange({ 
-      sortDirection: direction as 'asc' | 'desc',
+      parentCategoryId: value === 'root' ? undefined : value === 'all' ? undefined : parseInt(value),
+      rootOnly: value === 'root' ? true : undefined,
       page: 1 
     });
   };
@@ -58,18 +50,17 @@ export function CategoryFilters({ onFiltersChange, totalCount }: CategoryFilters
   const clearFilters = () => {
     setSearchTerm('');
     setStatusFilter('all');
-    setSortBy('name');
-    setSortDirection('asc');
+    setParentFilter('all');
     onFiltersChange({
       searchTerm: undefined,
       isActive: undefined,
-      sortBy: 'name',
-      sortDirection: 'asc',
+      parentCategoryId: undefined,
+      rootOnly: undefined,
       page: 1,
     });
   };
 
-  const hasActiveFilters = searchTerm || statusFilter !== 'all';
+  const hasActiveFilters = searchTerm || statusFilter !== 'all' || parentFilter !== 'all';
 
   return (
     <div className="space-y-4">
@@ -98,27 +89,14 @@ export function CategoryFilters({ onFiltersChange, totalCount }: CategoryFilters
           </SelectContent>
         </Select>
 
-        {/* Sort By */}
-        <Select value={sortBy} onValueChange={handleSortChange}>
+        {/* Parent Filter */}
+        <Select value={parentFilter} onValueChange={handleParentChange}>
           <SelectTrigger className="w-full sm:w-[150px]">
-            <SelectValue placeholder="Sort by" />
+            <SelectValue placeholder="Parent" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="name">Name</SelectItem>
-            <SelectItem value="courseCount">Courses</SelectItem>
-            <SelectItem value="sortOrder">Sort Order</SelectItem>
-            <SelectItem value="createdAt">Created</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {/* Sort Direction */}
-        <Select value={sortDirection} onValueChange={handleSortDirectionChange}>
-          <SelectTrigger className="w-full sm:w-[120px]">
-            <SelectValue placeholder="Order" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">Ascending</SelectItem>
-            <SelectItem value="desc">Descending</SelectItem>
+            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="root">Root Only</SelectItem>
           </SelectContent>
         </Select>
 
