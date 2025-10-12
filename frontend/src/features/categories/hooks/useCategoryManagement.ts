@@ -1,10 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { categoriesApi } from '../services';
 import type {
   Category,
   CategorySummary,
   CategoryListResponse,
-  CategoryDetailResponse,
   CreateCategoryRequest,
   UpdateCategoryRequest,
   CategoryFilterRequest,
@@ -19,11 +18,14 @@ export function useCategoryManagement() {
   const [categories, setCategories] = useState<CategorySummary[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoadingCategory, setIsLoadingCategory] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Pagination and filtering state
   const [totalCount, setTotalCount] = useState(0);
@@ -34,9 +36,13 @@ export function useCategoryManagement() {
   /**
    * Load categories with optional filtering
    */
-  const loadCategories = useCallback(async (filters?: CategoryFilterRequest) => {
+  const loadCategories = useCallback(async (filters?: CategoryFilterRequest, isSearchRequest = false) => {
     try {
-      setLoading(true);
+      if (isSearchRequest) {
+        setIsSearching(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
       
       console.log('Loading categories with filters:', filters);
@@ -54,7 +60,11 @@ export function useCategoryManagement() {
       console.error('Failed to load categories:', err);
       setError(err instanceof Error ? err.message : 'Failed to load categories');
     } finally {
-      setLoading(false);
+      if (isSearchRequest) {
+        setIsSearching(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -68,7 +78,7 @@ export function useCategoryManagement() {
       
       console.log('Loading category:', id);
       
-      const category: CategoryDetailResponse = await categoriesApi.getCategoryById(id);
+      const category: Category = await categoriesApi.getCategoryById(id);
       setSelectedCategory(category);
       
       console.log('Category loaded successfully:', category);
@@ -100,14 +110,11 @@ export function useCategoryManagement() {
           id: newCategory.id,
           name: newCategory.name,
           description: newCategory.description,
-          slug: newCategory.slug,
-          icon: newCategory.icon,
-          color: newCategory.color,
+          iconUrl: newCategory.iconUrl,
+          parentCategoryId: newCategory.parentCategoryId,
           isActive: newCategory.isActive,
-          sortOrder: newCategory.sortOrder,
           courseCount: newCategory.courseCount,
-          totalStudents: newCategory.totalStudents,
-          parentName: newCategory.parentName,
+          createdAt: newCategory.createdAt,
         },
         ...prev
       ]);
@@ -146,12 +153,9 @@ export function useCategoryManagement() {
                 ...category,
                 name: updatedCategory.name,
                 description: updatedCategory.description,
-                slug: updatedCategory.slug,
-                icon: updatedCategory.icon,
-                color: updatedCategory.color,
+                iconUrl: updatedCategory.iconUrl,
+                parentCategoryId: updatedCategory.parentCategoryId,
                 isActive: updatedCategory.isActive,
-                sortOrder: updatedCategory.sortOrder,
-                parentName: updatedCategory.parentName,
               }
             : category
         )
@@ -183,7 +187,8 @@ export function useCategoryManagement() {
       
       console.log('Deleting category:', id);
       
-      await categoriesApi.deleteCategory(id);
+      const result = await categoriesApi.deleteCategory(id);
+      console.log('result.message', result.message);
       
       // Remove from local state
       setCategories(prev => prev.filter(category => category.id !== id));
@@ -244,6 +249,42 @@ export function useCategoryManagement() {
   }, [loadCategories]);
 
   /**
+   * Handle search with debouncing
+   */
+  const handleSearchChange = useCallback((newSearchTerm: string) => {
+    setSearchTerm(newSearchTerm);
+    
+    // Clear existing debounce timeout
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    
+    // Set new debounce timeout
+    debounceRef.current = setTimeout(() => {
+      const filters: CategoryFilterRequest = {
+        searchTerm: newSearchTerm.trim() || undefined,
+        page: 1 // Reset to first page when searching
+      };
+      loadCategories(filters, true); // Mark as search request
+    }, 300); // 300ms debounce delay
+  }, [loadCategories]);
+
+  /**
+   * Clear search
+   */
+  const clearSearch = useCallback(() => {
+    setSearchTerm('');
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    const filters: CategoryFilterRequest = {
+      searchTerm: undefined,
+      page: 1
+    };
+    loadCategories(filters, true); // Mark as search request
+  }, [loadCategories]);
+
+  /**
    * Clear error state
    */
   const clearError = useCallback(() => {
@@ -261,6 +302,16 @@ export function useCategoryManagement() {
     setTotalCount(0);
     setCurrentPage(1);
     setTotalPages(0);
+    setSearchTerm('');
+  }, []);
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
   }, []);
 
   return {
@@ -268,11 +319,13 @@ export function useCategoryManagement() {
     categories,
     selectedCategory,
     loading,
+    isSearching,
     isCreating,
     isUpdating,
     isDeleting,
     isLoadingCategory,
     error,
+    searchTerm,
     
     // Pagination
     totalCount,
@@ -289,6 +342,8 @@ export function useCategoryManagement() {
     loadParentCategories,
     loadSubcategories,
     refreshCategories,
+    handleSearchChange,
+    clearSearch,
     setSelectedCategory,
     clearError,
     resetState,

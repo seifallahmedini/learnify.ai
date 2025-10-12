@@ -34,10 +34,6 @@ class CategoriesApiService {
       ...options,
     });
 
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.statusText}`);
-    }
-
     const result: ApiResponse<T> = await response.json();
     
     if (!result.success) {
@@ -122,7 +118,7 @@ class CategoriesApiService {
    * @param id - Category ID
    * @returns Promise with deletion confirmation
    */
-  async deleteCategory(id: number): Promise<{ success: boolean }> {
+  async deleteCategory(id: number): Promise<{ success: boolean, message?: string }> {
     return this.request<{ success: boolean }>(`/${id}`, {
       method: 'DELETE',
     });
