@@ -66,46 +66,87 @@
 2. **Restart Claude Desktop**
 3. **Verify the MCP server appears** in Claude's available tools
 
-## ??? Available Tools (16 Total)
+## ??? Available Tools (31 Total)
 
-The MCP server exposes these lesson management tools:
+The MCP server exposes comprehensive lesson and course management tools:
 
-### **CRUD Operations:**
+### **?? Lesson Management Tools (16 Total)**
+
+#### **CRUD Operations:**
 - `GetLessonAsync` - Get lesson details by ID
 - `UpdateLessonAsync` - Update lesson properties
 - `DeleteLessonAsync` - Delete lesson permanently
 
-### **Publishing & Access:**
+#### **Publishing & Access:**
 - `PublishLessonAsync` - Make lesson visible to students
 - `UnpublishLessonAsync` - Hide lesson from students
 - `MakeLessonFreeAsync` - Make lesson free or premium
 
-### **Content Management:**
+#### **Content Management:**
 - `UploadLessonVideoAsync` - Upload/update lesson video
 - `UpdateLessonContentAsync` - Update lesson content
 - `GetLessonResourcesAsync` - Get lesson attachments
 
-### **Navigation & Organization:**
+#### **Navigation & Organization:**
 - `GetNextLessonAsync` - Get next lesson in sequence
 - `GetPreviousLessonAsync` - Get previous lesson in sequence
 - `ReorderLessonAsync` - Change lesson order in course
 
-### **Course Integration:**
+#### **Course Integration:**
 - `GetCourseLessonsAsync` - Get all lessons for a course
 - `CreateCourseLessonAsync` - Create new lesson in course
 
-### **Utilities:**
+#### **Utilities:**
 - `CheckLessonExistsAsync` - Verify lesson existence
 - `GetLessonSummaryAsync` - Get basic lesson info
+
+### **?? Course Management Tools (15 Total)**
+
+#### **CRUD Operations:**
+- `GetCoursesAsync` - Get all courses with filtering and pagination
+- `GetCourseAsync` - Get course details by ID
+- `CreateCourseAsync` - Create a new course
+- `UpdateCourseAsync` - Update course properties
+- `DeleteCourseAsync` - Delete course permanently
+
+#### **Publishing & Featuring:**
+- `PublishCourseAsync` - Make course visible to students
+- `UnpublishCourseAsync` - Hide course from students
+- `FeatureCourseAsync` - Feature course to highlight it
+- `UnfeatureCourseAsync` - Remove course featuring
+
+#### **Enrollment & Analytics:**
+- `GetCourseEnrollmentsAsync` - Get all course enrollments
+- `GetCourseStatsAsync` - Get comprehensive course statistics
+
+#### **Utilities:**
+- `CheckCourseExistsAsync` - Verify course existence
+- `GetCourseSummaryAsync` - Get basic course info
 
 ## ?? Testing Commands
 
 Once set up, test with Claude:
 
+### **Lesson Management:**
 1. **"What lesson management tools are available?"**
 2. **"Get lesson with ID 1"**
 3. **"Get all lessons for course 1"**
 4. **"Check if lesson 5 exists"**
+5. **"Create a new lesson for course 2"**
+
+### **Course Management:**
+1. **"What course management tools are available?"**
+2. **"Get all published courses"**
+3. **"Create a new beginner course for JavaScript"**
+4. **"Get statistics for course 1"**
+5. **"Find all courses by instructor 2"**
+6. **"Publish course 3"**
+7. **"Get featured courses under $50"**
+
+### **Advanced Operations:**
+1. **"Get course 1 with all its lessons"**
+2. **"Find all unpublished courses and their lesson counts"**
+3. **"Create a complete course structure with 5 lessons"**
 
 ## ?? Troubleshooting
 
@@ -151,6 +192,34 @@ When you update the MCP server code:
 2. No need to restart Claude Desktop
 3. Changes take effect immediately
 
+## ?? Documentation
+
+- **Lesson Feature**: See existing lesson management documentation
+- **Course Feature**: See `Features/Courses/README.md` for detailed course management guide
+- **API Integration**: Both features integrate with Learnify.ai API endpoints
+- **Model Definitions**: Check `Features/*/Models/` for data structures
+
+## ??? Architecture
+
+The MCP server follows a **vertical slice architecture**:
+
+```
+learnify.ai.mcp.server/
+??? Features/
+?   ??? Lessons/           # Lesson management feature
+?   ?   ??? Models/        # Lesson domain models
+?   ?   ??? Services/      # LessonApiService with MCP tools
+?   ?   ??? LessonFeature.cs
+?   ??? Courses/           # Course management feature
+?       ??? Models/        # Course domain models
+?       ??? Services/      # CourseApiService with MCP tools
+?       ??? CourseFeature.cs
+??? Shared/                # Common infrastructure
+?   ??? Models/           # Base API models
+?   ??? Services/         # BaseApiService
+??? Program.cs            # MCP server startup
+```
+
 ## ?? Support
 
 If you encounter issues:
@@ -158,5 +227,6 @@ If you encounter issues:
 2. Verify all prerequisites are met
 3. Test the script manually before using with Claude
 4. Ensure file paths match your actual directory structure
+5. Check API connectivity to http://localhost:5271
 
-The MCP server is now ready for use with Claude Desktop! ??
+The MCP server is now ready for comprehensive lesson and course management with Claude Desktop! ??
