@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "learnify-lessons": {
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "C:\\Users\\LENOVO\\Desktop\\100 Days Challenge\\learnify.ai\\backend\\learnify.ai.api\\learnify.ai.mcp.server\\start-mcp-server.ps1"
+      ],
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

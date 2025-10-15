@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "learnify-lessons": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "C:\\Users\\LENOVO\\Desktop\\100 Days Challenge\\learnify.ai\\backend\\learnify.ai.api\\learnify.ai.mcp.server\\start-mcp-server.bat"
+      ],
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
