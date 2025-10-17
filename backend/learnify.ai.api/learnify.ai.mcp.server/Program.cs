@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using Learnify.Mcp.Server.Features.Lessons;
 using Learnify.Mcp.Server.Features.Courses;
+using Learnify.Mcp.Server.Features.Categories;
+using Learnify.Mcp.Server.Features.Quizzes;
+using Learnify.Mcp.Server.Features.Answers;
 
 namespace Learnify.Mcp.Server;
 
@@ -32,6 +35,15 @@ public class Program
         
         // Add course management features (vertical slice)
         builder.Services.AddCourseFeature();
+        
+        // Add category management features (vertical slice)
+        builder.Services.AddCategoryFeature();
+        
+        // Add quiz management features (vertical slice)
+        builder.Services.AddQuizFeature();
+        
+        // Add answer management features (vertical slice)
+        builder.Services.AddAnswerFeature();
         
         // Configure MCP server with tools from assembly
         builder.Services
