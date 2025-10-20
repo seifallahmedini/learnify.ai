@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "learnify.ai.mcp.client": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7087",
+      "launchBrowser": false
+    }
+  }
+}
