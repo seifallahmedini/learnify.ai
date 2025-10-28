@@ -29,10 +29,14 @@ public class McpIntegrationTest
             .AddSingleton<IConfiguration>(configuration)
             .AddHttpClient()
             .AddScoped<LearnifyMcpService>()
+            .AddScoped<McpToolsService>()
+            .AddScoped<AiAgentService>()
             .BuildServiceProvider();
 
         var logger = services.GetRequiredService<ILogger<McpIntegrationTest>>();
         var mcpService = services.GetRequiredService<LearnifyMcpService>();
+        var toolsService = services.GetRequiredService<McpToolsService>();
+        var aiAgent = services.GetRequiredService<AiAgentService>();
 
         try
         {
@@ -54,52 +58,23 @@ public class McpIntegrationTest
             }
 
             Console.WriteLine("\n?? Step 3: Getting available tools...");
-            var tools = await mcpService.GetAvailableToolsAsync();
+            var tools = await toolsService.GetAvailableToolsAsync();
             Console.WriteLine($"? Found {tools.Count} tools:");
-            
-            var toolsByCategory = tools.GroupBy(t => 
-            {
-                if (t.Contains("Lesson")) return "Lessons";
-                if (t.Contains("Course")) return "Courses";
-                if (t.Contains("Category")) return "Categories";
-                if (t.Contains("Quiz")) return "Quizzes";
-                if (t.Contains("Answer")) return "Answers";
-                return "Other";
-            });
 
-            foreach (var category in toolsByCategory)
-            {
-                Console.WriteLine($"   ?? {category.Key}: {category.Count()} tools");
-            }
-
-            Console.WriteLine("\n?? Step 4: Testing educational request...");
+            Console.WriteLine("\n?? Step 4: Testing AI request...");
             var testRequest = "What tools are available for course management?";
-            Console.WriteLine($"   Request: {testRequest}");
-            
-            var response = await mcpService.ProcessEducationalRequestAsync(testRequest);
+            var response = await aiAgent.ProcessRequestWithAzureOpenAIAsync(testRequest);
             Console.WriteLine($"? Response received ({response.Length} characters)");
             Console.WriteLine($"   Preview: {response.Substring(0, Math.Min(200, response.Length))}...");
 
-            Console.WriteLine("\n?? Step 5: Testing analytics request...");
-            var analyticsRequest = "How many educational management tools are available?";
-            Console.WriteLine($"   Request: {analyticsRequest}");
-            
-            var analyticsResponse = await mcpService.GetEducationalAnalyticsAsync(analyticsRequest);
-            Console.WriteLine($"? Analytics response received ({analyticsResponse.Length} characters)");
-
             Console.WriteLine("\n?? All tests completed successfully!");
-            Console.WriteLine("\n?? Ready for Azure Function deployment!");
-            
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Test failed");
             Console.WriteLine($"? Test failed: {ex.Message}");
-            
             if (ex.InnerException != null)
-            {
                 Console.WriteLine($"   Inner exception: {ex.InnerException.Message}");
-            }
         }
         finally
         {

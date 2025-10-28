@@ -62,6 +62,16 @@ public class AnswersController : BaseController
     [HttpPost]
     public async Task<ActionResult<ApiResponse<AnswerResponse>>> CreateAnswer([FromBody] CreateAnswerRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<AnswerResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new CreateAnswerCommand(
@@ -82,9 +92,9 @@ public class AnswersController : BaseController
         {
             return BadRequest<AnswerResponse>(ex.Message);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return BadRequest<AnswerResponse>("An error occurred while creating the answer");
+            return BadRequest<AnswerResponse>($"Failed to create answer: {ex.Message}");
         }
     }
 
@@ -94,6 +104,16 @@ public class AnswersController : BaseController
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ApiResponse<AnswerResponse>>> UpdateAnswer(int id, [FromBody] UpdateAnswerRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<AnswerResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new UpdateAnswerCommand(id, request.AnswerText, request.IsCorrect, request.OrderIndex);
@@ -112,9 +132,9 @@ public class AnswersController : BaseController
         {
             return BadRequest<AnswerResponse>(ex.Message);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return BadRequest<AnswerResponse>("An error occurred while updating the answer");
+            return BadRequest<AnswerResponse>($"Failed to update answer: {ex.Message}");
         }
     }
 
@@ -176,6 +196,16 @@ public class AnswersController : BaseController
     [HttpPut("question/{questionId:int}/reorder")]
     public async Task<ActionResult<ApiResponse<AnswerReorderResponse>>> ReorderAnswers(int questionId, [FromBody] ReorderAnswersRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<AnswerReorderResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new ReorderAnswersCommand(questionId, request.AnswerOrders);
@@ -186,9 +216,9 @@ public class AnswersController : BaseController
         {
             return BadRequest<AnswerReorderResponse>(ex.Message);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return BadRequest<AnswerReorderResponse>("An error occurred while reordering answers");
+            return BadRequest<AnswerReorderResponse>($"Failed to reorder answers: {ex.Message}");
         }
     }
 

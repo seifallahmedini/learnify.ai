@@ -16,6 +16,16 @@ public class EnrollmentsController : BaseController
     [HttpPost]
     public async Task<ActionResult<ApiResponse<EnrollmentResponse>>> EnrollInCourse([FromBody] EnrollInCourseRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<EnrollmentResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new EnrollInCourseCommand(
@@ -34,6 +44,10 @@ public class EnrollmentsController : BaseController
         catch (InvalidOperationException ex)
         {
             return BadRequest<EnrollmentResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<EnrollmentResponse>($"Failed to enroll in course: {ex.Message}");
         }
     }
 
@@ -123,6 +137,16 @@ public class EnrollmentsController : BaseController
     [HttpPut("{id:int}/status")]
     public async Task<ActionResult<ApiResponse<EnrollmentResponse>>> UpdateEnrollmentStatus(int id, [FromBody] UpdateEnrollmentStatusRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<EnrollmentResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new UpdateEnrollmentStatusCommand(id, request.Status);
@@ -136,6 +160,10 @@ public class EnrollmentsController : BaseController
         catch (InvalidOperationException ex)
         {
             return BadRequest<EnrollmentResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<EnrollmentResponse>($"Failed to update enrollment status: {ex.Message}");
         }
     }
 
@@ -171,6 +199,16 @@ public class EnrollmentsController : BaseController
     [HttpPut("{id:int}/progress")]
     public async Task<ActionResult<ApiResponse<EnrollmentProgressResponse>>> UpdateEnrollmentProgress(int id, [FromBody] UpdateEnrollmentProgressRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<EnrollmentProgressResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new UpdateEnrollmentProgressCommand(
@@ -190,6 +228,10 @@ public class EnrollmentsController : BaseController
         catch (ArgumentException ex)
         {
             return BadRequest<EnrollmentProgressResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<EnrollmentProgressResponse>($"Failed to update enrollment progress: {ex.Message}");
         }
     }
 
@@ -221,6 +263,16 @@ public class EnrollmentsController : BaseController
     [HttpPost("{id:int}/certificate")]
     public async Task<ActionResult<ApiResponse<CertificateResponse>>> GenerateCertificate(int id, [FromBody] GenerateCertificateRequest? request = null)
     {
+        // Add model validation check (only if request is not null)
+        if (request != null && !ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<CertificateResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new GenerateCertificateCommand(id, request?.CertificateTemplate);
@@ -238,6 +290,10 @@ public class EnrollmentsController : BaseController
         catch (ArgumentException ex)
         {
             return BadRequest<CertificateResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<CertificateResponse>($"Failed to generate certificate: {ex.Message}");
         }
     }
 

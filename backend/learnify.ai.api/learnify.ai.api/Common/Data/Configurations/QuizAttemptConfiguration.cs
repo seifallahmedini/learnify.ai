@@ -10,9 +10,9 @@ public class QuizAttemptConfiguration : IEntityTypeConfiguration<QuizAttempt>
     {
         builder.ToTable("QuizAttempts", t => 
         {
-            t.HasCheckConstraint("CK_QuizAttempt_Score", "Score >= 0");
-            t.HasCheckConstraint("CK_QuizAttempt_MaxScore", "MaxScore > 0");
-            t.HasCheckConstraint("CK_QuizAttempt_TimeSpent", "TimeSpent >= 0");
+            t.HasCheckConstraint("CK_QuizAttempt_Score", "\"Score\" >= 0");
+            t.HasCheckConstraint("CK_QuizAttempt_MaxScore", "\"MaxScore\" > 0");
+            t.HasCheckConstraint("CK_QuizAttempt_TimeSpent", "\"TimeSpent\" >= 0");
         });
 
         builder.HasKey(qa => qa.Id);

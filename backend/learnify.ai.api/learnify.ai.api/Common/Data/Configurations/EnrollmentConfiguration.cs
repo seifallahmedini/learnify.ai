@@ -10,7 +10,7 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
     {
         builder.ToTable("Enrollments", t => 
         {
-            t.HasCheckConstraint("CK_Enrollment_Progress", "Progress >= 0 AND Progress <= 100");
+            t.HasCheckConstraint("CK_Enrollment_Progress", "\"Progress\" >= 0 AND \"Progress\" <= 100");
         });
 
         builder.HasKey(e => e.Id);

@@ -4,6 +4,8 @@ using ModelContextProtocol.Server;
 using System.ComponentModel;
 using Learnify.Mcp.Server.Shared.Services;
 using Learnify.Mcp.Server.Features.Courses.Models;
+using System.Net;
+using System.Text.Json;
 
 namespace Learnify.Mcp.Server.Features.Courses.Services;
 
@@ -61,27 +63,41 @@ public class CourseApiService : BaseApiService
 
             if (courses == null)
             {
-                return System.Text.Json.JsonSerializer.Serialize(new
+                return JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = "No courses found"
+                    message = "No courses found",
+                    details = "The request was successful but no courses matched the specified criteria"
                 });
             }
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            return JsonSerializer.Serialize(new
             {
                 success = true,
                 data = courses,
                 message = "Courses retrieved successfully"
             });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error getting courses");
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "API error getting courses");
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = "Failed to retrieve courses",
+                details = ex.Message,
+                errorType = "ApiError"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error getting courses");
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = "An unexpected error occurred while retrieving courses",
+                details = ex.Message,
+                errorType = "UnknownError"
             });
         }
     }
@@ -101,27 +117,42 @@ public class CourseApiService : BaseApiService
 
             if (course == null)
             {
-                return System.Text.Json.JsonSerializer.Serialize(new
+                return JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = $"Course with ID {courseId} not found"
+                    message = $"Course with ID {courseId} not found",
+                    details = "The specified course does not exist or has been deleted",
+                    errorType = "NotFound"
                 });
             }
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            return JsonSerializer.Serialize(new
             {
                 success = true,
                 data = course,
                 message = "Course retrieved successfully"
             });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error getting course {CourseId}", courseId);
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "API error getting course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = $"Failed to retrieve course {courseId}",
+                details = ex.Message,
+                errorType = "ApiError"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error getting course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"An unexpected error occurred while retrieving course {courseId}",
+                details = ex.Message,
+                errorType = "UnknownError"
             });
         }
     }
@@ -152,6 +183,51 @@ public class CourseApiService : BaseApiService
     {
         try
         {
+            // Validate input parameters
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                return JsonSerializer.Serialize(new
+                {
+                    success = false,
+                    message = "Course title is required",
+                    details = "Title cannot be empty or whitespace",
+                    errorType = "ValidationError"
+                });
+            }
+
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                return JsonSerializer.Serialize(new
+                {
+                    success = false,
+                    message = "Course description is required",
+                    details = "Description cannot be empty or whitespace",
+                    errorType = "ValidationError"
+                });
+            }
+
+            if (price < 0)
+            {
+                return JsonSerializer.Serialize(new
+                {
+                    success = false,
+                    message = "Course price cannot be negative",
+                    details = $"Provided price: {price}",
+                    errorType = "ValidationError"
+                });
+            }
+
+            if (level < 1 || level > 4)
+            {
+                return JsonSerializer.Serialize(new
+                {
+                    success = false,
+                    message = "Invalid course level",
+                    details = "Level must be between 1 (Beginner) and 4 (Expert)",
+                    errorType = "ValidationError"
+                });
+            }
+
             _logger.LogInformation("Creating course: {Title}", title);
 
             var request = new CreateCourseRequest(
@@ -162,20 +238,56 @@ public class CourseApiService : BaseApiService
 
             var createdCourse = await PostAsync<CourseModel>("/api/courses", request, cancellationToken);
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            return JsonSerializer.Serialize(new
             {
                 success = true,
                 data = createdCourse,
                 message = "Course created successfully"
             });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex) when (ex.Message.Contains("400"))
         {
-            _logger.LogError(ex, "Error creating course {Title}", title);
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "Validation error creating course {Title}", title);
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = "Course creation failed due to validation errors",
+                details = ex.Message, // This will now contain the full API error message
+                errorType = "ValidationError",
+                originalError = ExtractApiErrorDetails(ex.Message)
+            });
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("404"))
+        {
+            _logger.LogError(ex, "Resource not found creating course {Title}", title);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = "Course creation failed - instructor or category not found",
+                details = ex.Message, // This will show the full API error
+                errorType = "NotFound"
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "API error creating course {Title}", title);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = "Failed to create course",
+                details = ex.Message, // This will contain the detailed API error message
+                errorType = "ApiError"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error creating course {Title}", title);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = "An unexpected error occurred while creating the course",
+                details = ex.Message,
+                errorType = "UnknownError"
             });
         }
     }
@@ -206,6 +318,29 @@ public class CourseApiService : BaseApiService
     {
         try
         {
+            // Validate input parameters
+            if (price.HasValue && price < 0)
+            {
+                return JsonSerializer.Serialize(new
+                {
+                    success = false,
+                    message = "Course price cannot be negative",
+                    details = $"Provided price: {price}",
+                    errorType = "ValidationError"
+                });
+            }
+
+            if (level.HasValue && (level < 1 || level > 4))
+            {
+                return JsonSerializer.Serialize(new
+                {
+                    success = false,
+                    message = "Invalid course level",
+                    details = "Level must be between 1 (Beginner) and 4 (Expert)",
+                    errorType = "ValidationError"
+                });
+            }
+
             _logger.LogInformation("Updating course with ID: {CourseId}", courseId);
 
             var request = new UpdateCourseRequest(
@@ -218,27 +353,53 @@ public class CourseApiService : BaseApiService
 
             if (updatedCourse == null)
             {
-                return System.Text.Json.JsonSerializer.Serialize(new
+                return JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = $"Course with ID {courseId} not found"
+                    message = $"Course with ID {courseId} not found",
+                    details = "The specified course does not exist or has been deleted",
+                    errorType = "NotFound"
                 });
             }
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            return JsonSerializer.Serialize(new
             {
                 success = true,
                 data = updatedCourse,
                 message = "Course updated successfully"
             });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex) when (ex.Message.Contains("400"))
         {
-            _logger.LogError(ex, "Error updating course {CourseId}", courseId);
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "Validation error updating course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = "Course update failed due to validation errors",
+                details = ex.Message, // This will now contain the full API error message
+                errorType = "ValidationError"
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "API error updating course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"Failed to update course {courseId}",
+                details = ex.Message, // This will contain the detailed API error message
+                errorType = "ApiError"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error updating course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"An unexpected error occurred while updating course {courseId}",
+                details = ex.Message,
+                errorType = "UnknownError"
             });
         }
     }
@@ -256,19 +417,54 @@ public class CourseApiService : BaseApiService
             _logger.LogInformation("Deleting course with ID: {CourseId}", courseId);
             var success = await DeleteAsync($"/api/courses/{courseId}", cancellationToken);
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            if (!success)
             {
-                success,
-                message = success ? "Course deleted successfully" : "Failed to delete course"
+                return JsonSerializer.Serialize(new
+                {
+                    success = false,
+                    message = $"Course with ID {courseId} not found",
+                    details = "The specified course does not exist or has already been deleted",
+                    errorType = "NotFound"
+                });
+            }
+
+            return JsonSerializer.Serialize(new
+            {
+                success = true,
+                message = "Course deleted successfully"
+            });
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("400"))
+        {
+            _logger.LogError(ex, "Cannot delete course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = "Course deletion not allowed",
+                details = "Course cannot be deleted because it has active enrollments or dependencies",
+                errorType = "BusinessRuleViolation"
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "API error deleting course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"Failed to delete course {courseId}",
+                details = ex.Message,
+                errorType = "ApiError"
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting course {CourseId}", courseId);
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "Unexpected error deleting course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = $"An unexpected error occurred while deleting course {courseId}",
+                details = ex.Message,
+                errorType = "UnknownError"
             });
         }
     }
@@ -292,27 +488,53 @@ public class CourseApiService : BaseApiService
 
             if (publishedCourse == null)
             {
-                return System.Text.Json.JsonSerializer.Serialize(new
+                return JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = $"Course with ID {courseId} not found"
+                    message = $"Course with ID {courseId} not found",
+                    details = "The specified course does not exist or has been deleted",
+                    errorType = "NotFound"
                 });
             }
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            return JsonSerializer.Serialize(new
             {
                 success = true,
                 data = publishedCourse,
                 message = "Course published successfully"
             });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex) when (ex.Message.Contains("400"))
         {
-            _logger.LogError(ex, "Error publishing course {CourseId}", courseId);
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "Cannot publish course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = "Course cannot be published",
+                details = "Course may be missing required content, lessons, or may already be published",
+                errorType = "BusinessRuleViolation"
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "API error publishing course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"Failed to publish course {courseId}",
+                details = ex.Message,
+                errorType = "ApiError"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error publishing course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"An unexpected error occurred while publishing course {courseId}",
+                details = ex.Message,
+                errorType = "UnknownError"
             });
         }
     }
@@ -332,27 +554,42 @@ public class CourseApiService : BaseApiService
 
             if (unpublishedCourse == null)
             {
-                return System.Text.Json.JsonSerializer.Serialize(new
+                return JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = $"Course with ID {courseId} not found"
+                    message = $"Course with ID {courseId} not found",
+                    details = "The specified course does not exist or has been deleted",
+                    errorType = "NotFound"
                 });
             }
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            return JsonSerializer.Serialize(new
             {
                 success = true,
                 data = unpublishedCourse,
                 message = "Course unpublished successfully"
             });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error unpublishing course {CourseId}", courseId);
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "API error unpublishing course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = $"Failed to unpublish course {courseId}",
+                details = ex.Message,
+                errorType = "ApiError"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error unpublishing course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"An unexpected error occurred while unpublishing course {courseId}",
+                details = ex.Message,
+                errorType = "UnknownError"
             });
         }
     }
@@ -372,27 +609,42 @@ public class CourseApiService : BaseApiService
 
             if (featuredCourse == null)
             {
-                return System.Text.Json.JsonSerializer.Serialize(new
+                return JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = $"Course with ID {courseId} not found"
+                    message = $"Course with ID {courseId} not found",
+                    details = "The specified course does not exist or has been deleted",
+                    errorType = "NotFound"
                 });
             }
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            return JsonSerializer.Serialize(new
             {
                 success = true,
                 data = featuredCourse,
                 message = "Course featured successfully"
             });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error featuring course {CourseId}", courseId);
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "API error featuring course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = $"Failed to feature course {courseId}",
+                details = ex.Message,
+                errorType = "ApiError"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error featuring course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"An unexpected error occurred while featuring course {courseId}",
+                details = ex.Message,
+                errorType = "UnknownError"
             });
         }
     }
@@ -412,27 +664,42 @@ public class CourseApiService : BaseApiService
 
             if (unfeaturedCourse == null)
             {
-                return System.Text.Json.JsonSerializer.Serialize(new
+                return JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = $"Course with ID {courseId} not found"
+                    message = $"Course with ID {courseId} not found",
+                    details = "The specified course does not exist or has been deleted",
+                    errorType = "NotFound"
                 });
             }
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            return JsonSerializer.Serialize(new
             {
                 success = true,
                 data = unfeaturedCourse,
                 message = "Course unfeatured successfully"
             });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error unfeaturing course {CourseId}", courseId);
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "API error unfeaturing course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = $"Failed to unfeature course {courseId}",
+                details = ex.Message,
+                errorType = "ApiError"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error unfeaturing course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"An unexpected error occurred while unfeaturing course {courseId}",
+                details = ex.Message,
+                errorType = "UnknownError"
             });
         }
     }
@@ -458,27 +725,42 @@ public class CourseApiService : BaseApiService
 
             if (enrollments == null)
             {
-                return System.Text.Json.JsonSerializer.Serialize(new
+                return JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = $"No enrollments found for course ID {courseId}"
+                    message = $"No enrollments found for course ID {courseId}",
+                    details = "The course may not exist or has no enrolled students",
+                    errorType = "NotFound"
                 });
             }
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            return JsonSerializer.Serialize(new
             {
                 success = true,
                 data = enrollments,
                 message = "Course enrollments retrieved successfully"
             });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error getting enrollments for course {CourseId}", courseId);
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "API error getting enrollments for course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = $"Failed to retrieve enrollments for course {courseId}",
+                details = ex.Message,
+                errorType = "ApiError"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error getting enrollments for course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"An unexpected error occurred while retrieving enrollments for course {courseId}",
+                details = ex.Message,
+                errorType = "UnknownError"
             });
         }
     }
@@ -498,27 +780,42 @@ public class CourseApiService : BaseApiService
 
             if (stats == null)
             {
-                return System.Text.Json.JsonSerializer.Serialize(new
+                return JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = $"No statistics found for course ID {courseId}"
+                    message = $"No statistics found for course ID {courseId}",
+                    details = "The course may not exist or statistics are not available",
+                    errorType = "NotFound"
                 });
             }
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            return JsonSerializer.Serialize(new
             {
                 success = true,
                 data = stats,
                 message = "Course statistics retrieved successfully"
             });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error getting statistics for course {CourseId}", courseId);
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "API error getting statistics for course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = $"Failed to retrieve statistics for course {courseId}",
+                details = ex.Message,
+                errorType = "ApiError"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error getting statistics for course {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"An unexpected error occurred while retrieving statistics for course {courseId}",
+                details = ex.Message,
+                errorType = "UnknownError"
             });
         }
     }
@@ -541,20 +838,34 @@ public class CourseApiService : BaseApiService
             var course = await GetAsync<CourseModel>($"/api/courses/{courseId}", cancellationToken);
             var exists = course != null;
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            return JsonSerializer.Serialize(new
             {
                 success = true,
                 exists,
+                courseId,
                 message = exists ? "Course exists" : "Course does not exist"
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "API error checking course existence {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"Failed to check if course {courseId} exists",
+                details = ex.Message,
+                errorType = "ApiError"
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking course existence {CourseId}", courseId);
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "Unexpected error checking course existence {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = $"An unexpected error occurred while checking if course {courseId} exists",
+                details = ex.Message,
+                errorType = "UnknownError"
             });
         }
     }
@@ -574,10 +885,12 @@ public class CourseApiService : BaseApiService
 
             if (course == null)
             {
-                return System.Text.Json.JsonSerializer.Serialize(new
+                return JsonSerializer.Serialize(new
                 {
                     success = false,
-                    message = $"Course with ID {courseId} not found"
+                    message = $"Course with ID {courseId} not found",
+                    details = "The specified course does not exist or has been deleted",
+                    errorType = "NotFound"
                 });
             }
 
@@ -596,21 +909,81 @@ public class CourseApiService : BaseApiService
                 course.CreatedAt
             );
 
-            return System.Text.Json.JsonSerializer.Serialize(new
+            return JsonSerializer.Serialize(new
             {
                 success = true,
                 data = summary,
                 message = "Course summary retrieved successfully"
             });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Error getting course summary {CourseId}", courseId);
-            return System.Text.Json.JsonSerializer.Serialize(new
+            _logger.LogError(ex, "API error getting course summary {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
             {
                 success = false,
-                message = ex.Message
+                message = $"Failed to retrieve course summary for {courseId}",
+                details = ex.Message,
+                errorType = "ApiError"
             });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error getting course summary {CourseId}", courseId);
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                message = $"An unexpected error occurred while retrieving course summary for {courseId}",
+                details = ex.Message,
+                errorType = "UnknownError"
+            });
+        }
+    }
+
+    #endregion
+
+    #region Private Helper Methods
+
+    /// <summary>
+    /// Extract detailed error information from API error messages
+    /// </summary>
+    private static string ExtractApiErrorDetails(string errorMessage)
+    {
+        try
+        {
+            // If the error message already contains structured information from BaseApiService, return it as-is
+            if (errorMessage.Contains("API Error") || errorMessage.Contains("Validation Error"))
+            {
+                return errorMessage;
+            }
+            
+            // Try to extract more specific error information from older format messages
+            if (errorMessage.Contains("Response status code does not indicate success:"))
+            {
+                var statusIndex = errorMessage.IndexOf("Response status code does not indicate success:");
+                if (statusIndex >= 0)
+                {
+                    var statusPart = errorMessage.Substring(statusIndex);
+                    if (statusPart.Contains("400"))
+                        return "Bad Request - Check input parameters for validation errors";
+                    if (statusPart.Contains("401"))
+                        return "Unauthorized - Authentication required";
+                    if (statusPart.Contains("403"))
+                        return "Forbidden - Insufficient permissions";
+                    if (statusPart.Contains("404"))
+                        return "Not Found - Resource does not exist";
+                    if (statusPart.Contains("409"))
+                        return "Conflict - Resource already exists or business rule violation";
+                    if (statusPart.Contains("500"))
+                        return "Internal Server Error - Server encountered an error";
+                }
+            }
+            
+            return errorMessage;
+        }
+        catch
+        {
+            return errorMessage;
         }
     }
 

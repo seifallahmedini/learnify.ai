@@ -16,6 +16,16 @@ public class QuizAttemptsController : BaseController
     [HttpPost("{id:int}/submit")]
     public async Task<ActionResult<ApiResponse<SubmitQuizAttemptResponse>>> SubmitQuizAttempt(int id, [FromBody] SubmitQuizAttemptRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<SubmitQuizAttemptResponse>("Validation failed", errors);
+        }
+
         var command = new SubmitQuizAttemptCommand(id, request.Answers);
         
         try
@@ -30,6 +40,10 @@ public class QuizAttemptsController : BaseController
         catch (InvalidOperationException ex)
         {
             return BadRequest<SubmitQuizAttemptResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<SubmitQuizAttemptResponse>($"Failed to submit quiz attempt: {ex.Message}");
         }
     }
 

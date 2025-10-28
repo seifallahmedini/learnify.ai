@@ -10,7 +10,7 @@ public class AnswerConfiguration : IEntityTypeConfiguration<Answer>
     {
         builder.ToTable("Answers", t => 
         {
-            t.HasCheckConstraint("CK_Answer_OrderIndex", "OrderIndex >= 0");
+            t.HasCheckConstraint("CK_Answer_OrderIndex", "\"OrderIndex\" >= 0");
         });
 
         builder.HasKey(a => a.Id);

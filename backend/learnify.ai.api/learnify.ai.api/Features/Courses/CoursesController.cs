@@ -55,28 +55,49 @@ public class CoursesController : BaseController
     [HttpPost]
     public async Task<ActionResult<ApiResponse<CourseResponse>>> CreateCourse([FromBody] CreateCourseRequest request)
     {
-        var command = new CreateCourseCommand(
-            request.Title,
-            request.Description,
-            request.ShortDescription,
-            request.InstructorId,
-            request.CategoryId,
-            request.Price,
-            request.DiscountPrice,
-            request.DurationHours,
-            request.Level,
-            request.Language,
-            request.ThumbnailUrl,
-            request.VideoPreviewUrl,
-            request.IsPublished,
-            request.IsFeatured,
-            request.MaxStudents,
-            request.Prerequisites,
-            request.LearningObjectives
-        );
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<CourseResponse>("Validation failed", errors);
+        }
 
-        var result = await Mediator.Send(command);
-        return Ok(result, "Course created successfully");
+        try
+        {
+            var command = new CreateCourseCommand(
+                request.Title,
+                request.Description,
+                request.ShortDescription,
+                request.InstructorId,
+                request.CategoryId,
+                request.Price,
+                request.DiscountPrice,
+                request.DurationHours,
+                request.Level,
+                request.Language,
+                request.ThumbnailUrl,
+                request.VideoPreviewUrl,
+                request.IsPublished,
+                request.IsFeatured,
+                request.MaxStudents,
+                request.Prerequisites,
+                request.LearningObjectives
+            );
+
+            var result = await Mediator.Send(command);
+            return Ok(result, "Course created successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<CourseResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<CourseResponse>($"Failed to create course: {ex.Message}");
+        }
     }
 
     /// <summary>

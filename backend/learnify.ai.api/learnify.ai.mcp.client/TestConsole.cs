@@ -40,7 +40,6 @@ public class TestConsole
             Console.WriteLine("Please check the path in local.settings.json");
             Console.WriteLine($"Current working directory: {Directory.GetCurrentDirectory()}");
             
-            // Try to find the correct path
             var currentDir = Directory.GetCurrentDirectory();
             var possiblePaths = new[]
             {
@@ -87,10 +86,14 @@ public class TestConsole
             .AddSingleton<IConfiguration>(configuration)
             .AddHttpClient()
             .AddScoped<LearnifyMcpService>()
+            .AddScoped<McpToolsService>()
+            .AddScoped<AiAgentService>()
             .BuildServiceProvider();
 
         var logger = services.GetRequiredService<ILogger<TestConsole>>();
         var mcpService = services.GetRequiredService<LearnifyMcpService>();
+        var toolsService = services.GetRequiredService<McpToolsService>();
+        var aiAgent = services.GetRequiredService<AiAgentService>();
 
         try
         {
@@ -111,7 +114,7 @@ public class TestConsole
             }
 
             Console.WriteLine("\n?? Step 3: Getting available tools...");
-            var tools = await mcpService.GetAvailableToolsAsync();
+            var tools = await toolsService.GetAvailableToolsAsync();
             Console.WriteLine($"? Found {tools.Count} tools:");
             
             // Group tools by category for better display
@@ -142,7 +145,7 @@ public class TestConsole
             Console.WriteLine($"\n?? Total: {tools.Count} tools available across {toolsByCategory.Count()} categories");
 
             Console.WriteLine("\n?? Step 4: Getting tool parameters...");
-            var toolsWithParams = await mcpService.GetToolsWithParametersAsync();
+            var toolsWithParams = await toolsService.GetToolsWithParametersAsync();
             Console.WriteLine($"? Found {toolsWithParams.Count} tools with parameters:");
             
             // Show detailed information for first few tools
@@ -171,7 +174,7 @@ public class TestConsole
             Console.WriteLine("\n?? Step 5: Testing tool execution...");
             
             // Try to execute a simple tool (like get_lessons or get_courses)
-            var availableTools = await mcpService.GetAvailableToolsAsync();
+            var availableTools = await toolsService.GetAvailableToolsAsync();
             var testTool = availableTools.FirstOrDefault(t => 
                 t.ToLowerInvariant().Contains("get") && 
                 (t.ToLowerInvariant().Contains("lesson") || t.ToLowerInvariant().Contains("course")));
@@ -181,7 +184,7 @@ public class TestConsole
                 Console.WriteLine($"   Testing tool: {testTool}");
                 try
                 {
-                    var toolResult = await mcpService.CallToolAsync(testTool, new { });
+                    var toolResult = await toolsService.CallToolAsync(testTool, new { });
                     Console.WriteLine($"   ? Tool executed successfully");
                     Console.WriteLine($"   Result: {JsonSerializer.Serialize(toolResult).Substring(0, Math.Min(200, JsonSerializer.Serialize(toolResult).Length))}...");
                 }
@@ -198,7 +201,7 @@ public class TestConsole
             Console.WriteLine("\n?? Step 6: Checking for available resources...");
             try
             {
-                var resources = await mcpService.GetAvailableResourcesAsync();
+                var resources = await toolsService.GetAvailableResourcesAsync();
                 if (resources.Count > 0)
                 {
                     Console.WriteLine($"   ? Found {resources.Count} resources");
@@ -217,13 +220,13 @@ public class TestConsole
                 Console.WriteLine($"   ?? Resources not supported: {resourceEx.Message}");
             }
 
-            Console.WriteLine("\n?? Step 7: Testing educational request...");
+            Console.WriteLine("\n?? Step 7: Testing AI-powered educational request...");
             var testRequest = "What tools are available for course management?";
             Console.WriteLine($"   Request: {testRequest}");
             
-            var response = await mcpService.ProcessEducationalRequestAsync(testRequest);
-            Console.WriteLine($"? Response received ({response.Length} characters)");
-            Console.WriteLine($"   Preview: {response.Substring(0, Math.Min(150, response.Length))}...");
+            var aiResponse = await aiAgent.ProcessRequestWithAzureOpenAIAsync(testRequest);
+            Console.WriteLine($"? Response received ({aiResponse.Length} characters)");
+            Console.WriteLine($"   Preview: {aiResponse.Substring(0, Math.Min(150, aiResponse.Length))}...");
 
             Console.WriteLine("\n?? All tests completed successfully!");
             Console.WriteLine("?? The MCP client is ready for use!");

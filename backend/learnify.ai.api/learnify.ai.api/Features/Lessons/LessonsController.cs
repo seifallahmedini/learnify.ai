@@ -31,24 +31,45 @@ public class LessonsController : BaseController
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ApiResponse<LessonResponse>>> UpdateLesson(int id, [FromBody] UpdateLessonRequest request)
     {
-        var command = new UpdateLessonCommand(
-            id,
-            request.Title,
-            request.Description,
-            request.Content,
-            request.VideoUrl,
-            request.Duration,
-            request.OrderIndex,
-            request.IsFree,
-            request.IsPublished
-        );
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<LessonResponse>("Validation failed", errors);
+        }
 
-        var result = await Mediator.Send(command);
+        try
+        {
+            var command = new UpdateLessonCommand(
+                id,
+                request.Title,
+                request.Description,
+                request.Content,
+                request.VideoUrl,
+                request.Duration,
+                request.OrderIndex,
+                request.IsFree,
+                request.IsPublished
+            );
 
-        if (result == null)
-            return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+            var result = await Mediator.Send(command);
 
-        return Ok(result, "Lesson updated successfully");
+            if (result == null)
+                return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+
+            return Ok(result, "Lesson updated successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<LessonResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<LessonResponse>($"Failed to update lesson: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -76,13 +97,34 @@ public class LessonsController : BaseController
     [HttpPut("{id:int}/reorder")]
     public async Task<ActionResult<ApiResponse<LessonResponse>>> ReorderLesson(int id, [FromBody] ReorderLessonRequest request)
     {
-        var command = new ReorderLessonCommand(id, request.NewOrderIndex);
-        var result = await Mediator.Send(command);
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<LessonResponse>("Validation failed", errors);
+        }
 
-        if (result == null)
-            return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+        try
+        {
+            var command = new ReorderLessonCommand(id, request.NewOrderIndex);
+            var result = await Mediator.Send(command);
 
-        return Ok(result, "Lesson reordered successfully");
+            if (result == null)
+                return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+
+            return Ok(result, "Lesson reordered successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<LessonResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<LessonResponse>($"Failed to reorder lesson: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -125,13 +167,34 @@ public class LessonsController : BaseController
     [HttpPost("{id:int}/video")]
     public async Task<ActionResult<ApiResponse<LessonResponse>>> UploadLessonVideo(int id, [FromBody] UploadVideoRequest request)
     {
-        var command = new UploadLessonVideoCommand(id, request.VideoUrl);
-        var result = await Mediator.Send(command);
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<LessonResponse>("Validation failed", errors);
+        }
 
-        if (result == null)
-            return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+        try
+        {
+            var command = new UploadLessonVideoCommand(id, request.VideoUrl);
+            var result = await Mediator.Send(command);
 
-        return Ok(result, "Lesson video uploaded successfully");
+            if (result == null)
+                return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+
+            return Ok(result, "Lesson video uploaded successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<LessonResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<LessonResponse>($"Failed to upload lesson video: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -140,13 +203,34 @@ public class LessonsController : BaseController
     [HttpPut("{id:int}/content")]
     public async Task<ActionResult<ApiResponse<LessonResponse>>> UpdateLessonContent(int id, [FromBody] UpdateContentRequest request)
     {
-        var command = new UpdateLessonContentCommand(id, request.Content);
-        var result = await Mediator.Send(command);
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<LessonResponse>("Validation failed", errors);
+        }
 
-        if (result == null)
-            return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+        try
+        {
+            var command = new UpdateLessonContentCommand(id, request.Content);
+            var result = await Mediator.Send(command);
 
-        return Ok(result, "Lesson content updated successfully");
+            if (result == null)
+                return NotFound<LessonResponse>($"Lesson with ID {id} not found");
+
+            return Ok(result, "Lesson content updated successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<LessonResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<LessonResponse>($"Failed to update lesson content: {ex.Message}");
+        }
     }
 
     /// <summary>

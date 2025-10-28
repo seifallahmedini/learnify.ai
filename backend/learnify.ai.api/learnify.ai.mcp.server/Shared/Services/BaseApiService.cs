@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Learnify.Mcp.Server.Shared.Models;
+using System.Net;
 
 namespace Learnify.Mcp.Server.Shared.Services;
 
@@ -49,13 +50,19 @@ public abstract class BaseApiService
 
             var response = await _httpClient.GetAsync(url, cancellationToken);
             
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            if (response.StatusCode == HttpStatusCode.NotFound)
             {
                 _logger.LogWarning("Resource not found: {Url}", url);
                 return null;
             }
 
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                var detailedError = await ExtractErrorDetailsAsync(response, errorContent);
+                throw new InvalidOperationException(detailedError);
+            }
+
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
             
             var apiResponse = JsonSerializer.Deserialize<ApiResponse<T>>(content, _jsonOptions);
@@ -91,7 +98,13 @@ public abstract class BaseApiService
             }
 
             var response = await _httpClient.PostAsync(url, httpContent, cancellationToken);
-            response.EnsureSuccessStatusCode();
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                var detailedError = await ExtractErrorDetailsAsync(response, errorContent);
+                throw new InvalidOperationException(detailedError);
+            }
 
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
             var apiResponse = JsonSerializer.Deserialize<ApiResponse<T>>(content, _jsonOptions);
@@ -132,13 +145,18 @@ public abstract class BaseApiService
 
             var response = await _httpClient.PutAsync(url, httpContent, cancellationToken);
             
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            if (response.StatusCode == HttpStatusCode.NotFound)
             {
                 _logger.LogWarning("Resource not found for PUT: {Url}", url);
                 return null;
             }
 
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                var detailedError = await ExtractErrorDetailsAsync(response, errorContent);
+                throw new InvalidOperationException(detailedError);
+            }
 
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
             var apiResponse = JsonSerializer.Deserialize<ApiResponse<T>>(content, _jsonOptions);
@@ -169,19 +187,160 @@ public abstract class BaseApiService
 
             var response = await _httpClient.DeleteAsync(url, cancellationToken);
             
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            if (response.StatusCode == HttpStatusCode.NotFound)
             {
                 _logger.LogWarning("Resource not found for DELETE: {Url}", url);
                 return false;
             }
 
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                var detailedError = await ExtractErrorDetailsAsync(response, errorContent);
+                throw new InvalidOperationException(detailedError);
+            }
+
             return true;
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "HTTP error during DELETE request to {Endpoint}", endpoint);
             throw new InvalidOperationException($"Failed to delete resource at {endpoint}: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Extract detailed error information from API responses
+    /// </summary>
+    private async Task<string> ExtractErrorDetailsAsync(HttpResponseMessage response, string errorContent)
+    {
+        try
+        {
+            var statusCode = (int)response.StatusCode;
+            var statusName = response.StatusCode.ToString();
+            
+            // Try to parse error response as API error format
+            if (!string.IsNullOrEmpty(errorContent))
+            {
+                try
+                {
+                    using var document = JsonDocument.Parse(errorContent);
+                    var root = document.RootElement;
+                    
+                    // Check for Learnify API response format first (success, message, errors)
+                    if (root.TryGetProperty("success", out var successElement) && 
+                        successElement.ValueKind == JsonValueKind.False)
+                    {
+                        var errorParts = new List<string>();
+                        
+                        // Add the main message
+                        if (root.TryGetProperty("message", out var apiMessageElement))
+                        {
+                            var apiMessage = apiMessageElement.GetString();
+                            if (!string.IsNullOrEmpty(apiMessage))
+                            {
+                                errorParts.Add(apiMessage);
+                            }
+                        }
+                        
+                        // Add specific errors array
+                        if (root.TryGetProperty("errors", out var apiErrorsElement) &&
+                            apiErrorsElement.ValueKind == JsonValueKind.Array)
+                        {
+                            var specificErrors = new List<string>();
+                            foreach (var error in apiErrorsElement.EnumerateArray())
+                            {
+                                var errorMsg = error.GetString();
+                                if (!string.IsNullOrEmpty(errorMsg))
+                                {
+                                    specificErrors.Add(errorMsg);
+                                }
+                            }
+                            
+                            if (specificErrors.Any())
+                            {
+                                errorParts.Add($"Details: {string.Join("; ", specificErrors)}");
+                            }
+                        }
+                        
+                        if (errorParts.Any())
+                        {
+                            return $"API Error ({statusCode} {statusName}): {string.Join(" | ", errorParts)}";
+                        }
+                    }
+                    
+                    // Check for standard validation errors (ModelState format)
+                    if (root.TryGetProperty("errors", out var errorsElement))
+                    {
+                        var errorDetails = new List<string>();
+                        
+                        if (errorsElement.ValueKind == JsonValueKind.Object)
+                        {
+                            foreach (var error in errorsElement.EnumerateObject())
+                            {
+                                if (error.Value.ValueKind == JsonValueKind.Array)
+                                {
+                                    foreach (var errorMsg in error.Value.EnumerateArray())
+                                    {
+                                        errorDetails.Add($"{error.Name}: {errorMsg.GetString()}");
+                                    }
+                                }
+                                else
+                                {
+                                    errorDetails.Add($"{error.Name}: {error.Value.GetString()}");
+                                }
+                            }
+                        }
+                        else if (errorsElement.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var error in errorsElement.EnumerateArray())
+                            {
+                                errorDetails.Add(error.GetString() ?? "Unknown error");
+                            }
+                        }
+                        
+                        if (errorDetails.Any())
+                        {
+                            return $"Validation Error ({statusCode} {statusName}): {string.Join("; ", errorDetails)}";
+                        }
+                    }
+                    
+                    // Check for message property
+                    if (root.TryGetProperty("message", out var messageElement))
+                    {
+                        var message = messageElement.GetString();
+                        if (!string.IsNullOrEmpty(message))
+                        {
+                            return $"API Error ({statusCode} {statusName}): {message}";
+                        }
+                    }
+                    
+                    // Check for title property (common in problem details)
+                    if (root.TryGetProperty("title", out var titleElement))
+                    {
+                        var title = titleElement.GetString();
+                        if (!string.IsNullOrEmpty(title))
+                        {
+                            return $"API Error ({statusCode} {statusName}): {title}";
+                        }
+                    }
+                }
+                catch (JsonException)
+                {
+                    // If JSON parsing fails, include raw content if it's not too long
+                    var contentPreview = errorContent.Length > 500 ? 
+                        errorContent.Substring(0, 500) + "..." : 
+                        errorContent;
+                    return $"HTTP Error ({statusCode} {statusName}): {contentPreview}";
+                }
+            }
+            
+            return $"HTTP Error: {statusCode} ({statusName})";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to extract error details from response");
+            return $"HTTP Error: {(int)response.StatusCode} ({response.StatusCode})";
         }
     }
 

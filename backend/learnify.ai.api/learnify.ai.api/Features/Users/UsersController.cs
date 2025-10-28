@@ -51,19 +51,40 @@ public class UsersController : BaseController
     [HttpPost]
     public async Task<ActionResult<ApiResponse<UserResponse>>> CreateUser([FromBody] CreateUserRequest request)
     {
-        var command = new CreateUserCommand(
-            request.FirstName,
-            request.LastName,
-            request.Email,
-            request.Password,
-            request.Role,
-            request.Bio,
-            request.DateOfBirth,
-            request.PhoneNumber
-        );
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<UserResponse>("Validation failed", errors);
+        }
 
-        var result = await Mediator.Send(command);
-        return Ok(result, "User created successfully");
+        try
+        {
+            var command = new CreateUserCommand(
+                request.FirstName,
+                request.LastName,
+                request.Email,
+                request.Password,
+                request.Role,
+                request.Bio,
+                request.DateOfBirth,
+                request.PhoneNumber
+            );
+
+            var result = await Mediator.Send(command);
+            return Ok(result, "User created successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<UserResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<UserResponse>($"Failed to create user: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -72,22 +93,43 @@ public class UsersController : BaseController
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ApiResponse<UserResponse>>> UpdateUser(int id, [FromBody] UpdateUserRequest request)
     {
-        var command = new UpdateUserCommand(
-            id,
-            request.FirstName,
-            request.LastName,
-            request.Bio,
-            request.DateOfBirth,
-            request.PhoneNumber,
-            request.IsActive
-        );
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<UserResponse>("Validation failed", errors);
+        }
 
-        var result = await Mediator.Send(command);
+        try
+        {
+            var command = new UpdateUserCommand(
+                id,
+                request.FirstName,
+                request.LastName,
+                request.Bio,
+                request.DateOfBirth,
+                request.PhoneNumber,
+                request.IsActive
+            );
 
-        if (result == null)
-            return NotFound<UserResponse>($"User with ID {id} not found");
+            var result = await Mediator.Send(command);
 
-        return Ok(result, "User updated successfully");
+            if (result == null)
+                return NotFound<UserResponse>($"User with ID {id} not found");
+
+            return Ok(result, "User updated successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<UserResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<UserResponse>($"Failed to update user: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -268,21 +310,42 @@ public class UsersController : BaseController
     [HttpPut("{id:int}/profile")]
     public async Task<ActionResult<ApiResponse<UserResponse>>> UpdateUserProfile(int id, [FromBody] UpdateUserRequest request)
     {
-        var command = new UpdateUserCommand(
-            id,
-            request.FirstName,
-            request.LastName,
-            request.Bio,
-            request.DateOfBirth,
-            request.PhoneNumber
-        );
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<UserResponse>("Validation failed", errors);
+        }
 
-        var result = await Mediator.Send(command);
+        try
+        {
+            var command = new UpdateUserCommand(
+                id,
+                request.FirstName,
+                request.LastName,
+                request.Bio,
+                request.DateOfBirth,
+                request.PhoneNumber
+            );
 
-        if (result == null)
-            return NotFound<UserResponse>($"User with ID {id} not found");
+            var result = await Mediator.Send(command);
 
-        return Ok(result, "User profile updated successfully");
+            if (result == null)
+                return NotFound<UserResponse>($"User with ID {id} not found");
+
+            return Ok(result, "User profile updated successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<UserResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<UserResponse>($"Failed to update user profile: {ex.Message}");
+        }
     }
 
     /// <summary>

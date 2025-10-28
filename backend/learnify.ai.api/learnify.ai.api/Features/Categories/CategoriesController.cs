@@ -86,6 +86,16 @@ public class CategoriesController : BaseController
     [HttpPost]
     public async Task<ActionResult<ApiResponse<CategoryResponse>>> CreateCategory([FromBody] CreateCategoryRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<CategoryResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new CreateCategoryCommand(
@@ -103,22 +113,9 @@ public class CategoriesController : BaseController
         {
             return BadRequest<CategoryResponse>(ex.Message);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            var fallbackResponse = new CategoryResponse(
-                0,
-                request.Name,
-                request.Description,
-                request.IconUrl,
-                request.ParentCategoryId,
-                null,
-                request.IsActive,
-                0,
-                0,
-                DateTime.UtcNow,
-                DateTime.UtcNow
-            );
-            return Ok(fallbackResponse, "Category creation endpoint - Implementation in progress");
+            return BadRequest<CategoryResponse>($"Failed to create category: {ex.Message}");
         }
     }
 
@@ -128,6 +125,16 @@ public class CategoriesController : BaseController
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ApiResponse<CategoryResponse>>> UpdateCategory(int id, [FromBody] UpdateCategoryRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<CategoryResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new UpdateCategoryCommand(
@@ -150,22 +157,9 @@ public class CategoriesController : BaseController
         {
             return BadRequest<CategoryResponse>(ex.Message);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            var fallbackResponse = new CategoryResponse(
-                id,
-                request.Name ?? "Updated Category",
-                request.Description ?? "Updated description",
-                request.IconUrl,
-                request.ParentCategoryId,
-                null,
-                request.IsActive ?? true,
-                0,
-                0,
-                DateTime.UtcNow,
-                DateTime.UtcNow
-            );
-            return Ok(fallbackResponse, "Category update endpoint - Implementation in progress");
+            return BadRequest<CategoryResponse>($"Failed to update category: {ex.Message}");
         }
     }
 

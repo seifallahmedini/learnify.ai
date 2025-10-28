@@ -10,8 +10,8 @@ public class QuestionConfiguration : IEntityTypeConfiguration<Question>
     {
         builder.ToTable("Questions", t => 
         {
-            t.HasCheckConstraint("CK_Question_OrderIndex", "OrderIndex >= 0");
-            t.HasCheckConstraint("CK_Question_Points", "Points > 0");
+            t.HasCheckConstraint("CK_Question_OrderIndex", "\"OrderIndex\" >= 0");
+            t.HasCheckConstraint("CK_Question_Points", "\"Points\" > 0");
         });
 
         builder.HasKey(q => q.Id);

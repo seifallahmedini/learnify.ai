@@ -47,6 +47,16 @@ public class QuizzesController : BaseController
     [HttpPost]
     public async Task<ActionResult<ApiResponse<QuizResponse>>> CreateQuiz([FromBody] CreateQuizRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<QuizResponse>("Validation failed", errors);
+        }
+
         var command = new CreateQuizCommand(
             request.CourseId,
             request.LessonId,
@@ -67,6 +77,10 @@ public class QuizzesController : BaseController
         {
             return BadRequest<QuizResponse>(ex.Message);
         }
+        catch (Exception ex)
+        {
+            return BadRequest<QuizResponse>($"Failed to create quiz: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -75,22 +89,43 @@ public class QuizzesController : BaseController
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ApiResponse<QuizResponse>>> UpdateQuiz(int id, [FromBody] UpdateQuizRequest request)
     {
-        var command = new UpdateQuizCommand(
-            id,
-            request.Title,
-            request.Description,
-            request.TimeLimit,
-            request.PassingScore,
-            request.MaxAttempts,
-            request.IsActive
-        );
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<QuizResponse>("Validation failed", errors);
+        }
 
-        var result = await Mediator.Send(command);
+        try
+        {
+            var command = new UpdateQuizCommand(
+                id,
+                request.Title,
+                request.Description,
+                request.TimeLimit,
+                request.PassingScore,
+                request.MaxAttempts,
+                request.IsActive
+            );
 
-        if (result == null)
-            return NotFound<QuizResponse>($"Quiz with ID {id} not found");
+            var result = await Mediator.Send(command);
 
-        return Ok(result, "Quiz updated successfully");
+            if (result == null)
+                return NotFound<QuizResponse>($"Quiz with ID {id} not found");
+
+            return Ok(result, "Quiz updated successfully");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<QuizResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<QuizResponse>($"Failed to update quiz: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -217,6 +252,16 @@ public class QuizzesController : BaseController
     [HttpPost("{quizId:int}/questions")]
     public async Task<ActionResult<ApiResponse<QuestionSummaryResponse>>> AddQuestionToQuiz(int quizId, [FromBody] AddQuestionToQuizRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<QuestionSummaryResponse>("Validation failed", errors);
+        }
+
         var command = new AddQuestionToQuizCommand(
             quizId,
             request.QuestionText,
@@ -238,6 +283,10 @@ public class QuizzesController : BaseController
         {
             return BadRequest<QuestionSummaryResponse>(ex.Message);
         }
+        catch (Exception ex)
+        {
+            return BadRequest<QuestionSummaryResponse>($"Failed to add question to quiz: {ex.Message}");
+        }
     }
 
     #endregion
@@ -250,6 +299,16 @@ public class QuizzesController : BaseController
     [HttpPost("{id:int}/start")]
     public async Task<ActionResult<ApiResponse<StartQuizAttemptResponse>>> StartQuizAttempt(int id, [FromBody] StartQuizAttemptRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<StartQuizAttemptResponse>("Validation failed", errors);
+        }
+
         var command = new StartQuizAttemptCommand(id, request.UserId);
 
         try
@@ -264,6 +323,10 @@ public class QuizzesController : BaseController
         catch (InvalidOperationException ex)
         {
             return BadRequest<StartQuizAttemptResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<StartQuizAttemptResponse>($"Failed to start quiz attempt: {ex.Message}");
         }
     }
 

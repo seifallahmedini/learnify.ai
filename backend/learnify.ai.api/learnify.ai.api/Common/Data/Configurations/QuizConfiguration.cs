@@ -10,9 +10,9 @@ public class QuizConfiguration : IEntityTypeConfiguration<Quiz>
     {
         builder.ToTable("Quizzes", t =>
         {
-            t.HasCheckConstraint("CK_Quiz_PassingScore", "PassingScore >= 0 AND PassingScore <= 100");
-            t.HasCheckConstraint("CK_Quiz_MaxAttempts", "MaxAttempts > 0");
-            t.HasCheckConstraint("CK_Quiz_TimeLimit", "TimeLimit IS NULL OR TimeLimit > 0");
+            t.HasCheckConstraint("CK_Quiz_PassingScore", "\"PassingScore\" >= 0 AND \"PassingScore\" <= 100");
+            t.HasCheckConstraint("CK_Quiz_MaxAttempts", "\"MaxAttempts\" > 0");
+            t.HasCheckConstraint("CK_Quiz_TimeLimit", "\"TimeLimit\" IS NULL OR \"TimeLimit\" > 0");
         });
 
         builder.HasKey(q => q.Id);

@@ -10,8 +10,8 @@ public class LessonConfiguration : IEntityTypeConfiguration<Lesson>
     {
         builder.ToTable("Lessons", t => 
         {
-            t.HasCheckConstraint("CK_Lesson_Duration", "Duration > 0");
-            t.HasCheckConstraint("CK_Lesson_OrderIndex", "OrderIndex >= 0");
+            t.HasCheckConstraint("CK_Lesson_Duration", "\"Duration\" > 0");
+            t.HasCheckConstraint("CK_Lesson_OrderIndex", "\"OrderIndex\" >= 0");
         });
 
         builder.HasKey(l => l.Id);

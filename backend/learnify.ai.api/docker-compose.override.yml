@@ -1,0 +1,10 @@
+services:
+  learnify.ai.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # Fixed port configuration - override any dynamic ports
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      # Fixed port mapping - always use 8080
+      - "8080:8080"

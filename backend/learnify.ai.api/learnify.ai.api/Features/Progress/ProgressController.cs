@@ -64,6 +64,16 @@ public class ProgressController : BaseController
     [HttpPut("lesson/{lessonId:int}/complete")]
     public async Task<ActionResult<ApiResponse<DetailedLessonProgressResponse>>> MarkLessonComplete(int lessonId, [FromBody] MarkLessonCompleteRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<DetailedLessonProgressResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new MarkLessonCompleteCommand(lessonId, request.EnrollmentId);
@@ -78,9 +88,9 @@ public class ProgressController : BaseController
         {
             return BadRequest<DetailedLessonProgressResponse>(ex.Message);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return BadRequest<DetailedLessonProgressResponse>("An error occurred while marking lesson as complete");
+            return BadRequest<DetailedLessonProgressResponse>($"Failed to mark lesson as complete: {ex.Message}");
         }
     }
 
@@ -90,6 +100,16 @@ public class ProgressController : BaseController
     [HttpPost("lesson/{lessonId:int}/time")]
     public async Task<ActionResult<ApiResponse<DetailedLessonProgressResponse>>> TrackTimeSpent(int lessonId, [FromBody] TrackTimeSpentRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<DetailedLessonProgressResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new TrackTimeSpentCommand(lessonId, request.EnrollmentId, request.TimeSpentMinutes);
@@ -104,9 +124,9 @@ public class ProgressController : BaseController
         {
             return BadRequest<DetailedLessonProgressResponse>(ex.Message);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return BadRequest<DetailedLessonProgressResponse>("An error occurred while tracking time spent");
+            return BadRequest<DetailedLessonProgressResponse>($"Failed to track time spent: {ex.Message}");
         }
     }
 

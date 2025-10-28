@@ -10,7 +10,7 @@ public class ProgressConfiguration : IEntityTypeConfiguration<Progress>
     {
         builder.ToTable("Progress", t => 
         {
-            t.HasCheckConstraint("CK_Progress_TimeSpent", "TimeSpent >= 0");
+            t.HasCheckConstraint("CK_Progress_TimeSpent", "\"TimeSpent\" >= 0");
         });
 
         builder.HasKey(p => p.Id);

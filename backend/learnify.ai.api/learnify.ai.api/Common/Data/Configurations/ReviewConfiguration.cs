@@ -10,7 +10,7 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
     {
         builder.ToTable("Reviews", t => 
         {
-            t.HasCheckConstraint("CK_Review_Rating", "Rating >= 1 AND Rating <= 5");
+            t.HasCheckConstraint("CK_Review_Rating", "\"Rating\" >= 1 AND \"Rating\" <= 5");
         });
 
         builder.HasKey(r => r.Id);

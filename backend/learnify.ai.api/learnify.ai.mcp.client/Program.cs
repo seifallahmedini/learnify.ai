@@ -13,8 +13,11 @@ var host = new HostBuilder()
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
 
-        // Register custom services
+        // Core MCP plumbing (process + stdio)
         services.AddScoped<LearnifyMcpService>();
+        // Separated concerns
+        services.AddScoped<McpToolsService>();
+        services.AddScoped<AiAgentService>();
         
         // Add HTTP client
         services.AddHttpClient();

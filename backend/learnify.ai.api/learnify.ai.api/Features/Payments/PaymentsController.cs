@@ -16,6 +16,16 @@ public class PaymentsController : BaseController
     [HttpPost("process")]
     public async Task<ActionResult<ApiResponse<ProcessPaymentResponse>>> ProcessPayment([FromBody] ProcessPaymentRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<ProcessPaymentResponse>("Validation failed", errors);
+        }
+
         var command = new ProcessPaymentCommand(
             request.UserId,
             request.CourseId,
@@ -37,6 +47,10 @@ public class PaymentsController : BaseController
         catch (InvalidOperationException ex)
         {
             return BadRequest<ProcessPaymentResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<ProcessPaymentResponse>($"Failed to process payment: {ex.Message}");
         }
     }
 
@@ -61,6 +75,16 @@ public class PaymentsController : BaseController
     [HttpPost("{id:int}/refund")]
     public async Task<ActionResult<ApiResponse<RefundResponse>>> ProcessRefund(int id, [FromBody] ProcessRefundRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<RefundResponse>("Validation failed", errors);
+        }
+
         var command = new ProcessRefundCommand(id, request.RefundAmount, request.Reason);
 
         try
@@ -75,6 +99,10 @@ public class PaymentsController : BaseController
         catch (InvalidOperationException ex)
         {
             return BadRequest<RefundResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<RefundResponse>($"Failed to process refund: {ex.Message}");
         }
     }
 

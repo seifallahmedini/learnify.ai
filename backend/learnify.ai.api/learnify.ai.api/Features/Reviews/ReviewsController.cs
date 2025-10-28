@@ -61,6 +61,16 @@ public class ReviewsController : BaseController
     [HttpPost]
     public async Task<ActionResult<ApiResponse<ReviewResponse>>> CreateReview([FromBody] CreateReviewRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<ReviewResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new CreateReviewCommand(
@@ -81,6 +91,10 @@ public class ReviewsController : BaseController
         {
             return BadRequest<ReviewResponse>(ex.Message);
         }
+        catch (Exception ex)
+        {
+            return BadRequest<ReviewResponse>($"Failed to create review: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -89,6 +103,16 @@ public class ReviewsController : BaseController
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ApiResponse<ReviewResponse>>> UpdateReview(int id, [FromBody] UpdateReviewRequest request)
     {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<ReviewResponse>("Validation failed", errors);
+        }
+
         try
         {
             var command = new UpdateReviewCommand(id, request.Rating, request.Comment);
@@ -102,6 +126,10 @@ public class ReviewsController : BaseController
         catch (ArgumentException ex)
         {
             return BadRequest<ReviewResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<ReviewResponse>($"Failed to update review: {ex.Message}");
         }
     }
 
