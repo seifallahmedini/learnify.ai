@@ -17,24 +17,32 @@ import {
   Users,
   User,
   GraduationCap,
-  BarChart3,
-  Settings,
   Award,
-  Calendar,
-  HelpCircle,
   LogOut,
   FolderOpen,
-  CreditCard,
-  MessageSquare,
   BookOpenCheck,
-  TrendingUp,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar"
 import { Badge } from "@/shared/components/ui/badge"
 import { Separator } from "@/shared/components/ui/separator"
+import type { LucideIcon } from "lucide-react"
 
-// Menu items configuration
-const menuItems = [
+// Type definitions for menu items
+interface MenuItem {
+  title: string
+  url: string
+  icon: LucideIcon
+  description: string
+  badge?: string | null
+}
+
+interface MenuGroup {
+  title: string
+  items: MenuItem[]
+}
+
+// Menu items configuration - aligned with actual routes
+const menuItems: MenuGroup[] = [
   {
     title: "Overview",
     items: [
@@ -43,14 +51,6 @@ const menuItems = [
         url: "/",
         icon: Home,
         description: "Overview and analytics",
-        badge: null,
-      },
-      {
-        title: "Analytics",
-        url: "/analytics",
-        icon: TrendingUp,
-        description: "Platform insights and metrics",
-        badge: null,
       },
     ],
   },
@@ -62,21 +62,18 @@ const menuItems = [
         url: "/courses",
         icon: BookOpen,
         description: "Browse and manage courses",
-        badge: "12",
       },
       {
         title: "Categories",
         url: "/categories",
         icon: FolderOpen,
         description: "Course categories",
-        badge: null,
       },
       {
         title: "Lessons",
         url: "/lessons",
         icon: BookOpenCheck,
         description: "Individual lesson content",
-        badge: null,
       },
     ],
   },
@@ -84,18 +81,10 @@ const menuItems = [
     title: "Assessment",
     items: [
       {
-        title: "Assessments",
-        url: "/assessments",
+        title: "Quizzes",
+        url: "/courses",
         icon: Award,
-        description: "Quizzes and evaluations",
-        badge: "New",
-      },
-      {
-        title: "Progress",
-        url: "/progress",
-        icon: BarChart3,
-        description: "Learning progress tracking",
-        badge: null,
+        description: "Quizzes and assessments (via courses)",
       },
     ],
   },
@@ -107,33 +96,6 @@ const menuItems = [
         url: "/users",
         icon: Users,
         description: "Manage learners and instructors",
-        badge: null,
-      },
-      {
-        title: "Enrollments",
-        url: "/enrollments",
-        icon: Calendar,
-        description: "Course enrollments",
-        badge: "5",
-      },
-      {
-        title: "Reviews",
-        url: "/reviews",
-        icon: MessageSquare,
-        description: "Course reviews and feedback",
-        badge: null,
-      },
-    ],
-  },
-  {
-    title: "Finance",
-    items: [
-      {
-        title: "Payments",
-        url: "/payments",
-        icon: CreditCard,
-        description: "Payment management",
-        badge: null,
       },
     ],
   },
@@ -144,30 +106,9 @@ const menuItems = [
         title: "Profile",
         url: "/profile",
         icon: User,
-        description: "Personal settings",
-        badge: null,
-      },
-      {
-        title: "Settings",
-        url: "/settings",
-        icon: Settings,
-        description: "App preferences",
-        badge: null,
+        description: "Personal settings and preferences",
       },
     ],
-  },
-]
-
-const helpItems = [
-  {
-    title: "Help Center",
-    url: "/help",
-    icon: HelpCircle,
-  },
-  {
-    title: "Support",
-    url: "/support",
-    icon: HelpCircle,
   },
 ]
 
@@ -175,11 +116,29 @@ export function AppSidebar() {
   const location = useLocation()
   const { open } = useSidebar()
 
-  const isActive = (url: string) => {
+  // Check if a route is active - handles exact match for dashboard and prefix match for others
+  const isActive = (url: string, itemTitle?: string): boolean => {
+    const pathname = location.pathname
+    
+    // Exact match for dashboard
     if (url === "/") {
-      return location.pathname === "/"
+      return pathname === "/"
     }
-    return location.pathname.startsWith(url)
+    
+    // Special handling for quizzes - highlight when on any quiz-related route
+    if (itemTitle === "Quizzes") {
+      return pathname.includes("/quizzes")
+    }
+    
+    // For courses - active on course pages, but not when exclusively viewing quizzes
+    // (quizzes can be accessed through courses, but we want the quizzes item highlighted)
+    if (url === "/courses" && itemTitle !== "Quizzes") {
+      // Active on /courses or /courses/:id, but not on /courses/:id/quizzes
+      return pathname.startsWith("/courses") && !pathname.endsWith("/quizzes") && !pathname.includes("/quizzes/")
+    }
+    
+    // Default: prefix matching
+    return pathname.startsWith(url)
   }
 
   return (
@@ -203,57 +162,67 @@ export function AppSidebar() {
       <SidebarContent className="px-3 py-2">
         <div className="space-y-3">
           {menuItems.map((group, groupIndex) => (
-            <SidebarGroup key={groupIndex} className="space-y-2">
+            <SidebarGroup key={`group-${groupIndex}`} className="space-y-2">
               {open && (
                 <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2">
                   {group.title}
                 </SidebarGroupLabel>
               )}
               <SidebarMenu className="space-y-0.5">
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive(item.url)}
-                      tooltip={!open ? item.title : undefined}
-                      className={`w-full transition-all duration-200 min-h-[2rem] ${
-                        isActive(item.url)
-                          ? 'bg-primary/10 text-primary border-l-2 border-primary'
-                          : 'hover:bg-muted/50'
-                      } ${!open ? 'justify-center' : ''}`}
-                    >
-                      <Link to={item.url} className={`flex items-center gap-3 w-full ${!open ? 'justify-center' : ''}`}>
-                        <item.icon className={`size-5 shrink-0 transition-colors duration-200 ${
-                          isActive(item.url) 
-                            ? 'text-primary' 
-                            : 'text-muted-foreground'
-                        }`} />
-                        {open && (
-                          <>
-                            <div className="flex flex-col flex-1 min-w-0 py-1">
-                              <span className={`font-medium truncate transition-colors duration-200 leading-tight ${
-                                isActive(item.url) ? 'text-primary font-semibold' : 'text-foreground'
-                              }`}>
-                                {item.title}
-                              </span>
-                              <span className="text-xs text-muted-foreground truncate leading-relaxed">
-                                {item.description}
-                              </span>
-                            </div>
-                            {item.badge && (
-                              <Badge 
-                                variant={item.badge === "New" ? "default" : "secondary"} 
-                                className={`ml-auto text-xs ${item.badge === "New" ? 'bg-green-500 hover:bg-green-600' : ''}`}
-                              >
-                                {item.badge}
-                              </Badge>
-                            )}
-                          </>
-                        )}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {group.items.map((item) => {
+                  const active = isActive(item.url, item.title)
+                  return (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={active}
+                        tooltip={!open ? item.title : undefined}
+                        className={`w-full transition-all duration-200 min-h-[2rem] ${
+                          active
+                            ? 'bg-primary/10 text-primary border-l-2 border-primary'
+                            : 'hover:bg-muted/50'
+                        } ${!open ? 'justify-center' : ''}`}
+                      >
+                        <Link 
+                          to={item.url} 
+                          className={`flex items-center gap-3 w-full ${!open ? 'justify-center' : ''}`}
+                        >
+                          <item.icon 
+                            className={`size-5 shrink-0 transition-colors duration-200 ${
+                              active 
+                                ? 'text-primary' 
+                                : 'text-muted-foreground'
+                            }`} 
+                          />
+                          {open && (
+                            <>
+                              <div className="flex flex-col flex-1 min-w-0 py-1">
+                                <span 
+                                  className={`font-medium truncate transition-colors duration-200 leading-tight ${
+                                    active ? 'text-primary font-semibold' : 'text-foreground'
+                                  }`}
+                                >
+                                  {item.title}
+                                </span>
+                                <span className="text-xs text-muted-foreground truncate leading-relaxed">
+                                  {item.description}
+                                </span>
+                              </div>
+                              {item.badge && (
+                                <Badge 
+                                  variant={item.badge === "New" ? "default" : "secondary"} 
+                                  className="ml-auto text-xs"
+                                >
+                                  {item.badge}
+                                </Badge>
+                              )}
+                            </>
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
               </SidebarMenu>
               {groupIndex < menuItems.length - 1 && open && (
                 <div className="px-2">
@@ -262,34 +231,6 @@ export function AppSidebar() {
               )}
             </SidebarGroup>
           ))}
-
-          {/* Help Section */}
-          {open && (
-            <SidebarGroup className="space-y-2">
-              <div className="px-2">
-                <Separator className="my-2" />
-              </div>
-              <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2">
-                Support
-              </SidebarGroupLabel>
-              <SidebarMenu className="space-y-0.5">
-                {helpItems.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip={!open ? item.title : undefined}
-                      className="w-full transition-all duration-200 hover:bg-muted/50"
-                    >
-                      <Link to={item.url} className="flex items-center gap-3">
-                        <item.icon className="size-5 text-muted-foreground transition-colors duration-200" />
-                        <span className="font-medium text-foreground">{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroup>
-          )}
         </div>
       </SidebarContent>
 
