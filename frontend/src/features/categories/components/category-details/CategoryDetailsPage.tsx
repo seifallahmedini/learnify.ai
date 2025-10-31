@@ -218,29 +218,29 @@ export function CategoryDetailsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <div className="p-8 space-y-8">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Button variant="outline" onClick={handleBack} className="h-10">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <Button variant="outline" onClick={handleBack} className="h-9 sm:h-10">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <div className="relative">
                 <CategoryIcon 
                   iconUrl={selectedCategory.iconUrl}
-                  className="h-16 w-16 rounded-xl shadow-lg"
+                  className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl shadow-lg"
                 />
                 <div className="absolute -bottom-1 -right-1 p-1 bg-white rounded-full shadow-md">
                   <div className={`h-3 w-3 rounded-full ${selectedCategory.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
                 </div>
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
                   {selectedCategory.name}
                 </h1>
-                <div className="flex items-center gap-3 mt-2">
+                <div className="flex items-center gap-2 sm:gap-3 mt-1.5 sm:mt-2">
                   <Badge variant="outline" className="text-xs">
                     ID: {selectedCategory.id}
                   </Badge>
@@ -274,19 +274,19 @@ export function CategoryDetailsPage() {
         <Separator className="bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Column - Main Info */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Category Information Card */}
-            <div className="bg-white border rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 mb-6">
+            <div className="bg-white border rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 mb-4 sm:mb-6">
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <Folder className="h-5 w-5 text-blue-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Category Information</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Category Information</h2>
               </div>
               
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <div>
                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                     <Tag className="h-4 w-4" />
@@ -332,13 +332,13 @@ export function CategoryDetailsPage() {
             </div>
 
             {/* Course List Card */}
-            <div className="bg-white border rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-white border rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-green-100 rounded-lg">
                     <BookOpen className="h-5 w-5 text-green-600" />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Courses in this Category</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Courses in this Category</h2>
                 </div>
                 {!showAllCourses && selectedCategory.courseCount > 6 && (
                   <Button 
@@ -359,7 +359,7 @@ export function CategoryDetailsPage() {
               
               {/* Course Status Legend */}
               {categoryCourses.length > 0 && (
-                <div className="flex items-center gap-4 mb-4 text-sm">
+                <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4 text-sm">
                   <span className="text-gray-600">Status:</span>
                   <div className="flex items-center gap-1">
                     <Badge className="bg-green-100 text-green-800 text-xs">Published</Badge>
@@ -414,19 +414,19 @@ export function CategoryDetailsPage() {
                   </Badge>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {categoryCourses.map((course) => (
                     <div 
                       key={course.id} 
-                      className={`border rounded-xl p-6 hover:shadow-md transition-shadow cursor-pointer ${
+                      className={`border rounded-xl p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer ${
                         course.isPublished ? '' : 'bg-yellow-50 border-yellow-200'
                       }`}
                       onClick={() => navigate(`/courses/${course.id}`)}
                     >
-                      <div className="flex gap-6">
+                      <div className="flex gap-4 sm:gap-6">
                         {/* Course Thumbnail */}
                         <div className="flex-shrink-0">
-                          <div className="h-20 w-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center border">
+                          <div className="h-16 w-24 sm:h-20 sm:w-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center border">
                             {course.thumbnailUrl ? (
                               <img 
                                 src={course.thumbnailUrl} 
@@ -441,10 +441,10 @@ export function CategoryDetailsPage() {
 
                         {/* Course Info */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-start justify-between mb-2 sm:mb-3">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-lg font-semibold text-gray-900 truncate">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
                                   {course.title}
                                 </h3>
                                 <Badge 
@@ -475,7 +475,7 @@ export function CategoryDetailsPage() {
                           </div>
 
                           {/* Course Meta */}
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600 flex-wrap">
                             <div className="flex items-center gap-1">
                               <Clock className="h-4 w-4" />
                               <span>{formatCourseDuration(course.durationHours)}</span>
@@ -552,43 +552,43 @@ export function CategoryDetailsPage() {
           </div>
 
           {/* Right Column - Statistics and Details */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Statistics Card */}
-            <div className="bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-white border rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 mb-3 sm:mb-4">
                 <div className="p-2 bg-orange-100 rounded-lg">
                   <BarChart3 className="h-5 w-5 text-orange-600" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">Statistics</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">Statistics</h3>
               </div>
               
-              <div className="space-y-4">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-3 sm:p-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-200 rounded-lg">
-                        <BookOpen className="h-4 w-4 text-blue-700" />
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="p-1.5 sm:p-2 bg-blue-200 rounded-lg">
+                        <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-700" />
                       </div>
                       <div>
-                        <span className="text-sm font-medium text-blue-900">Total Courses</span>
-                        <p className="text-xs text-blue-700">Courses in category</p>
+                        <span className="text-xs sm:text-sm font-medium text-blue-900">Total Courses</span>
+                        <p className="text-[10px] sm:text-xs text-blue-700">Courses in category</p>
                       </div>
                     </div>
-                    <span className="text-2xl font-bold text-blue-800">
+                    <span className="text-xl sm:text-2xl font-bold text-blue-800">
                       {selectedCategory.courseCount}
                     </span>
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl p-4">
+                <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl p-3 sm:p-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-200 rounded-lg">
-                        <Users className="h-4 w-4 text-green-700" />
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="p-1.5 sm:p-2 bg-green-200 rounded-lg">
+                        <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-700" />
                       </div>
                       <div>
-                        <span className="text-sm font-medium text-green-900">Active Status</span>
-                        <p className="text-xs text-green-700">Category visibility</p>
+                        <span className="text-xs sm:text-sm font-medium text-green-900">Active Status</span>
+                        <p className="text-[10px] sm:text-xs text-green-700">Category visibility</p>
                       </div>
                     </div>
                     <div className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -604,15 +604,15 @@ export function CategoryDetailsPage() {
             </div>
 
             {/* Quick Actions Card */}
-            <div className="bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-white border rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 mb-3 sm:mb-4">
                 <div className="p-2 bg-purple-100 rounded-lg">
                   <Settings className="h-5 w-5 text-purple-600" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">Quick Actions</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">Quick Actions</h3>
               </div>
               
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <Button 
                   variant="outline" 
                   className="w-full justify-start hover:bg-blue-50 hover:border-blue-200 transition-colors"
@@ -652,16 +652,16 @@ export function CategoryDetailsPage() {
             </div>
 
             {/* Activity Card */}
-            <div className="bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 mb-4">
+            <div className="bg-white border rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 mb-3 sm:mb-4">
                 <div className="p-2 bg-indigo-100 rounded-lg">
                   <Activity className="h-5 w-5 text-indigo-600" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">Recent Activity</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">Recent Activity</h3>
               </div>
               
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
                   <div className="p-1 bg-blue-100 rounded">
                     <Calendar className="h-3 w-3 text-blue-600" />
                   </div>

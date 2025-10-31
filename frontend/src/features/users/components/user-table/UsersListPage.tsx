@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/shared/components/ui/button"
+import { Input } from "@/shared/components/ui/input"
+import { Search } from "lucide-react"
 import { UserPlus } from "lucide-react"
 import { UserFilters } from "./UserFilters"
 import { UserTable } from "./UserTable"
@@ -11,6 +13,7 @@ import { useUserManagement } from "../../hooks/useUserManagement"
 import { useCreateUserForm } from "../../hooks/useCreateUserForm"
 import { usersApi } from "../../services"
 import type { User } from "../../types"
+ 
 
 export function UsersListPage() {
   const navigate = useNavigate()
@@ -37,10 +40,8 @@ export function UsersListPage() {
     totalCount,
     pageSize,
     setSearchTerm,
-    setCurrentPage,
     handleRoleChange,
     handleStatusChange,
-    handlePageSizeChange,
     handleActivateUser,
     handleDeactivateUser,
     handleCreateUser,
@@ -137,30 +138,58 @@ export function UsersListPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+        <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">Users</h1>
           <p className="text-muted-foreground">
-            Manage users, roles, and permissions
+            Manage users, roles, and permissions • {loading ? 'loading…' : `${totalCount} users`}
           </p>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add User
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Add User
+          </Button>
+        </div>
       </div>
 
-      {/* Filters */}
-      <UserFilters
-        searchTerm={searchTerm}
-        selectedRole={selectedRole}
-        selectedStatus={selectedStatus}
-        onSearchChange={setSearchTerm}
-        onRoleChange={handleRoleChange}
-        onStatusChange={handleStatusChange}
-      />
+      {/* Search and Filters - Inline Design */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          {/* Search Field */}
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Search users by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 h-9 w-full"
+            />
+          </div>
+
+          {/* Filters - Role and Status on the right */}
+          <UserFilters
+            selectedRole={selectedRole}
+            selectedStatus={selectedStatus}
+            onRoleChange={handleRoleChange}
+            onStatusChange={handleStatusChange}
+          />
+        </div>
+      </div>
+
+      {/* Results Summary */}
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <span>
+          Showing {users.length} of {totalCount} users
+          {searchTerm && (
+            <span className="ml-1">
+              for "<span className="text-foreground font-medium">{searchTerm}</span>"
+            </span>
+          )}
+        </span>
+      </div>
 
       {/* Users Table */}
       <UserTable
@@ -175,12 +204,19 @@ export function UsersListPage() {
         onDeleteUser={handleDeleteUserClick}
         onViewUser={handleViewUser}
         onEditUser={handleEditUser}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={handlePageSizeChange}
         onCreateUser={() => setShowCreateDialog(true)}
         onClearFilters={clearFilters}
         hasFilters={searchTerm.trim() !== "" || selectedRole !== "all" || selectedStatus !== "all"}
       />
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center space-x-4 py-4">
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <span>Page {currentPage} of {totalPages}</span>
+          </div>
+        </div>
+      )}
 
       {/* Create User Dialog */}
       <CreateUserDialog
@@ -202,7 +238,8 @@ export function UsersListPage() {
         />
       )}
 
-      {/* Delete User Dialog */}
+      {/* Delete User Dialog */
+      }
       <DeleteUserDialog
         user={userToDelete}
         open={showDeleteDialog}

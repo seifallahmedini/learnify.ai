@@ -56,3 +56,22 @@ public record AnswerOrderResult(
     int NewOrderIndex,
     bool Success
 );
+
+// Bulk operation response models
+public record BulkAnswerOperationResponse(
+    bool Success,
+    int ProcessedCount,
+    int SuccessCount,
+    int FailureCount,
+    IEnumerable<string> Errors,
+    string Message,
+    IEnumerable<AnswerResponse>? CreatedAnswers = null
+);
+
+public record BulkAnswerCreationResult(
+    int QuestionId,
+    IEnumerable<AnswerResponse> CreatedAnswers,
+    int SuccessCount,
+    int FailureCount,
+    IEnumerable<string> Errors
+);

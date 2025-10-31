@@ -224,6 +224,85 @@ public class AnswersController : BaseController
 
     #endregion
 
+    #region Bulk Answer Operations
+
+    /// <summary>
+    /// Create multiple answers for a question at once
+    /// </summary>
+    [HttpPost("question/{questionId:int}/bulk")]
+    public async Task<ActionResult<ApiResponse<BulkAnswerOperationResponse>>> CreateMultipleAnswers(int questionId, [FromBody] CreateMultipleAnswersRequest request)
+    {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<BulkAnswerOperationResponse>("Validation failed", errors);
+        }
+
+        try
+        {
+            // Ensure the questionId from route matches the request
+            var command = new CreateMultipleAnswersCommand(questionId, request.Answers);
+            var result = await Mediator.Send(command);
+            
+            return Ok(result, result.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<BulkAnswerOperationResponse>(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<BulkAnswerOperationResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<BulkAnswerOperationResponse>($"Failed to create multiple answers: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Perform bulk operations on multiple answers
+    /// </summary>
+    [HttpPost("bulk")]
+    public async Task<ActionResult<ApiResponse<BulkAnswerOperationResponse>>> BulkAnswerOperation([FromBody] BulkAnswerOperationRequest request)
+    {
+        // Add model validation check
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState
+                .SelectMany(x => x.Value.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+            return BadRequest<BulkAnswerOperationResponse>("Validation failed", errors);
+        }
+
+        try
+        {
+            var command = new BulkAnswerOperationCommand(request.AnswerIds, request.Operation);
+            var result = await Mediator.Send(command);
+            
+            return Ok(result, result.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest<BulkAnswerOperationResponse>(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest<BulkAnswerOperationResponse>(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest<BulkAnswerOperationResponse>($"Failed to perform bulk operation: {ex.Message}");
+        }
+    }
+
+    #endregion
+
     #region Answer Validation
 
     /// <summary>

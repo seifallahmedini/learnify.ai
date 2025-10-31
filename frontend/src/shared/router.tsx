@@ -6,6 +6,8 @@ import { CategoriesListPage, CategoryDetailsPage } from "@/features/categories"
 import { ProfilePage } from "@/features/profile"
 import { LoginPage } from "@/features/auth"
 import { UsersListPage, UserDetailsPage } from "@/features/users"
+import { LessonsListPage, LessonDetailsPage, AllLessonsPage } from "@/features/lessons"
+import { QuizzesListPage, QuizDetailsPage } from "@/features/quizzes"
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +29,26 @@ export const router = createBrowserRouter([
       {
         path: "courses/:courseId",
         element: <CourseDetailsPage />,
+      },
+      {
+        path: "courses/:courseId/lessons",
+        element: <LessonsListPage />,
+      },
+      {
+        path: "courses/:courseId/quizzes",
+        element: <QuizzesListPage />,
+      },
+      {
+        path: "lessons",
+        element: <AllLessonsPage />,
+      },
+      {
+        path: "lessons/:lessonId",
+        element: <LessonDetailsPage />,
+      },
+      {
+        path: "quizzes/:quizId",
+        element: <QuizDetailsPage />,
       },
       {
         path: "categories",
