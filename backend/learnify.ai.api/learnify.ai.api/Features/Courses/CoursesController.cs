@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using learnify.ai.api.Common.Controllers;
 using learnify.ai.api.Common.Models;
 using learnify.ai.api.Features.Lessons;
+using learnify.ai.api.Domain.Enums;
 
 namespace learnify.ai.api.Features.Courses;
 

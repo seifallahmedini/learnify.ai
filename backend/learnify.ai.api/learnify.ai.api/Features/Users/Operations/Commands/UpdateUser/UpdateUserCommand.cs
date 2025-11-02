@@ -1,6 +1,6 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
 
 namespace learnify.ai.api.Features.Users;
 
@@ -14,9 +14,9 @@ public record UpdateUserCommand(
     bool? IsActive = null
 ) : ICommand<UserResponse?>;
 
-public class UpdateUserValidator : AbstractValidator<UpdateUserCommand>
+public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
 {
-    public UpdateUserValidator()
+    public UpdateUserCommandValidator()
     {
         RuleFor(x => x.Id)
             .GreaterThan(0)
@@ -44,11 +44,11 @@ public class UpdateUserValidator : AbstractValidator<UpdateUserCommand>
     }
 }
 
-public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, UserResponse?>
+public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserResponse?>
 {
     private readonly IUserRepository _userRepository;
 
-    public UpdateUserHandler(IUserRepository userRepository)
+    public UpdateUserCommandHandler(IUserRepository userRepository)
     {
         _userRepository = userRepository;
     }
@@ -60,40 +60,10 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, UserResponse
         if (user == null)
             return null;
 
-        // Update only provided fields
-        if (!string.IsNullOrEmpty(request.FirstName))
-            user.FirstName = request.FirstName;
-
-        if (!string.IsNullOrEmpty(request.LastName))
-            user.LastName = request.LastName;
-
-        if (request.Bio != null)
-            user.Bio = request.Bio;
-
-        if (request.DateOfBirth.HasValue)
-            user.DateOfBirth = request.DateOfBirth;
-
-        if (!string.IsNullOrEmpty(request.PhoneNumber))
-            user.PhoneNumber = request.PhoneNumber;
-
-        if (request.IsActive.HasValue)
-            user.IsActive = request.IsActive.Value;
+        request.UpdateEntity(user);
 
         var updatedUser = await _userRepository.UpdateAsync(user, cancellationToken);
 
-        return new UserResponse(
-            updatedUser.Id,
-            updatedUser.FirstName,
-            updatedUser.LastName,
-            updatedUser.Email,
-            updatedUser.Role,
-            updatedUser.IsActive,
-            updatedUser.ProfilePicture,
-            updatedUser.Bio,
-            updatedUser.DateOfBirth,
-            updatedUser.PhoneNumber,
-            updatedUser.CreatedAt,
-            updatedUser.UpdatedAt
-        );
+        return updatedUser.ToResponse();
     }
 }

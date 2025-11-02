@@ -25,4 +25,9 @@ public abstract class BaseController : ControllerBase
     {
         return base.NotFound(ApiResponse<T>.ErrorResult(message));
     }
+
+    protected ActionResult<ApiResponse<T>> Unauthorized<T>(string message)
+    {
+        return StatusCode(401, ApiResponse<T>.ErrorResult(message));
+    }
 }

@@ -1,3 +1,5 @@
+using learnify.ai.api.Domain.Enums;
+
 namespace learnify.ai.api.Features.Assessments;
 
 // Response DTOs for Quiz endpoints

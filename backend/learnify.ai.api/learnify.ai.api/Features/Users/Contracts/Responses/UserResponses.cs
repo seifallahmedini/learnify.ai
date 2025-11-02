@@ -1,3 +1,6 @@
+
+using learnify.ai.api.Common.Enums;
+
 namespace learnify.ai.api.Features.Users;
 
 public record UserResponse(
@@ -5,14 +8,15 @@ public record UserResponse(
     string FirstName,
     string LastName,
     string Email,
-    UserRole Role,
+    //RoleType Role,
     bool IsActive,
     string? ProfilePicture,
     string? Bio,
     DateTime? DateOfBirth,
     string? PhoneNumber,
     DateTime CreatedAt,
-    DateTime UpdatedAt
+    DateTime UpdatedAt,
+    Gender Gender
 )
 {
     public string FullName => $"{FirstName} {LastName}";
@@ -22,7 +26,7 @@ public record UserSummaryResponse(
     int Id,
     string FullName,
     string Email,
-    UserRole Role,
+    //RoleType Role,
     bool IsActive,
     DateTime CreatedAt
 );

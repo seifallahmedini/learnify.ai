@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Domain.Entities;
 using learnify.ai.api.Features.Enrollments;
 using learnify.ai.api.Features.Courses;
 
@@ -48,7 +49,7 @@ public class GetLessonProgressHandler : IRequestHandler<GetLessonProgressQuery, 
         if (lesson == null)
             return null;
 
-        Enrollments.Progress? progress = null;
+        Domain.Entities.Progress? progress = null;
 
         if (request.EnrollmentId.HasValue)
         {

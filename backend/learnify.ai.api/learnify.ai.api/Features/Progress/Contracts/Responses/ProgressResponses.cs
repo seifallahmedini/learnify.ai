@@ -1,4 +1,5 @@
-using learnify.ai.api.Features.Enrollments;
+using learnify.ai.api.Domain.Entities;
+using learnify.ai.api.Domain.Enums;
 
 namespace learnify.ai.api.Features.Progress;
 

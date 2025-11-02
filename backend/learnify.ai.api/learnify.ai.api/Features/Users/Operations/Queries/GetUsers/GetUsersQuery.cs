@@ -1,20 +1,21 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Common.Enums;
 
 namespace learnify.ai.api.Features.Users;
 
 public record GetUsersQuery(
-    UserRole? Role = null,
+    RoleType? Role = null,
     bool? IsActive = null,
     string? SearchTerm = null,
     int Page = 1,
     int PageSize = 10
 ) : IQuery<UserListResponse>;
 
-public class GetUsersValidator : AbstractValidator<GetUsersQuery>
+public class GetUsersQueryValidator : AbstractValidator<GetUsersQuery>
 {
-    public GetUsersValidator()
+    public GetUsersQueryValidator()
     {
         RuleFor(x => x.Page)
             .GreaterThan(0)
@@ -27,11 +28,11 @@ public class GetUsersValidator : AbstractValidator<GetUsersQuery>
     }
 }
 
-public class GetUsersHandler : IRequestHandler<GetUsersQuery, UserListResponse>
+public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, UserListResponse>
 {
     private readonly IUserRepository _userRepository;
 
-    public GetUsersHandler(IUserRepository userRepository)
+    public GetUsersQueryHandler(IUserRepository userRepository)
     {
         _userRepository = userRepository;
     }
@@ -42,11 +43,6 @@ public class GetUsersHandler : IRequestHandler<GetUsersQuery, UserListResponse>
         
         // Apply filters
         var filteredUsers = allUsers.AsQueryable();
-
-        if (request.Role.HasValue)
-        {
-            filteredUsers = filteredUsers.Where(u => u.Role == request.Role.Value);
-        }
 
         if (request.IsActive.HasValue)
         {
@@ -59,7 +55,7 @@ public class GetUsersHandler : IRequestHandler<GetUsersQuery, UserListResponse>
             filteredUsers = filteredUsers.Where(u => 
                 u.FirstName.ToLower().Contains(searchTerm) ||
                 u.LastName.ToLower().Contains(searchTerm) ||
-                u.Email.ToLower().Contains(searchTerm));
+                (u.Email ?? string.Empty).ToLower().Contains(searchTerm));
         }
 
         var totalCount = filteredUsers.Count();
@@ -70,14 +66,7 @@ public class GetUsersHandler : IRequestHandler<GetUsersQuery, UserListResponse>
             .ThenBy(u => u.FirstName)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(u => new UserSummaryResponse(
-                u.Id,
-                u.GetFullName(),
-                u.Email,
-                u.Role,
-                u.IsActive,
-                u.CreatedAt
-            ));
+            .Select(u => u.ToSummary());
 
         return new UserListResponse(
             users,

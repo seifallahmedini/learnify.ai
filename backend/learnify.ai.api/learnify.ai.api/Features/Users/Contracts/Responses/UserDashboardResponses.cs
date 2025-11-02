@@ -1,8 +1,10 @@
+using learnify.ai.api.Common.Enums;
+
 namespace learnify.ai.api.Features.Users;
 
 public record UserDashboardResponse(
     int UserId,
-    UserRole Role,
+    RoleType Role,
     UserDashboardStats Stats,
     IEnumerable<RecentActivityItem> RecentActivity,
     IEnumerable<ActiveEnrollmentSummary> ActiveEnrollments,

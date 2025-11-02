@@ -1,6 +1,8 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Domain.Entities;
+using learnify.ai.api.Domain.Enums;
 using learnify.ai.api.Features.Enrollments;
 using learnify.ai.api.Features.Courses;
 
@@ -61,7 +63,7 @@ public class MarkLessonCompleteHandler : IRequestHandler<MarkLessonCompleteComma
         
         if (progress == null)
         {
-            progress = new Enrollments.Progress
+            progress = new Domain.Entities.Progress
             {
                 EnrollmentId = request.EnrollmentId,
                 LessonId = request.LessonId,
@@ -96,7 +98,7 @@ public class MarkLessonCompleteHandler : IRequestHandler<MarkLessonCompleteComma
         );
     }
 
-    private async Task UpdateEnrollmentProgress(Enrollments.Enrollment enrollment, CancellationToken cancellationToken)
+    private async Task UpdateEnrollmentProgress(Enrollment enrollment, CancellationToken cancellationToken)
     {
         var totalLessons = await _lessonRepository.GetLessonCountAsync(enrollment.CourseId, cancellationToken);
         if (totalLessons == 0) return;
@@ -107,9 +109,9 @@ public class MarkLessonCompleteHandler : IRequestHandler<MarkLessonCompleteComma
         enrollment.Progress = Math.Round(progressPercentage, 2);
 
         // Mark as completed if all lessons are done
-        if (progressPercentage >= 100 && enrollment.Status == Enrollments.EnrollmentStatus.Active)
+        if (progressPercentage >= 100 && enrollment.Status == EnrollmentStatus.Active)
         {
-            enrollment.Status = Enrollments.EnrollmentStatus.Completed;
+            enrollment.Status = EnrollmentStatus.Completed;
             enrollment.CompletionDate = DateTime.UtcNow;
         }
 

@@ -1,8 +1,11 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Courses;
+using Microsoft.AspNetCore.Identity;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Common.Enums;
+using learnify.ai.api.Domain.Entities;
 using learnify.ai.api.Features.Enrollments;
+using learnify.ai.api.Features.Courses;
 using learnify.ai.api.Features.Assessments;
 using learnify.ai.api.Features.Payments;
 using learnify.ai.api.Features.Reviews;
@@ -24,6 +27,7 @@ public class GetUserDashboardValidator : AbstractValidator<GetUserDashboardQuery
 public class GetUserDashboardHandler : IRequestHandler<GetUserDashboardQuery, UserDashboardResponse?>
 {
     private readonly IUserRepository _userRepository;
+    private readonly UserManager<User> _userManager;
     private readonly ICourseRepository _courseRepository;
     private readonly IEnrollmentRepository _enrollmentRepository;
     private readonly IProgressRepository _progressRepository;
@@ -34,6 +38,7 @@ public class GetUserDashboardHandler : IRequestHandler<GetUserDashboardQuery, Us
 
     public GetUserDashboardHandler(
         IUserRepository userRepository,
+        UserManager<User> userManager,
         ICourseRepository courseRepository,
         IEnrollmentRepository enrollmentRepository,
         IProgressRepository progressRepository,
@@ -43,6 +48,7 @@ public class GetUserDashboardHandler : IRequestHandler<GetUserDashboardQuery, Us
         IReviewRepository reviewRepository)
     {
         _userRepository = userRepository;
+        _userManager = userManager;
         _courseRepository = courseRepository;
         _enrollmentRepository = enrollmentRepository;
         _progressRepository = progressRepository;
@@ -70,16 +76,20 @@ public class GetUserDashboardHandler : IRequestHandler<GetUserDashboardQuery, Us
         // Get quiz performance
         var quizPerformance = await GetQuizPerformanceAsync(request.UserId, cancellationToken);
 
-        // Get instructor data if user is an instructor
+        // Get user roles
+        var roles = await _userManager.GetRolesAsync(user);
+        var roleType = GetRoleTypeFromRoles(roles);
+
+        // Get instructor data if user is an instructor or admin
         InstructorDashboardData? instructorData = null;
-        if (user.Role == UserRole.Instructor || user.Role == UserRole.Admin)
+        if (roleType == RoleType.Instructor || roleType == RoleType.Admin || roleType == RoleType.SuperAdmin)
         {
             instructorData = await GetInstructorDashboardDataAsync(request.UserId, cancellationToken);
         }
 
         return new UserDashboardResponse(
             user.Id,
-            user.Role,
+            roleType,
             stats,
             recentActivity,
             activeEnrollments,
@@ -94,8 +104,8 @@ public class GetUserDashboardHandler : IRequestHandler<GetUserDashboardQuery, Us
         var enrollmentsList = enrollments.ToList();
         
         var totalEnrollments = enrollmentsList.Count;
-        var activeEnrollments = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Active);
-        var completedCourses = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Completed);
+        var activeEnrollments = enrollmentsList.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Active);
+        var completedCourses = enrollmentsList.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Completed);
 
         // Calculate overall progress
         var overallProgress = enrollmentsList.Any() 
@@ -176,7 +186,7 @@ public class GetUserDashboardHandler : IRequestHandler<GetUserDashboardQuery, Us
 
             // Recent course completions
             var recentCompletions = recentEnrollments
-                .Where(e => e.Status == EnrollmentStatus.Completed && 
+                .Where(e => e.Status == Domain.Enums.EnrollmentStatus.Completed && 
                            e.CompletionDate.HasValue && 
                            e.CompletionDate >= cutoffDate)
                 .OrderByDescending(e => e.CompletionDate)
@@ -211,7 +221,7 @@ public class GetUserDashboardHandler : IRequestHandler<GetUserDashboardQuery, Us
         {
             var allEnrollments = await _enrollmentRepository.GetByUserIdAsync(userId, cancellationToken);
             var activeEnrollments = allEnrollments
-                .Where(e => e.Status == EnrollmentStatus.Active)
+                .Where(e => e.Status == Domain.Enums.EnrollmentStatus.Active)
                 .OrderByDescending(e => e.EnrollmentDate)
                 .Take(5);
 
@@ -393,5 +403,14 @@ public class GetUserDashboardHandler : IRequestHandler<GetUserDashboardQuery, Us
                 new CourseAnalyticsSummary(0, 0, 0m, 0, 0)
             );
         }
+    }
+
+    private static RoleType GetRoleTypeFromRoles(IList<string> roles)
+    {
+        if (roles.Contains("Admin") || roles.Contains("SuperAdmin"))
+            return RoleType.Admin;
+        if (roles.Contains("Instructor"))
+            return RoleType.Instructor;
+        return RoleType.Student;
     }
 }

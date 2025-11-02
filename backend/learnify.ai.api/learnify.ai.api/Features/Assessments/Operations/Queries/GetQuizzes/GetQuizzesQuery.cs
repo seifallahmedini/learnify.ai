@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Domain.Entities;
 
 namespace learnify.ai.api.Features.Assessments;
 
@@ -48,29 +49,31 @@ public class GetQuizzesHandler : IRequestHandler<GetQuizzesQuery, QuizListRespon
 
     public async Task<QuizListResponse> Handle(GetQuizzesQuery request, CancellationToken cancellationToken)
     {
-        // Get quizzes based on filters
+        // Get quizzes based on filters at repository level
         IEnumerable<Quiz> quizzes;
 
         if (request.CourseId.HasValue)
         {
-            quizzes = await _quizRepository.GetByCourseIdAsync(request.CourseId.Value, cancellationToken);
+            quizzes = await _quizRepository.GetByCourseIdAsync(request.CourseId.Value, request.IsActive, cancellationToken);
         }
         else if (request.LessonId.HasValue)
         {
-            quizzes = await _quizRepository.GetByLessonIdAsync(request.LessonId.Value, cancellationToken);
+            quizzes = await _quizRepository.GetByLessonIdAsync(request.LessonId.Value, request.IsActive, cancellationToken);
         }
         else
         {
-            quizzes = await _quizRepository.GetAllAsync(cancellationToken);
+            // For GetAllAsync, apply isActive filter if provided
+            if (request.IsActive.HasValue)
+            {
+                quizzes = await _quizRepository.FindAsync(q => q.IsActive == request.IsActive.Value, cancellationToken);
+            }
+            else
+            {
+                quizzes = await _quizRepository.GetAllAsync(cancellationToken);
+            }
         }
 
         var quizzesList = quizzes.ToList();
-
-        // Apply active filter
-        if (request.IsActive.HasValue)
-        {
-            quizzesList = quizzesList.Where(q => q.IsActive == request.IsActive.Value).ToList();
-        }
 
         // Get total count before pagination
         var totalCount = quizzesList.Count;

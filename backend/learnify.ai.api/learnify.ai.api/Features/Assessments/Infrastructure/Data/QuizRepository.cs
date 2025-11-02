@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using learnify.ai.api.Common.Data;
-using learnify.ai.api.Common.Data.Repositories;
+using learnify.ai.api.Common.Infrastructure.Data;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Common.Infrastructure.Data.Repositories;
 
+using learnify.ai.api.Domain.Entities;
 namespace learnify.ai.api.Features.Assessments;
 
 public class QuizRepository : BaseRepository<Quiz>, IQuizRepository
@@ -10,14 +12,22 @@ public class QuizRepository : BaseRepository<Quiz>, IQuizRepository
     {
     }
 
-    public async Task<IEnumerable<Quiz>> GetByCourseIdAsync(int courseId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Quiz>> GetByCourseIdAsync(int courseId, bool? isActive = null, CancellationToken cancellationToken = default)
     {
-        return await FindAsync(q => q.CourseId == courseId && q.IsActive, cancellationToken);
+        if (isActive.HasValue)
+        {
+            return await FindAsync(q => q.CourseId == courseId && q.IsActive == isActive.Value, cancellationToken);
+        }
+        return await FindAsync(q => q.CourseId == courseId, cancellationToken);
     }
 
-    public async Task<IEnumerable<Quiz>> GetByLessonIdAsync(int lessonId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Quiz>> GetByLessonIdAsync(int lessonId, bool? isActive = null, CancellationToken cancellationToken = default)
     {
-        return await FindAsync(q => q.LessonId == lessonId && q.IsActive, cancellationToken);
+        if (isActive.HasValue)
+        {
+            return await FindAsync(q => q.LessonId == lessonId && q.IsActive == isActive.Value, cancellationToken);
+        }
+        return await FindAsync(q => q.LessonId == lessonId, cancellationToken);
     }
 
     public async Task<IEnumerable<Quiz>> GetActiveQuizzesAsync(int courseId, CancellationToken cancellationToken = default)

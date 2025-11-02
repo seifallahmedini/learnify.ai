@@ -1,6 +1,6 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
 
 namespace learnify.ai.api.Features.Reviews;
 

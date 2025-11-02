@@ -1,3 +1,5 @@
+using learnify.ai.api.Common.Enums;
+
 namespace learnify.ai.api.Features.Users;
 
 public record CreateUserRequest(
@@ -5,10 +7,11 @@ public record CreateUserRequest(
     string LastName,
     string Email,
     string Password,
-    UserRole Role = UserRole.Student,
+    RoleType Role = RoleType.Student,
     string? Bio = null,
     DateTime? DateOfBirth = null,
-    string? PhoneNumber = null
+    string? PhoneNumber = null,
+    Gender Gender = Gender.Male
 );
 
 public record UpdateUserRequest(
@@ -17,11 +20,12 @@ public record UpdateUserRequest(
     string? Bio = null,
     DateTime? DateOfBirth = null,
     string? PhoneNumber = null,
-    bool? IsActive = null
+    bool? IsActive = null,
+    Gender? Gender = null
 );
 
 public record UserFilterRequest(
-    UserRole? Role = null,
+    RoleType? Role = null,
     bool? IsActive = null,
     string? SearchTerm = null,
     int Page = 1,

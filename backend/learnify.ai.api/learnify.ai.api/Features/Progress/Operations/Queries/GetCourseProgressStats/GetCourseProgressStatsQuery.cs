@@ -1,8 +1,9 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
-using learnify.ai.api.Features.Enrollments;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Domain.Entities;
 using learnify.ai.api.Features.Courses;
+using learnify.ai.api.Features.Enrollments;
 
 namespace learnify.ai.api.Features.Progress;
 
@@ -82,8 +83,8 @@ public class GetCourseProgressStatsHandler : IRequestHandler<GetCourseProgressSt
 
         // Calculate statistics
         var totalEnrollments = enrollmentsList.Count;
-        var completedEnrollments = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Completed);
-        var activeEnrollments = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Active);
+        var completedEnrollments = enrollmentsList.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Completed);
+        var activeEnrollments = enrollmentsList.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Active);
 
         // Calculate average progress
         var averageProgress = enrollmentsList.Average(e => e.Progress);
@@ -93,7 +94,7 @@ public class GetCourseProgressStatsHandler : IRequestHandler<GetCourseProgressSt
 
         // Calculate average time to complete (for completed enrollments only)
         var completedEnrollmentsWithDates = enrollmentsList
-            .Where(e => e.Status == EnrollmentStatus.Completed && e.CompletionDate.HasValue)
+            .Where(e => e.Status == Domain.Enums.EnrollmentStatus.Completed && e.CompletionDate.HasValue)
             .ToList();
 
         var averageTimeToCompleteMinutes = 0;

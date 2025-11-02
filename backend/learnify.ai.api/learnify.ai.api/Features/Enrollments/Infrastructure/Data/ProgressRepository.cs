@@ -1,36 +1,38 @@
 using Microsoft.EntityFrameworkCore;
-using learnify.ai.api.Common.Data;
-using learnify.ai.api.Common.Data.Repositories;
+using learnify.ai.api.Common.Infrastructure.Data;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Common.Infrastructure.Data.Repositories;
 
+using learnify.ai.api.Domain.Entities;
 namespace learnify.ai.api.Features.Enrollments;
 
-public class ProgressRepository : BaseRepository<Progress>, IProgressRepository
+public class ProgressRepository : BaseRepository<Domain.Entities.Progress>, IProgressRepository
 {
     public ProgressRepository(LearnifyDbContext context) : base(context)
     {
     }
 
-    public async Task<IEnumerable<Progress>> GetByEnrollmentIdAsync(int enrollmentId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Domain.Entities.Progress>> GetByEnrollmentIdAsync(int enrollmentId, CancellationToken cancellationToken = default)
     {
         return await FindAsync(p => p.EnrollmentId == enrollmentId, cancellationToken);
     }
 
-    public async Task<IEnumerable<Progress>> GetByLessonIdAsync(int lessonId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Domain.Entities.Progress>> GetByLessonIdAsync(int lessonId, CancellationToken cancellationToken = default)
     {
         return await FindAsync(p => p.LessonId == lessonId, cancellationToken);
     }
 
-    public async Task<Progress?> GetByEnrollmentAndLessonAsync(int enrollmentId, int lessonId, CancellationToken cancellationToken = default)
+    public async Task<Domain.Entities.Progress?> GetByEnrollmentAndLessonAsync(int enrollmentId, int lessonId, CancellationToken cancellationToken = default)
     {
         return await FirstOrDefaultAsync(p => p.EnrollmentId == enrollmentId && p.LessonId == lessonId, cancellationToken);
     }
 
-    public async Task<IEnumerable<Progress>> GetCompletedLessonsAsync(int enrollmentId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Domain.Entities.Progress>> GetCompletedLessonsAsync(int enrollmentId, CancellationToken cancellationToken = default)
     {
         return await FindAsync(p => p.EnrollmentId == enrollmentId && p.IsCompleted, cancellationToken);
     }
 
-    public async Task<IEnumerable<Progress>> GetIncompleteLessonsAsync(int enrollmentId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Domain.Entities.Progress>> GetIncompleteLessonsAsync(int enrollmentId, CancellationToken cancellationToken = default)
     {
         return await FindAsync(p => p.EnrollmentId == enrollmentId && !p.IsCompleted, cancellationToken);
     }

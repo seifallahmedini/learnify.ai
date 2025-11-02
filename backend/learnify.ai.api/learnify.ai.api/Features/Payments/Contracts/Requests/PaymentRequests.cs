@@ -1,3 +1,5 @@
+using learnify.ai.api.Domain.Enums;
+
 namespace learnify.ai.api.Features.Payments;
 
 // Request DTOs for Payment endpoints

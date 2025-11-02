@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Domain.Entities;
 using learnify.ai.api.Features.Assessments;
 using learnify.ai.api.Features.Courses;
 
@@ -96,7 +97,8 @@ public class GetUserQuizAttemptsHandler : IRequestHandler<GetUserQuizAttemptsQue
         if (request.CourseId.HasValue)
         {
             // Filter by course - need to check quiz course relationship
-            var courseQuizzes = await _quizRepository.GetByCourseIdAsync(request.CourseId.Value, cancellationToken);
+            // Get all quizzes (both active and inactive) to match attempts
+            var courseQuizzes = await _quizRepository.GetByCourseIdAsync(request.CourseId.Value, isActive: null, cancellationToken);
             var courseQuizIds = courseQuizzes.Select(q => q.Id).ToHashSet();
             allAttempts = allAttempts.Where(qa => courseQuizIds.Contains(qa.QuizId));
         }

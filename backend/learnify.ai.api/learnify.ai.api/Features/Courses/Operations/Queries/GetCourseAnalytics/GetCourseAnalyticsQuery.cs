@@ -1,6 +1,8 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Domain.Entities;
+using learnify.ai.api.Domain.Enums;
 using learnify.ai.api.Features.Enrollments;
 using learnify.ai.api.Features.Reviews;
 using learnify.ai.api.Features.Payments;

@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Domain.Entities;
 using learnify.ai.api.Features.Enrollments;
 using learnify.ai.api.Features.Users;
 using learnify.ai.api.Features.Courses;
@@ -70,8 +71,8 @@ public class GetUserLearningStatsHandler : IRequestHandler<GetUserLearningStatsQ
 
         // Calculate overall statistics
         var totalEnrollments = enrollmentsList.Count;
-        var activeEnrollments = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Active);
-        var completedCourses = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Completed);
+        var activeEnrollments = enrollmentsList.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Active);
+        var completedCourses = enrollmentsList.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Completed);
 
         // Calculate total time spent and completed lessons across all enrollments
         int totalTimeSpent = 0;
@@ -90,7 +91,7 @@ public class GetUserLearningStatsHandler : IRequestHandler<GetUserLearningStatsQ
 
             // Get course information
             var course = await _courseRepository.GetByIdAsync(enrollment.CourseId, cancellationToken);
-            var totalLessons = course != null ? await _progressRepository.GetByEnrollmentIdAsync(enrollment.Id, cancellationToken) : new List<Enrollments.Progress>();
+            var totalLessons = course != null ? await _progressRepository.GetByEnrollmentIdAsync(enrollment.Id, cancellationToken) : new List<Domain.Entities.Progress>();
             var totalLessonsCount = totalLessons.Count();
 
             // Get last access date for this enrollment

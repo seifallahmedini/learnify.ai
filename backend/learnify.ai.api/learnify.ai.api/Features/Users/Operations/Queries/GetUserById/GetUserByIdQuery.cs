@@ -1,14 +1,14 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
 
 namespace learnify.ai.api.Features.Users;
 
 public record GetUserByIdQuery(int Id) : IQuery<UserResponse?>;
 
-public class GetUserByIdValidator : AbstractValidator<GetUserByIdQuery>
+public class GetUserByIdQueryValidator : AbstractValidator<GetUserByIdQuery>
 {
-    public GetUserByIdValidator()
+    public GetUserByIdQueryValidator()
     {
         RuleFor(x => x.Id)
             .GreaterThan(0)
@@ -16,11 +16,11 @@ public class GetUserByIdValidator : AbstractValidator<GetUserByIdQuery>
     }
 }
 
-public class GetUserByIdHandler : IRequestHandler<GetUserByIdQuery, UserResponse?>
+public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserResponse?>
 {
     private readonly IUserRepository _userRepository;
 
-    public GetUserByIdHandler(IUserRepository userRepository)
+    public GetUserByIdQueryHandler(IUserRepository userRepository)
     {
         _userRepository = userRepository;
     }
@@ -32,19 +32,6 @@ public class GetUserByIdHandler : IRequestHandler<GetUserByIdQuery, UserResponse
         if (user == null)
             return null;
 
-        return new UserResponse(
-            user.Id,
-            user.FirstName,
-            user.LastName,
-            user.Email,
-            user.Role,
-            user.IsActive,
-            user.ProfilePicture,
-            user.Bio,
-            user.DateOfBirth,
-            user.PhoneNumber,
-            user.CreatedAt,
-            user.UpdatedAt
-        );
+        return user.ToResponse();
     }
 }

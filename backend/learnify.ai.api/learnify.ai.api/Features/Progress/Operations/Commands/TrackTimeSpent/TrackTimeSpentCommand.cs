@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Domain.Entities;
 using learnify.ai.api.Features.Enrollments;
 using learnify.ai.api.Features.Courses;
 
@@ -66,7 +67,7 @@ public class TrackTimeSpentHandler : IRequestHandler<TrackTimeSpentCommand, Deta
         
         if (progress == null)
         {
-            progress = new Enrollments.Progress
+            progress = new Domain.Entities.Progress
             {
                 EnrollmentId = request.EnrollmentId,
                 LessonId = request.LessonId,

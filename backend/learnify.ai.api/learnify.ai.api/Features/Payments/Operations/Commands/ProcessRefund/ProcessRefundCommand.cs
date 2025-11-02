@@ -1,6 +1,6 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
 
 namespace learnify.ai.api.Features.Payments;
 
@@ -78,7 +78,7 @@ public class ProcessRefundHandler : IRequestHandler<ProcessRefundCommand, Refund
         );
     }
 
-    private async Task<RefundGatewayResult> ProcessRefundWithGateway(Payment payment, decimal refundAmount, string? reason)
+    private async Task<RefundGatewayResult> ProcessRefundWithGateway(Domain.Entities.Payment payment, decimal refundAmount, string? reason)
     {
         // Mock implementation - in reality, you would call the payment gateway's refund API
         await Task.Delay(100, CancellationToken.None);

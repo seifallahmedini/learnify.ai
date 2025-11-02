@@ -1,11 +1,8 @@
-using System.Reflection;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using learnify.ai.api.Common.Behaviors;
-using learnify.ai.api.Common.Data;
-using learnify.ai.api.Common.Middleware;
 using learnify.ai.api.Common.Extensions;
+using learnify.ai.api.Common.Infrastructure.Data;
+using learnify.ai.api.Common.Infrastructure.Middleware;
+using learnify.ai.api.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,46 +13,16 @@ Environment.SetEnvironmentVariable("ASPNETCORE_HTTP_PORTS", "8080");
 // Configure fixed port 8080 for the API
 builder.WebHost.UseUrls("http://+:8080");
 
-// Add services to the container.
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// Add health checks
-builder.Services.AddHealthChecks();
-
-// Add DbContext
-builder.Services.AddDbContext<LearnifyDbContext>(options =>
-{
-    var conn = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (!string.IsNullOrWhiteSpace(conn))
-        options.UseNpgsql(conn);
-    else
-        options.UseInMemoryDatabase("LearnifyDb");
-});
-
-// Add MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
-
-// Add FluentValidation
-builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-
-// Add pipeline behaviors
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-
-// Add CORS if needed
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
-
-builder.Services.AddRepositories();
+// Add services using extension methods for better organization
+builder.Services
+    .AddApiServices()
+    .AddDatabaseServices(builder.Configuration)
+    .AddIdentityServices()
+    .AddAuthenticationServices(builder.Configuration)
+    .AddAuthorizationServices()
+    .AddMediatRServices()
+    .AddCorsServices()
+    .AddApplicationServices();
 
 var app = builder.Build();
 
@@ -80,12 +47,13 @@ using (var scope = app.Services.CreateScope())
 // Seed data in development (only for InMemory)
 //if (app.Environment.IsDevelopment())
 //{
-    using var seederScope = app.Services.CreateScope();
-    var context = seederScope.ServiceProvider.GetRequiredService<LearnifyDbContext>();
-    if (context.Database.IsNpgsql())
-    {
-        await DataSeeder.SeedAsync(context);
-    }
+using var seederScope = app.Services.CreateScope();
+var context = seederScope.ServiceProvider.GetRequiredService<LearnifyDbContext>();
+if (context.Database.IsNpgsql())
+{
+    await DataSeeder.SeedAsync(seederScope.ServiceProvider);
+}
+await IdentitySeeder.SeedAsync(seederScope.ServiceProvider);
 //}
 
 // Configure the HTTP request pipeline.
@@ -97,6 +65,7 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseCors();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Add health check endpoint

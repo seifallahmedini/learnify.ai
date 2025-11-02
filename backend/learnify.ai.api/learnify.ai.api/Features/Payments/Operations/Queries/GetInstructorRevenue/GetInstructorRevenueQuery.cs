@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Domain.Entities;
 using learnify.ai.api.Features.Users;
 using learnify.ai.api.Features.Courses;
 
@@ -61,7 +62,7 @@ public class GetInstructorRevenueHandler : IRequestHandler<GetInstructorRevenueQ
         var allPayments = await _paymentRepository.GetAllAsync(cancellationToken);
         var instructorPayments = allPayments
             .Where(p => courseIds.Contains(p.CourseId) && 
-                       p.Status == PaymentStatus.Completed && 
+                       p.Status == Domain.Enums.PaymentStatus.Completed && 
                        p.Currency == currency)
             .ToList();
 

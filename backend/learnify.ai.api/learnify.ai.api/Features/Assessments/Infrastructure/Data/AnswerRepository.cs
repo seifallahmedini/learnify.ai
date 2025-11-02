@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using learnify.ai.api.Common.Data;
-using learnify.ai.api.Common.Data.Repositories;
+using learnify.ai.api.Common.Infrastructure.Data;
+using learnify.ai.api.Common.Infrastructure.Data.Repositories;
 
+using learnify.ai.api.Domain.Entities;
 namespace learnify.ai.api.Features.Assessments;
 
 public class AnswerRepository : BaseRepository<Answer>, IAnswerRepository

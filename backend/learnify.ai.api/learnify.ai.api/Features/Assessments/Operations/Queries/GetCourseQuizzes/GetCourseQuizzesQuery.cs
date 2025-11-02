@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Domain.Entities;
 using learnify.ai.api.Features.Courses;
 
 namespace learnify.ai.api.Features.Assessments;
@@ -39,8 +40,8 @@ public class GetCourseQuizzesHandler : IRequestHandler<GetCourseQuizzesQuery, Co
         if (course == null)
             throw new ArgumentException($"Course with ID {request.CourseId} not found");
 
-        // Get all quizzes for the course
-        var quizzes = await _quizRepository.GetByCourseIdAsync(request.CourseId, cancellationToken);
+        // Get all quizzes for the course (both active and inactive)
+        var quizzes = await _quizRepository.GetByCourseIdAsync(request.CourseId, isActive: null, cancellationToken);
         var quizzesList = quizzes.ToList();
 
         // Build quiz summaries

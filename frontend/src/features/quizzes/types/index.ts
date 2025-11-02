@@ -212,3 +212,13 @@ export interface StartQuizAttemptRequest {
   userId: number;
 }
 
+// Answer Response Types
+// Response from /api/answers/question/{questionId}
+export interface QuestionAnswersResponse {
+  questionId: number;
+  questionText: string;
+  questionType: QuestionType;
+  answers: AnswerSummary[];
+  totalAnswers: number;
+  correctAnswersCount: number;
+}

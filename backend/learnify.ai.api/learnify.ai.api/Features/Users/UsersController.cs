@@ -2,7 +2,8 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using learnify.ai.api.Common.Controllers;
 using learnify.ai.api.Common.Models;
-using learnify.ai.api.Features.Enrollments;
+using learnify.ai.api.Common.Enums;
+using learnify.ai.api.Domain.Entities;
 
 namespace learnify.ai.api.Features.Users;
 
@@ -49,42 +50,10 @@ public class UsersController : BaseController
     /// Create a new user
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<UserResponse>>> CreateUser([FromBody] CreateUserRequest request)
+    public async Task<ActionResult<ApiResponse<UserResponse>>> CreateUser([FromBody] CreateUserCommand command)
     {
-        // Add model validation check
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState
-                .SelectMany(x => x.Value.Errors)
-                .Select(x => x.ErrorMessage)
-                .ToList();
-            return BadRequest<UserResponse>("Validation failed", errors);
-        }
-
-        try
-        {
-            var command = new CreateUserCommand(
-                request.FirstName,
-                request.LastName,
-                request.Email,
-                request.Password,
-                request.Role,
-                request.Bio,
-                request.DateOfBirth,
-                request.PhoneNumber
-            );
-
-            var result = await Mediator.Send(command);
-            return Ok(result, "User created successfully");
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest<UserResponse>(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest<UserResponse>($"Failed to create user: {ex.Message}");
-        }
+        var result = await Mediator.Send(command);
+        return Ok(result, "User created successfully");
     }
 
     /// <summary>
@@ -93,43 +62,22 @@ public class UsersController : BaseController
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ApiResponse<UserResponse>>> UpdateUser(int id, [FromBody] UpdateUserRequest request)
     {
-        // Add model validation check
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState
-                .SelectMany(x => x.Value.Errors)
-                .Select(x => x.ErrorMessage)
-                .ToList();
-            return BadRequest<UserResponse>("Validation failed", errors);
-        }
+        var command = new UpdateUserCommand(
+            id,
+            request.FirstName,
+            request.LastName,
+            request.Bio,
+            request.DateOfBirth,
+            request.PhoneNumber,
+            request.IsActive
+        );
 
-        try
-        {
-            var command = new UpdateUserCommand(
-                id,
-                request.FirstName,
-                request.LastName,
-                request.Bio,
-                request.DateOfBirth,
-                request.PhoneNumber,
-                request.IsActive
-            );
+        var result = await Mediator.Send(command);
 
-            var result = await Mediator.Send(command);
+        if (result == null)
+            return NotFound<UserResponse>($"User with ID {id} not found");
 
-            if (result == null)
-                return NotFound<UserResponse>($"User with ID {id} not found");
-
-            return Ok(result, "User updated successfully");
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest<UserResponse>(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest<UserResponse>($"Failed to update user: {ex.Message}");
-        }
+        return Ok(result, "User updated successfully");
     }
 
     /// <summary>
@@ -158,7 +106,7 @@ public class UsersController : BaseController
     public async Task<ActionResult<ApiResponse<UserListResponse>>> GetInstructors([FromQuery] UserFilterRequest request)
     {
         var query = new GetUsersQuery(
-            UserRole.Instructor,
+            RoleType.Instructor,
             request.IsActive,
             request.SearchTerm,
             request.Page,
@@ -176,7 +124,7 @@ public class UsersController : BaseController
     public async Task<ActionResult<ApiResponse<UserListResponse>>> GetStudents([FromQuery] UserFilterRequest request)
     {
         var query = new GetUsersQuery(
-            UserRole.Student,
+            RoleType.Student,
             request.IsActive,
             request.SearchTerm,
             request.Page,
@@ -194,7 +142,7 @@ public class UsersController : BaseController
     public async Task<ActionResult<ApiResponse<UserListResponse>>> GetAdmins([FromQuery] UserFilterRequest request)
     {
         var query = new GetUsersQuery(
-            UserRole.Admin,
+            RoleType.Admin,
             request.IsActive,
             request.SearchTerm,
             request.Page,
@@ -211,7 +159,7 @@ public class UsersController : BaseController
     [HttpPut("{id:int}/activate")]
     public async Task<ActionResult<ApiResponse<UserResponse>>> ActivateUser(int id)
     {
-        var command = new UpdateUserCommand(id, IsActive: true);
+        var command = new ActivateUserCommand(id);
         var result = await Mediator.Send(command);
 
         if (result == null)
@@ -226,7 +174,7 @@ public class UsersController : BaseController
     [HttpPut("{id:int}/deactivate")]
     public async Task<ActionResult<ApiResponse<UserResponse>>> DeactivateUser(int id)
     {
-        var command = new UpdateUserCommand(id, IsActive: false);
+        var command = new DeactivateUserCommand(id);
         var result = await Mediator.Send(command);
 
         if (result == null)
@@ -247,7 +195,7 @@ public class UsersController : BaseController
         int id,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] EnrollmentStatus? status = null)
+        [FromQuery] Domain.Enums.EnrollmentStatus? status = null)
     {
         var query = new GetUserEnrollmentsQuery(id, page, pageSize, status);
         var result = await Mediator.Send(query);
@@ -310,42 +258,21 @@ public class UsersController : BaseController
     [HttpPut("{id:int}/profile")]
     public async Task<ActionResult<ApiResponse<UserResponse>>> UpdateUserProfile(int id, [FromBody] UpdateUserRequest request)
     {
-        // Add model validation check
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState
-                .SelectMany(x => x.Value.Errors)
-                .Select(x => x.ErrorMessage)
-                .ToList();
-            return BadRequest<UserResponse>("Validation failed", errors);
-        }
+        var command = new UpdateUserCommand(
+            id,
+            request.FirstName,
+            request.LastName,
+            request.Bio,
+            request.DateOfBirth,
+            request.PhoneNumber
+        );
 
-        try
-        {
-            var command = new UpdateUserCommand(
-                id,
-                request.FirstName,
-                request.LastName,
-                request.Bio,
-                request.DateOfBirth,
-                request.PhoneNumber
-            );
+        var result = await Mediator.Send(command);
 
-            var result = await Mediator.Send(command);
+        if (result == null)
+            return NotFound<UserResponse>($"User with ID {id} not found");
 
-            if (result == null)
-                return NotFound<UserResponse>($"User with ID {id} not found");
-
-            return Ok(result, "User profile updated successfully");
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest<UserResponse>(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest<UserResponse>($"Failed to update user profile: {ex.Message}");
-        }
+        return Ok(result, "User profile updated successfully");
     }
 
     /// <summary>
@@ -374,7 +301,7 @@ public class UsersController : BaseController
     [HttpGet("search")]
     public async Task<ActionResult<ApiResponse<UserListResponse>>> SearchUsers(
         [FromQuery] string searchTerm,
-        [FromQuery] UserRole? role = null,
+        [FromQuery] RoleType? role = null,
         [FromQuery] bool? isActive = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)

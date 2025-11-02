@@ -1,5 +1,6 @@
-using learnify.ai.api.Common.Data.Repositories;
+using learnify.ai.api.Common.Abstractions;
 
+using learnify.ai.api.Domain.Entities;
 namespace learnify.ai.api.Features.Users;
 
 public interface IUserRepository : IBaseRepository<User>

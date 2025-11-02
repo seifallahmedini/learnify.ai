@@ -1,6 +1,8 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Domain.Entities;
+
 using learnify.ai.api.Features.Enrollments;
 using learnify.ai.api.Features.Users;
 using learnify.ai.api.Features.Courses;
@@ -139,8 +141,8 @@ public class GetProgressDashboardHandler : IRequestHandler<GetProgressDashboardQ
             }
         }
 
-        var completedCourses = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Completed);
-        var activeCourses = enrollmentsList.Count(e => e.Status == EnrollmentStatus.Active);
+        var completedCourses = enrollmentsList.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Completed);
+        var activeCourses = enrollmentsList.Count(e => e.Status == Domain.Enums.EnrollmentStatus.Active);
         var averageProgress = enrollmentsList.Any() ? enrollmentsList.Average(e => e.Progress) : 0;
 
         // Calculate current streak (placeholder logic)
@@ -228,7 +230,7 @@ public class GetProgressDashboardHandler : IRequestHandler<GetProgressDashboardQ
         return achievements.OrderByDescending(a => a.EarnedDate).ToList();
     }
 
-    private int CalculateCurrentStreak(List<Enrollments.Enrollment> enrollments)
+    private int CalculateCurrentStreak(List<Enrollment> enrollments)
     {
         // Placeholder implementation for calculating learning streak
         // In a real application, you would track daily learning activities

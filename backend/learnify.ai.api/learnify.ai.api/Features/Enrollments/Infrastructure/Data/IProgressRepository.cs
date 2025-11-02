@@ -1,14 +1,14 @@
-using learnify.ai.api.Common.Data.Repositories;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Domain.Entities;
 
 namespace learnify.ai.api.Features.Enrollments;
-
-public interface IProgressRepository : IBaseRepository<Progress>
+public interface IProgressRepository : IBaseRepository<Domain.Entities.Progress>
 {
-    Task<IEnumerable<Progress>> GetByEnrollmentIdAsync(int enrollmentId, CancellationToken cancellationToken = default);
-    Task<IEnumerable<Progress>> GetByLessonIdAsync(int lessonId, CancellationToken cancellationToken = default);
-    Task<Progress?> GetByEnrollmentAndLessonAsync(int enrollmentId, int lessonId, CancellationToken cancellationToken = default);
-    Task<IEnumerable<Progress>> GetCompletedLessonsAsync(int enrollmentId, CancellationToken cancellationToken = default);
-    Task<IEnumerable<Progress>> GetIncompleteLessonsAsync(int enrollmentId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Domain.Entities.Progress>> GetByEnrollmentIdAsync(int enrollmentId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Domain.Entities.Progress>> GetByLessonIdAsync(int lessonId, CancellationToken cancellationToken = default);
+    Task<Domain.Entities.Progress?> GetByEnrollmentAndLessonAsync(int enrollmentId, int lessonId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Domain.Entities.Progress>> GetCompletedLessonsAsync(int enrollmentId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Domain.Entities.Progress>> GetIncompleteLessonsAsync(int enrollmentId, CancellationToken cancellationToken = default);
     Task<int> GetCompletedLessonsCountAsync(int enrollmentId, CancellationToken cancellationToken = default);
     Task<int> GetTotalTimeSpentAsync(int enrollmentId, CancellationToken cancellationToken = default);
     Task<decimal> GetProgressPercentageAsync(int enrollmentId, CancellationToken cancellationToken = default);

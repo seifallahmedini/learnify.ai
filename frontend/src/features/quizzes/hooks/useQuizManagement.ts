@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { quizzesApi } from '../services';
-import type { Quiz, QuizSummary, QuizListResponse, CreateQuizRequest, UpdateQuizRequest } from '../types';
+import type { Quiz, QuizSummary, CreateQuizRequest, UpdateQuizRequest } from '../types';
 
 interface UseQuizManagementOptions {
   courseId?: number | null;
@@ -24,13 +24,26 @@ export const useQuizManagement = (options: UseQuizManagementOptions = {}) => {
     setIsLoading(true);
     setError(null);
     try {
-      const params = {
+      const params: {
+        courseId?: number;
+        lessonId?: number;
+        isActive?: boolean;
+        page?: number;
+        pageSize?: number;
+      } = {
         courseId: options.courseId || undefined,
         lessonId: options.lessonId || undefined,
-        isActive: showActiveOnly || options.isActive || undefined,
         page: pagination.page,
         pageSize: pagination.pageSize,
       };
+      
+      // Only include isActive filter when showActiveOnly is true
+      // When false, don't include it so API returns all quizzes (both active and inactive)
+      if (showActiveOnly) {
+        params.isActive = true;
+      } else if (options.isActive !== undefined) {
+        params.isActive = options.isActive;
+      }
       
       const response = await quizzesApi.getQuizzes(params);
       setQuizzes(response.quizzes);

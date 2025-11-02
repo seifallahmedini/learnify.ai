@@ -1,14 +1,14 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using learnify.ai.api.Common.Abstractions;
 
 namespace learnify.ai.api.Features.Users;
 
 public record DeleteUserCommand(int Id) : ICommand<bool>;
 
-public class DeleteUserValidator : AbstractValidator<DeleteUserCommand>
+public class DeleteUserCommandValidator : AbstractValidator<DeleteUserCommand>
 {
-    public DeleteUserValidator()
+    public DeleteUserCommandValidator()
     {
         RuleFor(x => x.Id)
             .GreaterThan(0)
@@ -16,11 +16,11 @@ public class DeleteUserValidator : AbstractValidator<DeleteUserCommand>
     }
 }
 
-public class DeleteUserHandler : IRequestHandler<DeleteUserCommand, bool>
+public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, bool>
 {
     private readonly IUserRepository _userRepository;
 
-    public DeleteUserHandler(IUserRepository userRepository)
+    public DeleteUserCommandHandler(IUserRepository userRepository)
     {
         _userRepository = userRepository;
     }

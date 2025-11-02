@@ -1,13 +1,11 @@
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Card, CardContent } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
 import { Switch } from '@/shared/components/ui/switch';
 import { 
   ArrowLeft,
-  Plus,
   Clock,
-  BookOpen,
   Target,
   HelpCircle
 } from 'lucide-react';

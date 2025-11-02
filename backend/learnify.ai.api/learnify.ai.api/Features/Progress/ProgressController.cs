@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using learnify.ai.api.Common.Controllers;
 using learnify.ai.api.Common.Models;
+using learnify.ai.api.Features.Enrollments;
 
 namespace learnify.ai.api.Features.Progress;
 
@@ -14,7 +15,7 @@ public class ProgressController : BaseController
     /// Get all progress for enrollment
     /// </summary>
     [HttpGet("enrollment/{enrollmentId:int}")]
-    public async Task<ActionResult<ApiResponse<EnrollmentProgressDetailResponse>>> GetEnrollmentProgress(int enrollmentId)
+    public async Task<ActionResult<ApiResponse<EnrollmentProgressResponse>>> GetEnrollmentProgress(int enrollmentId)
     {
         try
         {
@@ -22,13 +23,13 @@ public class ProgressController : BaseController
             var result = await Mediator.Send(query);
 
             if (result == null)
-                return NotFound<EnrollmentProgressDetailResponse>($"Enrollment with ID {enrollmentId} not found");
+                return NotFound<EnrollmentProgressResponse>($"Enrollment with ID {enrollmentId} not found");
 
             return Ok(result, "Enrollment progress retrieved successfully");
         }
         catch (Exception)
         {
-            return BadRequest<EnrollmentProgressDetailResponse>("An error occurred while retrieving enrollment progress");
+            return BadRequest<EnrollmentProgressResponse>("An error occurred while retrieving enrollment progress");
         }
     }
 

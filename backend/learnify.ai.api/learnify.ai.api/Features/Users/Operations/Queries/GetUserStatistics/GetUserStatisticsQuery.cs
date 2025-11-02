@@ -1,6 +1,9 @@
 using FluentValidation;
 using MediatR;
-using learnify.ai.api.Common.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using learnify.ai.api.Common.Abstractions;
+using learnify.ai.api.Common.Enums;
+using learnify.ai.api.Domain.Entities;
 
 namespace learnify.ai.api.Features.Users;
 
@@ -17,10 +20,12 @@ public class GetUserStatisticsValidator : AbstractValidator<GetUserStatisticsQue
 public class GetUserStatisticsHandler : IRequestHandler<GetUserStatisticsQuery, UserStatisticsResponse>
 {
     private readonly IUserRepository _userRepository;
+    private readonly UserManager<User> _userManager;
 
-    public GetUserStatisticsHandler(IUserRepository userRepository)
+    public GetUserStatisticsHandler(IUserRepository userRepository, UserManager<User> userManager)
     {
         _userRepository = userRepository;
+        _userManager = userManager;
     }
 
     public async Task<UserStatisticsResponse> Handle(GetUserStatisticsQuery request, CancellationToken cancellationToken)
@@ -34,10 +39,21 @@ public class GetUserStatisticsHandler : IRequestHandler<GetUserStatisticsQuery, 
         var activeUsers = usersList.Count(u => u.IsActive);
         var inactiveUsers = totalUsers - activeUsers;
 
-        // Calculate role counts
-        var instructorCount = usersList.Count(u => u.Role == UserRole.Instructor);
-        var studentCount = usersList.Count(u => u.Role == UserRole.Student);
-        var adminCount = usersList.Count(u => u.Role == UserRole.Admin);
+        // Calculate role counts by checking roles for each user
+        var instructorCount = 0;
+        var studentCount = 0;
+        var adminCount = 0;
+
+        foreach (var user in usersList)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Contains("Admin") || roles.Contains("SuperAdmin"))
+                adminCount++;
+            else if (roles.Contains("Instructor"))
+                instructorCount++;
+            else
+                studentCount++;
+        }
 
         // Calculate role distribution percentages
         var roleDistribution = CalculateRoleDistribution(totalUsers, studentCount, instructorCount, adminCount);
