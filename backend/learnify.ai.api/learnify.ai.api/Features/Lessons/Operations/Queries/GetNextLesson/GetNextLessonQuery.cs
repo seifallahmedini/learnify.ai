@@ -58,6 +58,8 @@ public class GetNextLessonHandler : IRequestHandler<GetNextLessonQuery, LessonRe
             nextLesson.OrderIndex,
             nextLesson.IsFree,
             nextLesson.IsPublished,
+            nextLesson.LearningObjectives,
+            nextLesson.Resources,
             nextLesson.CreatedAt,
             nextLesson.UpdatedAt
         );

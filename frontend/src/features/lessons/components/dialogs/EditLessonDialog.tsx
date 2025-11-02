@@ -21,13 +21,13 @@ import {
 import { Input } from '@/shared/components/ui/input';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Switch } from '@/shared/components/ui/switch';
-import { Edit, Video, Clock } from 'lucide-react';
+import { Edit, Video, Clock, Target, Link2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useLessonOperations } from '../../hooks/useLessonManagement';
 import { formatLessonDuration, parseDurationToMinutes } from '../../lib';
-import type { Lesson } from '../../types';
+import type { Lesson, LessonResource } from '../../types';
 
 const editLessonSchema = z.object({
   title: z.string().min(1, 'Title is required').min(3, 'Title must be at least 3 characters'),
@@ -44,6 +44,8 @@ const editLessonSchema = z.object({
   orderIndex: z.string().optional(),
   isFree: z.boolean().default(false),
   isPublished: z.boolean().default(false),
+  learningObjectives: z.string().optional(),
+  resources: z.string().optional(),
 });
 
 type EditLessonFormData = z.infer<typeof editLessonSchema>;
@@ -58,6 +60,19 @@ export function EditLessonDialog({ lesson, onLessonUpdated, trigger }: EditLesso
   const [open, setOpen] = useState(false);
   const { updateLesson, isLoading, error: apiError } = useLessonOperations();
 
+  // Parse resources for display (convert JSON string to readable format)
+  const parseResourcesForDisplay = (resourcesJson?: string): string => {
+    if (!resourcesJson) return '';
+    try {
+      const resources = JSON.parse(resourcesJson) as LessonResource[];
+      if (!Array.isArray(resources)) return '';
+      // Format as JSON for editing
+      return JSON.stringify(resources, null, 2);
+    } catch {
+      return '';
+    }
+  };
+
   const form = useForm<EditLessonFormData>({
     resolver: zodResolver(editLessonSchema),
     defaultValues: {
@@ -69,6 +84,8 @@ export function EditLessonDialog({ lesson, onLessonUpdated, trigger }: EditLesso
       orderIndex: lesson.orderIndex.toString(),
       isFree: lesson.isFree,
       isPublished: lesson.isPublished,
+      learningObjectives: lesson.learningObjectives || '',
+      resources: parseResourcesForDisplay(lesson.resources),
     },
   });
 
@@ -83,12 +100,28 @@ export function EditLessonDialog({ lesson, onLessonUpdated, trigger }: EditLesso
         orderIndex: lesson.orderIndex.toString(),
         isFree: lesson.isFree,
         isPublished: lesson.isPublished,
+        learningObjectives: lesson.learningObjectives || '',
+        resources: parseResourcesForDisplay(lesson.resources),
       });
     }
   }, [open, lesson, form]);
 
   const onSubmit = async (data: EditLessonFormData) => {
     try {
+      // Validate and format resources JSON
+      let resourcesJson: string | undefined = undefined;
+      if (data.resources && data.resources.trim()) {
+        try {
+          const parsed = JSON.parse(data.resources);
+          // Validate it's an array
+          if (Array.isArray(parsed)) {
+            resourcesJson = JSON.stringify(parsed);
+          }
+        } catch {
+          // Invalid JSON, skip it
+        }
+      }
+
       const updated = await updateLesson(lesson.id, {
         title: data.title,
         description: data.description,
@@ -98,6 +131,8 @@ export function EditLessonDialog({ lesson, onLessonUpdated, trigger }: EditLesso
         orderIndex: data.orderIndex ? parseInt(data.orderIndex, 10) : undefined,
         isFree: data.isFree,
         isPublished: data.isPublished,
+        learningObjectives: data.learningObjectives?.trim() || undefined,
+        resources: resourcesJson,
       });
 
       if (updated) {
@@ -174,13 +209,61 @@ export function EditLessonDialog({ lesson, onLessonUpdated, trigger }: EditLesso
                   <FormLabel>Content *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Enter lesson content" 
+                      placeholder="Enter lesson content (Markdown supported)" 
                       className="min-h-[150px]"
                       {...field} 
                     />
                   </FormControl>
                   <FormDescription>
-                    The main content of the lesson
+                    The main content of the lesson (Markdown format supported)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="learningObjectives"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Learning Objectives
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter learning objectives, separated by commas or newlines&#10;Example: Understand React hooks, Learn component composition, Master state management" 
+                      className="min-h-[100px]"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    List learning objectives separated by commas or newlines
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="resources"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <Link2 className="h-4 w-4" />
+                    Resources (JSON)
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder='[{"name": "Example Resource", "url": "https://example.com", "type": "external"}]' 
+                      className="min-h-[120px] font-mono text-xs"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    JSON array format: Array of objects with name, url, and type (download|external|code)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

@@ -14,7 +14,9 @@ public record CreateLessonCommand(
     string? VideoUrl,
     int Duration,
     bool IsFree = false,
-    bool IsPublished = false
+    bool IsPublished = false,
+    string? LearningObjectives = null,
+    string? Resources = null
 ) : ICommand<LessonResponse>;
 
 public class CreateLessonValidator : AbstractValidator<CreateLessonCommand>
@@ -49,6 +51,11 @@ public class CreateLessonValidator : AbstractValidator<CreateLessonCommand>
             .MaximumLength(500)
             .WithMessage("Video URL cannot exceed 500 characters")
             .When(x => !string.IsNullOrEmpty(x.VideoUrl));
+
+        RuleFor(x => x.LearningObjectives)
+            .MaximumLength(2000)
+            .WithMessage("Learning objectives cannot exceed 2000 characters")
+            .When(x => !string.IsNullOrEmpty(x.LearningObjectives));
     }
 }
 
@@ -88,6 +95,8 @@ public class CreateLessonHandler : IRequestHandler<CreateLessonCommand, LessonRe
             OrderIndex = nextOrderIndex,
             IsFree = request.IsFree,
             IsPublished = request.IsPublished,
+            LearningObjectives = request.LearningObjectives,
+            Resources = request.Resources,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -106,6 +115,8 @@ public class CreateLessonHandler : IRequestHandler<CreateLessonCommand, LessonRe
             createdLesson.OrderIndex,
             createdLesson.IsFree,
             createdLesson.IsPublished,
+            createdLesson.LearningObjectives,
+            createdLesson.Resources,
             createdLesson.CreatedAt,
             createdLesson.UpdatedAt
         );

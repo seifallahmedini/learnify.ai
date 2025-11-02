@@ -7,7 +7,9 @@ public record CreateLessonRequest(
     string? VideoUrl,
     int Duration,
     bool IsFree = false,
-    bool IsPublished = false
+    bool IsPublished = false,
+    string? LearningObjectives = null,
+    string? Resources = null
 );
 
 public record UpdateLessonRequest(
@@ -18,7 +20,9 @@ public record UpdateLessonRequest(
     int? Duration = null,
     int? OrderIndex = null,
     bool? IsFree = null,
-    bool? IsPublished = null
+    bool? IsPublished = null,
+    string? LearningObjectives = null,
+    string? Resources = null
 );
 
 public record ReorderLessonRequest(

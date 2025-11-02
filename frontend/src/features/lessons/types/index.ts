@@ -19,6 +19,8 @@ export interface Lesson {
   orderIndex: number;
   isFree: boolean;
   isPublished: boolean;
+  learningObjectives?: string; // Comma or newline separated list
+  resources?: string; // JSON string of resource objects
   formattedDuration: string;
   createdAt: string;
   updatedAt: string;
@@ -59,12 +61,12 @@ export interface LessonResourcesResponse {
 }
 
 export interface LessonResource {
-  id: number;
+  id?: number;
   name: string;
   url: string;
-  type: 'file' | 'link' | 'document';
+  type: 'download' | 'external' | 'code';
   size?: number;
-  uploadedAt: string;
+  uploadedAt?: string;
 }
 
 // Request Types
@@ -76,6 +78,8 @@ export interface CreateLessonRequest {
   duration: number;
   isFree?: boolean;
   isPublished?: boolean;
+  learningObjectives?: string;
+  resources?: string;
 }
 
 export interface UpdateLessonRequest {
@@ -87,6 +91,8 @@ export interface UpdateLessonRequest {
   orderIndex?: number;
   isFree?: boolean;
   isPublished?: boolean;
+  learningObjectives?: string;
+  resources?: string;
 }
 
 export interface ReorderLessonRequest {

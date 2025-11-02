@@ -45,6 +45,12 @@ public class LessonConfiguration : IEntityTypeConfiguration<Lesson>
         builder.Property(l => l.IsPublished)
             .IsRequired();
 
+        builder.Property(l => l.LearningObjectives)
+            .HasMaxLength(2000);
+
+        builder.Property(l => l.Resources)
+            .HasColumnType("text"); // JSON storage
+
         builder.Property(l => l.CreatedAt)
             .IsRequired();
 

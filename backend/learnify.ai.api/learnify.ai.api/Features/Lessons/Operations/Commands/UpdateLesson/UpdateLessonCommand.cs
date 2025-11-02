@@ -15,7 +15,9 @@ public record UpdateLessonCommand(
     int? Duration = null,
     int? OrderIndex = null,
     bool? IsFree = null,
-    bool? IsPublished = null
+    bool? IsPublished = null,
+    string? LearningObjectives = null,
+    string? Resources = null
 ) : ICommand<LessonResponse?>;
 
 public class UpdateLessonValidator : AbstractValidator<UpdateLessonCommand>
@@ -50,6 +52,11 @@ public class UpdateLessonValidator : AbstractValidator<UpdateLessonCommand>
             .GreaterThan(0)
             .WithMessage("Order index must be greater than 0")
             .When(x => x.OrderIndex.HasValue);
+
+        RuleFor(x => x.LearningObjectives)
+            .MaximumLength(2000)
+            .WithMessage("Learning objectives cannot exceed 2000 characters")
+            .When(x => !string.IsNullOrEmpty(x.LearningObjectives));
     }
 }
 
@@ -96,6 +103,12 @@ public class UpdateLessonHandler : IRequestHandler<UpdateLessonCommand, LessonRe
         if (request.IsPublished.HasValue)
             lesson.IsPublished = request.IsPublished.Value;
 
+        if (request.LearningObjectives != null)
+            lesson.LearningObjectives = request.LearningObjectives;
+
+        if (request.Resources != null)
+            lesson.Resources = request.Resources;
+
         lesson.UpdatedAt = DateTime.UtcNow;
         var updatedLesson = await _lessonRepository.UpdateAsync(lesson, cancellationToken);
 
@@ -113,6 +126,8 @@ public class UpdateLessonHandler : IRequestHandler<UpdateLessonCommand, LessonRe
             updatedLesson.OrderIndex,
             updatedLesson.IsFree,
             updatedLesson.IsPublished,
+            updatedLesson.LearningObjectives,
+            updatedLesson.Resources,
             updatedLesson.CreatedAt,
             updatedLesson.UpdatedAt
         );

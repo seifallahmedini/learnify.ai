@@ -1,7 +1,3 @@
-using FluentValidation;
-using MediatR;
-using learnify.ai.api.Common.Abstractions;
-using learnify.ai.api.Domain.Entities;
 using learnify.ai.api.Features.Assessments;
 using learnify.ai.api.Features.Courses;
 

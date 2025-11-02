@@ -1,7 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-using learnify.ai.api.Common.Controllers;
-using learnify.ai.api.Common.Models;
-
 namespace learnify.ai.api.Features.Lessons;
 
 [ApiController]
@@ -52,7 +48,9 @@ public class LessonsController : BaseController
                 request.Duration,
                 request.OrderIndex,
                 request.IsFree,
-                request.IsPublished
+                request.IsPublished,
+                request.LearningObjectives,
+                request.Resources
             );
 
             var result = await Mediator.Send(command);

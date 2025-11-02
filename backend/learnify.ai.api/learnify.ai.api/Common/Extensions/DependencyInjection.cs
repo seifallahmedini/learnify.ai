@@ -1,7 +1,5 @@
 using System.Reflection;
 using System.Text;
-using FluentValidation;
-using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +9,6 @@ using learnify.ai.api.Common.Abstractions;
 using learnify.ai.api.Common.Infrastructure;
 using learnify.ai.api.Common.Infrastructure.Behaviors;
 using learnify.ai.api.Common.Infrastructure.Data;
-using learnify.ai.api.Domain.Entities;
 using learnify.ai.api.Features.Users;
 using learnify.ai.api.Features.Courses;
 using learnify.ai.api.Features.Enrollments;

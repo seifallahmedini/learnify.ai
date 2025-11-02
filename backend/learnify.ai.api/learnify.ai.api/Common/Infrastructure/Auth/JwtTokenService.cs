@@ -4,8 +4,6 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using learnify.ai.api.Common.Abstractions;
-using learnify.ai.api.Domain.Entities;
 
 namespace learnify.ai.api.Common.Infrastructure;
 

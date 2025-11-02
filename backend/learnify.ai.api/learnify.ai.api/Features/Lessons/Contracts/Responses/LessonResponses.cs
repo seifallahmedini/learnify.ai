@@ -1,5 +1,11 @@
 namespace learnify.ai.api.Features.Lessons;
 
+public record ResourceItem(
+    string Name,
+    string Url,
+    string Type // "download", "external", "code"
+);
+
 public record LessonResponse(
     int Id,
     int CourseId,
@@ -12,6 +18,8 @@ public record LessonResponse(
     int OrderIndex,
     bool IsFree,
     bool IsPublished,
+    string? LearningObjectives,
+    string? Resources, // JSON string, will be parsed on frontend
     DateTime CreatedAt,
     DateTime UpdatedAt
 )

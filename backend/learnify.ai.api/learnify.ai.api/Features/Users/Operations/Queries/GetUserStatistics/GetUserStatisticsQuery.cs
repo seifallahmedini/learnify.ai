@@ -1,9 +1,6 @@
-using FluentValidation;
-using MediatR;
 using Microsoft.AspNetCore.Identity;
 using learnify.ai.api.Common.Abstractions;
 using learnify.ai.api.Common.Enums;
-using learnify.ai.api.Domain.Entities;
 
 namespace learnify.ai.api.Features.Users;
 

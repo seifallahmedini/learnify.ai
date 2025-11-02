@@ -12,6 +12,8 @@ public class Lesson
     public int OrderIndex { get; set; }
     public bool IsFree { get; set; } = false;
     public bool IsPublished { get; set; } = false;
+    public string? LearningObjectives { get; set; } // Comma or newline separated list
+    public string? Resources { get; set; } // JSON array of resource objects
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

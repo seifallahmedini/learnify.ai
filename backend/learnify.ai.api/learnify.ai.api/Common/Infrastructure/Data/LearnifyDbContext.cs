@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using learnify.ai.api.Domain.Entities;
 
 namespace learnify.ai.api.Common.Infrastructure.Data;
 

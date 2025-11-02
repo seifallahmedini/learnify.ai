@@ -1,6 +1,3 @@
-using learnify.ai.api.Common.Abstractions;
-
-using learnify.ai.api.Domain.Entities;
 namespace learnify.ai.api.Features.Assessments;
 
 public interface IQuizRepository : IBaseRepository<Quiz>

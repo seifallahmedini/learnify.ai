@@ -1,7 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-using learnify.ai.api.Common.Controllers;
-using learnify.ai.api.Common.Models;
-
 namespace learnify.ai.api.Features.Categories;
 
 [ApiController]

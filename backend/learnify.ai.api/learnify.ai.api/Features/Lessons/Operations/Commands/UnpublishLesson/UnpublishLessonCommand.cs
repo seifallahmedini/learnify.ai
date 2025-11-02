@@ -54,6 +54,8 @@ public class UnpublishLessonHandler : IRequestHandler<UnpublishLessonCommand, Le
             updatedLesson.OrderIndex,
             updatedLesson.IsFree,
             updatedLesson.IsPublished,
+            updatedLesson.LearningObjectives,
+            updatedLesson.Resources,
             updatedLesson.CreatedAt,
             updatedLesson.UpdatedAt
         );

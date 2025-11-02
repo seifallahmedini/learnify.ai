@@ -1,11 +1,17 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import { 
   ArrowLeft, 
   Clock, 
   BookOpen,
   Play,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Target,
+  Download,
+  ExternalLink,
+  Code,
+  Link2
 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
@@ -19,6 +25,7 @@ import {
 } from '../shared';
 import { EditLessonDialog, DeleteLessonDialog } from '../dialogs';
 import { formatLessonDuration, sortLessonsByOrder } from '../../lib';
+import type { LessonResource } from '../../types';
 
 // Helper function to get video embed URL
 const getVideoEmbedUrl = (url: string): string | null => {
@@ -123,6 +130,43 @@ export function LessonDetailsPage() {
   }
 
   const sortedLessons = sortLessonsByOrder(courseLessons as any[]);
+
+  // Parse learning objectives (comma or newline separated)
+  // Handle both string and undefined/null cases
+  const learningObjectivesRaw = (lesson as any).learningObjectives;
+  const learningObjectives = (learningObjectivesRaw && typeof learningObjectivesRaw === 'string' && learningObjectivesRaw.trim())
+    ? learningObjectivesRaw.split(/[,\n]/).map(obj => obj.trim()).filter(obj => obj.length > 0)
+    : [];
+
+  // Parse resources (JSON string)
+  // Handle both string and undefined/null cases
+  let resources: LessonResource[] = [];
+  const resourcesRaw = (lesson as any).resources;
+  if (resourcesRaw && typeof resourcesRaw === 'string' && resourcesRaw.trim()) {
+    try {
+      const parsed = JSON.parse(resourcesRaw);
+      if (Array.isArray(parsed)) {
+        resources = parsed as LessonResource[];
+      }
+    } catch (e) {
+      console.warn('Failed to parse lesson resources:', e);
+      resources = [];
+    }
+  }
+
+  // Helper to get resource icon
+  const getResourceIcon = (type: string) => {
+    switch (type) {
+      case 'download':
+        return <Download className="h-4 w-4" />;
+      case 'external':
+        return <ExternalLink className="h-4 w-4" />;
+      case 'code':
+        return <Code className="h-4 w-4" />;
+      default:
+        return <Link2 className="h-4 w-4" />;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-950/50 dark:to-gray-900">
@@ -233,6 +277,36 @@ export function LessonDetailsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_320px] gap-3 sm:gap-4">
         {/* Main Content */}
         <div className="space-y-3">
+          {/* Learning Objectives */}
+          <Card>
+            <CardHeader className="pb-2 pt-3 px-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                Learning Objectives
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-4">
+              {learningObjectives.length > 0 ? (
+                <ul className="space-y-2 text-sm">
+                  {learningObjectives.map((objective, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <div className="flex-1 prose prose-sm max-w-none dark:prose-invert">
+                        <ReactMarkdown>{objective}</ReactMarkdown>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="text-center py-6 text-sm text-muted-foreground">
+                  <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>No learning objectives defined for this lesson.</p>
+                  <p className="text-xs mt-1">Edit the lesson to add learning objectives.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Lesson Content */}
           <Card>
             <CardHeader className="pb-2 pt-3 px-4">
@@ -243,8 +317,8 @@ export function LessonDetailsPage() {
             </CardHeader>
             <CardContent className="px-4 pb-4 space-y-4">
               {lesson.content && (
-                <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed whitespace-pre-wrap">
-                  {lesson.content}
+                <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
+                  <ReactMarkdown>{lesson.content}</ReactMarkdown>
                 </div>
               )}
 
@@ -324,6 +398,57 @@ export function LessonDetailsPage() {
                   </div>
                 )}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Resources Section */}
+          <Card>
+            <CardHeader className="pb-2 pt-3 px-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Link2 className="h-4 w-4" />
+                Resources
+                {resources.length > 0 && (
+                  <Badge variant="secondary" className="ml-auto text-xs h-5 px-1.5">
+                    {resources.length}
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-4">
+              {resources.length > 0 ? (
+                <div className="space-y-2">
+                  {resources.map((resource, index) => (
+                    <a
+                      key={index}
+                      href={resource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 transition-colors group"
+                    >
+                      <div className="flex-shrink-0 w-8 h-8 rounded-md bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center text-primary transition-colors">
+                        {getResourceIcon(resource.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm group-hover:text-primary transition-colors truncate">
+                          {resource.name}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {resource.type === 'download' ? 'Download' : resource.type === 'external' ? 'External Link' : 'Code Resource'}
+                        </div>
+                      </div>
+                      {resource.type === 'external' && (
+                        <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+                      )}
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-sm text-muted-foreground">
+                  <Link2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>No resources available for this lesson.</p>
+                  <p className="text-xs mt-1">Edit the lesson to add downloadable files, external links, or code resources.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

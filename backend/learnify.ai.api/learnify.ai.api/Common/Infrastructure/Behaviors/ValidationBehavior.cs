@@ -1,6 +1,3 @@
-using FluentValidation;
-using MediatR;
-
 namespace learnify.ai.api.Common.Infrastructure.Behaviors;
 
 public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>

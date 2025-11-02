@@ -60,6 +60,8 @@ public class UploadLessonVideoHandler : IRequestHandler<UploadLessonVideoCommand
             updatedLesson.OrderIndex,
             updatedLesson.IsFree,
             updatedLesson.IsPublished,
+            updatedLesson.LearningObjectives,
+            updatedLesson.Resources,
             updatedLesson.CreatedAt,
             updatedLesson.UpdatedAt
         );

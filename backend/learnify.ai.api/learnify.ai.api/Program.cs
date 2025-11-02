@@ -1,8 +1,6 @@
 using learnify.ai.api.Common.Extensions;
 using learnify.ai.api.Common.Infrastructure.Data;
 using learnify.ai.api.Common.Infrastructure.Middleware;
-using learnify.ai.api.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 

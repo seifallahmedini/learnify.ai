@@ -54,6 +54,8 @@ public class MakeLessonFreeHandler : IRequestHandler<MakeLessonFreeCommand, Less
             updatedLesson.OrderIndex,
             updatedLesson.IsFree,
             updatedLesson.IsPublished,
+            updatedLesson.LearningObjectives,
+            updatedLesson.Resources,
             updatedLesson.CreatedAt,
             updatedLesson.UpdatedAt
         );

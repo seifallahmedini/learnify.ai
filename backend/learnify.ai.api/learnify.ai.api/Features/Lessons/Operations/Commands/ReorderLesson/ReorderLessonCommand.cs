@@ -88,6 +88,8 @@ public class ReorderLessonHandler : IRequestHandler<ReorderLessonCommand, Lesson
             updatedLesson.OrderIndex,
             updatedLesson.IsFree,
             updatedLesson.IsPublished,
+            updatedLesson.LearningObjectives,
+            updatedLesson.Resources,
             updatedLesson.CreatedAt,
             updatedLesson.UpdatedAt
         );

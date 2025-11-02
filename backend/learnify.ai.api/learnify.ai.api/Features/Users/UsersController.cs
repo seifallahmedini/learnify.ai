@@ -1,9 +1,4 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using learnify.ai.api.Common.Controllers;
-using learnify.ai.api.Common.Models;
 using learnify.ai.api.Common.Enums;
-using learnify.ai.api.Domain.Entities;
 
 namespace learnify.ai.api.Features.Users;
 

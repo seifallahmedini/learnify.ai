@@ -1,5 +1,3 @@
-using learnify.ai.api.Domain.Entities;
-
 namespace learnify.ai.api.Common.Abstractions;
 
 public interface IJwtTokenService

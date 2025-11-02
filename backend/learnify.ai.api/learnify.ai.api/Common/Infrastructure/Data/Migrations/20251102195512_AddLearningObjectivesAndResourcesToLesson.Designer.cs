@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using learnify.ai.api.Common.Infrastructure.Data;
@@ -11,9 +12,11 @@ using learnify.ai.api.Common.Infrastructure.Data;
 namespace learnify.ai.api.Common.Data.Migrations
 {
     [DbContext(typeof(LearnifyDbContext))]
-    partial class LearnifyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251102195512_AddLearningObjectivesAndResourcesToLesson")]
+    partial class AddLearningObjectivesAndResourcesToLesson
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

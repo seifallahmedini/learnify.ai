@@ -1,9 +1,5 @@
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using learnify.ai.api.Common.Controllers;
-using learnify.ai.api.Common.Models;
 using learnify.ai.api.Features.Authentication;
 using learnify.ai.api.Features.Authentication.Operations.Commands.ChangePassword;
 using learnify.ai.api.Features.Authentication.Operations.Commands.ForgotPassword;

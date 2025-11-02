@@ -54,6 +54,8 @@ public class PublishLessonHandler : IRequestHandler<PublishLessonCommand, Lesson
             updatedLesson.OrderIndex,
             updatedLesson.IsFree,
             updatedLesson.IsPublished,
+            updatedLesson.LearningObjectives,
+            updatedLesson.Resources,
             updatedLesson.CreatedAt,
             updatedLesson.UpdatedAt
         );

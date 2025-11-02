@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using learnify.ai.api.Common.Enums;
 using learnify.ai.api.Common.Infrastructure.Data;
-using learnify.ai.api.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using learnify.ai.api.Domain.Enums;
 
 namespace learnify.ai.api.Common.Infrastructure.Data;
 

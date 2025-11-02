@@ -50,6 +50,8 @@ public class GetLessonByIdHandler : IRequestHandler<GetLessonByIdQuery, LessonRe
             lesson.OrderIndex,
             lesson.IsFree,
             lesson.IsPublished,
+            lesson.LearningObjectives,
+            lesson.Resources,
             lesson.CreatedAt,
             lesson.UpdatedAt
         );

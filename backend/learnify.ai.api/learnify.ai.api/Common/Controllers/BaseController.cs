@@ -1,7 +1,3 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using learnify.ai.api.Common.Models;
-
 namespace learnify.ai.api.Common.Controllers;
 
 [ApiController]
