@@ -1,15 +1,16 @@
 using learnify.ai.api.Common.Extensions;
 using learnify.ai.api.Common.Infrastructure.Data;
 using learnify.ai.api.Common.Infrastructure.Middleware;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Enforce fixed port 8080 - override any other configuration
-Environment.SetEnvironmentVariable("ASPNETCORE_URLS", "http://+:8080");
-Environment.SetEnvironmentVariable("ASPNETCORE_HTTP_PORTS", "8080");
+// Azure Web Service compatibility: Use PORT environment variable if available, otherwise default to 8080
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var urls = $"http://+:{port}";
 
-// Configure fixed port 8080 for the API
-builder.WebHost.UseUrls("http://+:8080");
+// Configure port for the API (Azure-compatible)
+builder.WebHost.UseUrls(urls);
 
 // Add services using extension methods for better organization
 builder.Services
@@ -22,39 +23,53 @@ builder.Services
     .AddCorsServices()
     .AddApplicationServices();
 
+// Configure forwarded headers for Azure (HTTPS forwarding)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
 
-// Apply migrations automatically (best effort) when using Postgres
-using (var scope = app.Services.CreateScope())
+// Apply migrations and seed data asynchronously (non-blocking for Azure warm-up)
+_ = Task.Run(async () =>
 {
+    await Task.Delay(TimeSpan.FromSeconds(2)); // Give app time to start
+    
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<LearnifyDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
     try
     {
         if (db.Database.IsNpgsql())
         {
+            logger.LogInformation("Starting database migrations...");
             db.Database.Migrate();
+            logger.LogInformation("Database migrations completed successfully");
+            
+            logger.LogInformation("Starting data seeding...");
+            await DataSeeder.SeedAsync(scope.ServiceProvider);
+            await IdentitySeeder.SeedAsync(scope.ServiceProvider);
+            logger.LogInformation("Data seeding completed successfully");
         }
     }
     catch (Exception ex)
     {
-        var migrationLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DbMigrations");
-        migrationLogger.LogError(ex, "Database migration failed");
+        logger.LogError(ex, "Database migration or seeding failed");
     }
-}
-
-// Seed data in development (only for InMemory)
-//if (app.Environment.IsDevelopment())
-//{
-using var seederScope = app.Services.CreateScope();
-var context = seederScope.ServiceProvider.GetRequiredService<LearnifyDbContext>();
-if (context.Database.IsNpgsql())
-{
-    await DataSeeder.SeedAsync(seederScope.ServiceProvider);
-}
-await IdentitySeeder.SeedAsync(seederScope.ServiceProvider);
-//}
+});
 
 // Configure the HTTP request pipeline.
+// Forward HTTPS headers in Azure (required for proper HTTPS handling)
+var isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
+if (isAzure)
+{
+    app.UseForwardedHeaders();
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -66,15 +81,23 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Add health check endpoint
+// Add health check endpoint (simple endpoint for Azure warm-up)
 app.MapHealthChecks("/health");
+app.MapGet("/", () => Results.Ok(new { status = "ok", message = "Learnify API is running" }))
+    .WithName("Root")
+    .WithTags("Health");
 
 app.MapControllers();
 
 // Log the configured URLs for verification
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("Learnify API configured to run on FIXED PORT 8080");
-logger.LogInformation("Access the API at: http://localhost:8080");
-logger.LogInformation("Access Swagger at: http://localhost:8080/swagger");
+var appLogger = app.Services.GetRequiredService<ILogger<Program>>();
+var baseUrl = isAzure 
+    ? $"https://{Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME")}" 
+    : $"http://localhost:{port}";
+
+appLogger.LogInformation("Learnify API configured to run on PORT {Port}", port);
+appLogger.LogInformation("Environment: {Environment}", isAzure ? "Azure" : "Local");
+appLogger.LogInformation("Access the API at: {BaseUrl}", baseUrl);
+appLogger.LogInformation("Access Swagger at: {SwaggerUrl}", $"{baseUrl}/swagger");
 
 app.Run();
