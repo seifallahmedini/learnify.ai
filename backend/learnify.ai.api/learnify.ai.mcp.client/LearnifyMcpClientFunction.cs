@@ -14,15 +14,18 @@ public class LearnifyMcpClientFunction
     private readonly ILogger<LearnifyMcpClientFunction> _logger;
     private readonly McpToolsService _toolsService;
     private readonly AiAgentService _aiAgent;
+    private readonly LearnifyMcpService _mcpService;
 
     public LearnifyMcpClientFunction(
         ILogger<LearnifyMcpClientFunction> logger,
         McpToolsService toolsService,
-        AiAgentService aiAgent)
+        AiAgentService aiAgent,
+        LearnifyMcpService mcpService)
     {
         _logger = logger;
         _toolsService = toolsService;
         _aiAgent = aiAgent;
+        _mcpService = mcpService;
     }
 
     [Function("Health")]
@@ -32,14 +35,31 @@ public class LearnifyMcpClientFunction
         {
             _logger.LogInformation("Health check requested");
             
-            // Reuse original health via base LearnifyMcpService if needed, otherwise basic ping
-            await _toolsService.EnsureInitializedAsync();
-            return new OkObjectResult(new { ok = true, message = "MCP initialized" });
+            // Use the new in-process health check
+            var health = await _mcpService.GetHealthStatusAsync();
+            
+            return new OkObjectResult(new
+            {
+                success = true,
+                status = health.Status,
+                isHealthy = health.IsHealthy,
+                mcpServer = health.McpServer,
+                openAI = health.OpenAI,
+                availableToolsCount = health.AvailableToolsCount,
+                lastChecked = health.LastChecked,
+                message = health.IsHealthy ? "MCP service is healthy" : health.ErrorMessage
+            });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Health check failed");
-            return new ObjectResult(new { error = ex.Message }) { StatusCode = 500 };
+            return new ObjectResult(new 
+            { 
+                success = false,
+                status = "Error",
+                isHealthy = false,
+                error = ex.Message 
+            }) { StatusCode = 500 };
         }
     }
 

@@ -15,6 +15,7 @@
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+    <None Include="IMPLEMENTATION_SUMMARY.md" />
     <None Include="learnify.ai" />
   </ItemGroup>
 </Project>

@@ -27,6 +27,9 @@
     <PackageReference Include="ModelContextProtocol" Version="0.4.0-preview.2" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\learnify.ai.mcp.server\learnify.ai.mcp.server.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

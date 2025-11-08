@@ -26,7 +26,7 @@ public abstract class BaseApiService
         _httpClient = httpClient;
         _configuration = configuration;
         _logger = logger;
-        _baseUrl = configuration.GetValue<string>("LearnifyApi:BaseUrl") ?? "http://localhost:5271";
+        _baseUrl = configuration.GetValue<string>("LearnifyApi:BaseUrl") ?? "https://learnify-ai-dev.azurewebsites.net";
         
         _jsonOptions = new JsonSerializerOptions
         {

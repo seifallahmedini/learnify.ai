@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using learnify.ai.mcp.client.Services;
+using Learnify.Mcp.Server.Extensions;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
@@ -13,9 +14,11 @@ var host = new HostBuilder()
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
 
-        // Core MCP plumbing (process + stdio)
+        // Register Learnify MCP Server (in-process) - includes InProcessMcpToolInvoker
+        services.AddLearnifyMcpServer();
+        
+        // Core MCP client services (now using in-process communication)
         services.AddScoped<LearnifyMcpService>();
-        // Separated concerns
         services.AddScoped<McpToolsService>();
         services.AddScoped<AiAgentService>();
         
