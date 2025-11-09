@@ -77,6 +77,8 @@ public class LessonApiService : BaseApiService
         [Description("The lesson order index")] int? orderIndex = null,
         [Description("Whether the lesson is free")] bool? isFree = null,
         [Description("Whether the lesson is published")] bool? isPublished = null,
+        [Description("Learning objectives for the lesson (optional)")] string? learningObjectives = null,
+        [Description("Resources for the lesson as JSON string (optional)")] string? resources = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -84,7 +86,7 @@ public class LessonApiService : BaseApiService
             _logger.LogInformation("Updating lesson with ID: {LessonId}", lessonId);
 
             var request = new UpdateLessonRequest(
-                title, description, content, videoUrl, duration, orderIndex, isFree, isPublished);
+                title, description, content, videoUrl, duration, orderIndex, isFree, isPublished, learningObjectives, resources);
 
             var updatedLesson = await PutAsync<LessonModel>($"/api/lessons/{lessonId}", request, cancellationToken);
 
@@ -588,6 +590,8 @@ public class LessonApiService : BaseApiService
         [Description("The lesson video URL (optional)")] string? videoUrl = null,
         [Description("Whether the lesson is free")] bool isFree = false,
         [Description("Whether the lesson is published")] bool isPublished = false,
+        [Description("Learning objectives for the lesson (optional)")] string? learningObjectives = null,
+        [Description("Resources for the lesson as JSON string (optional)")] string? resources = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -595,7 +599,7 @@ public class LessonApiService : BaseApiService
             _logger.LogInformation("Creating lesson for course ID: {CourseId}", courseId);
 
             var request = new CreateLessonRequest(
-                title, description, content, videoUrl, duration, isFree, isPublished);
+                title, description, content, videoUrl, duration, isFree, isPublished, learningObjectives, resources);
 
             var createdLesson = await PostAsync<LessonModel>($"/api/courses/{courseId}/lessons", request, cancellationToken);
 

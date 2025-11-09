@@ -18,6 +18,8 @@ public record LessonModel(
     [property: JsonPropertyName("orderIndex")] int OrderIndex,
     [property: JsonPropertyName("isFree")] bool IsFree,
     [property: JsonPropertyName("isPublished")] bool IsPublished,
+    [property: JsonPropertyName("learningObjectives")] string? LearningObjectives,
+    [property: JsonPropertyName("resources")] string? Resources,
     [property: JsonPropertyName("createdAt")] DateTime CreatedAt,
     [property: JsonPropertyName("updatedAt")] DateTime UpdatedAt
 )
@@ -92,7 +94,9 @@ public record CreateLessonRequest(
     [property: JsonPropertyName("videoUrl")] string? VideoUrl,
     [property: JsonPropertyName("duration")] int Duration,
     [property: JsonPropertyName("isFree")] bool IsFree = false,
-    [property: JsonPropertyName("isPublished")] bool IsPublished = false
+    [property: JsonPropertyName("isPublished")] bool IsPublished = false,
+    [property: JsonPropertyName("learningObjectives")] string? LearningObjectives = null,
+    [property: JsonPropertyName("resources")] string? Resources = null
 );
 
 public record UpdateLessonRequest(
@@ -103,7 +107,9 @@ public record UpdateLessonRequest(
     [property: JsonPropertyName("duration")] int? Duration = null,
     [property: JsonPropertyName("orderIndex")] int? OrderIndex = null,
     [property: JsonPropertyName("isFree")] bool? IsFree = null,
-    [property: JsonPropertyName("isPublished")] bool? IsPublished = null
+    [property: JsonPropertyName("isPublished")] bool? IsPublished = null,
+    [property: JsonPropertyName("learningObjectives")] string? LearningObjectives = null,
+    [property: JsonPropertyName("resources")] string? Resources = null
 );
 
 public record ReorderLessonRequest(
