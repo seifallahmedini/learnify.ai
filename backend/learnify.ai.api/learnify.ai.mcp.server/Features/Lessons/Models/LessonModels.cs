@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using System.Text.Json;
 using Learnify.Mcp.Server.Shared.Models;
 
 namespace Learnify.Mcp.Server.Features.Lessons.Models;
@@ -131,3 +132,163 @@ public record CourseLessonsFilterRequest(
     [property: JsonPropertyName("courseId")] int CourseId,
     [property: JsonPropertyName("isPublished")] bool? IsPublished = null
 ) : BaseFilterRequest();
+
+#region Extended Lesson Resources
+
+/// <summary>
+/// Extended lesson resources structure for comprehensive resource management
+/// </summary>
+public class ExtendedLessonResources
+{
+    [JsonPropertyName("essential_reading")]
+    public List<EssentialReadingResource> EssentialReading { get; set; } = new();
+
+    [JsonPropertyName("videos")]
+    public List<VideoResourceItem> Videos { get; set; } = new();
+
+    [JsonPropertyName("tools")]
+    public List<ToolResource> Tools { get; set; } = new();
+
+    [JsonPropertyName("research_papers")]
+    public List<string> ResearchPapers { get; set; } = new();
+
+    [JsonPropertyName("community")]
+    public List<string> Community { get; set; } = new();
+
+    [JsonPropertyName("practice_exercises")]
+    public List<string> PracticeExercises { get; set; } = new();
+
+    [JsonPropertyName("additional_resources")]
+    public List<string> AdditionalResources { get; set; } = new();
+}
+
+/// <summary>
+/// Essential reading resource
+/// </summary>
+public class EssentialReadingResource
+{
+    [JsonPropertyName("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [JsonPropertyName("author")]
+    public string? Author { get; set; }
+
+    [JsonPropertyName("source")]
+    public string? Source { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
+}
+
+/// <summary>
+/// Video resource item
+/// </summary>
+public class VideoResourceItem
+{
+    [JsonPropertyName("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [JsonPropertyName("platform")]
+    public string? Platform { get; set; }
+
+    [JsonPropertyName("instructor")]
+    public string? Instructor { get; set; }
+
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
+}
+
+/// <summary>
+/// Tool/framework resource
+/// </summary>
+public class ToolResource
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("url")]
+    public string Url { get; set; } = string.Empty;
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+}
+
+/// <summary>
+/// Helper class for managing extended lesson resources
+/// </summary>
+public static class ExtendedResourcesHelper
+{
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
+    /// <summary>
+    /// Creates a default empty extended resources structure
+    /// </summary>
+    public static ExtendedLessonResources CreateDefault()
+    {
+        return new ExtendedLessonResources();
+    }
+
+    /// <summary>
+    /// Parses JSON string to ExtendedLessonResources, returns default if parsing fails
+    /// </summary>
+    public static ExtendedLessonResources ParseOrDefault(string? resourcesJson)
+    {
+        if (string.IsNullOrWhiteSpace(resourcesJson))
+        {
+            return CreateDefault();
+        }
+
+        try
+        {
+            var parsed = JsonSerializer.Deserialize<ExtendedLessonResources>(resourcesJson, JsonOptions);
+            return parsed ?? CreateDefault();
+        }
+        catch (JsonException)
+        {
+            return CreateDefault();
+        }
+    }
+
+    /// <summary>
+    /// Serializes ExtendedLessonResources to JSON string
+    /// </summary>
+    public static string Serialize(ExtendedLessonResources resources)
+    {
+        return JsonSerializer.Serialize(resources, JsonOptions);
+    }
+
+    /// <summary>
+    /// Ensures resources string is in extended format
+    /// </summary>
+    public static string EnsureExtendedFormat(string? resourcesJson)
+    {
+        var resources = ParseOrDefault(resourcesJson);
+        return Serialize(resources);
+    }
+
+    /// <summary>
+    /// Gets total count of all resources
+    /// </summary>
+    public static int GetTotalResourceCount(ExtendedLessonResources resources)
+    {
+        int count = 0;
+        count += resources.EssentialReading?.Count ?? 0;
+        count += resources.Videos?.Count ?? 0;
+        count += resources.Tools?.Count ?? 0;
+        count += resources.ResearchPapers?.Count ?? 0;
+        count += resources.Community?.Count ?? 0;
+        count += resources.PracticeExercises?.Count ?? 0;
+        count += resources.AdditionalResources?.Count ?? 0;
+        return count;
+    }
+}
+
+#endregion

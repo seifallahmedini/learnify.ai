@@ -2,20 +2,21 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using System.ComponentModel;
+using System.Text.Json;
 using Learnify.Mcp.Server.Shared.Services;
 using Learnify.Mcp.Server.Features.Lessons.Models;
 
 namespace Learnify.Mcp.Server.Features.Lessons.Services;
 
 /// <summary>
-/// API service for lesson management operations
+/// API service for lesson management operations with extended resources support
 /// </summary>
 [McpServerToolType]
 public class LessonApiService : BaseApiService
 {
     public LessonApiService(
         HttpClient httpClient,
-        IConfiguration configuration,
+     IConfiguration configuration,
         ILogger<LessonApiService> logger)
         : base(httpClient, configuration, logger, "LessonApiService")
     {
@@ -29,7 +30,7 @@ public class LessonApiService : BaseApiService
     [McpServerTool, Description("Get lesson details by ID")]
     public async Task<string> GetLessonAsync(
         [Description("The lesson ID")] int lessonId,
-        CancellationToken cancellationToken = default)
+    CancellationToken cancellationToken = default)
     {
         try
         {
@@ -68,12 +69,12 @@ public class LessonApiService : BaseApiService
     /// </summary>
     [McpServerTool, Description("Update lesson details")]
     public async Task<string> UpdateLessonAsync(
-        [Description("The lesson ID")] int lessonId,
+     [Description("The lesson ID")] int lessonId,
         [Description("The lesson title")] string? title = null,
-        [Description("The lesson description")] string? description = null,
+    [Description("The lesson description")] string? description = null,
         [Description("The lesson content")] string? content = null,
-        [Description("The lesson video URL")] string? videoUrl = null,
-        [Description("The lesson duration in minutes")] int? duration = null,
+  [Description("The lesson video URL")] string? videoUrl = null,
+  [Description("The lesson duration in minutes")] int? duration = null,
         [Description("The lesson order index")] int? orderIndex = null,
         [Description("Whether the lesson is free")] bool? isFree = null,
         [Description("Whether the lesson is published")] bool? isPublished = null,
@@ -86,7 +87,7 @@ public class LessonApiService : BaseApiService
             _logger.LogInformation("Updating lesson with ID: {LessonId}", lessonId);
 
             var request = new UpdateLessonRequest(
-                title, description, content, videoUrl, duration, orderIndex, isFree, isPublished, learningObjectives, resources);
+              title, description, content, videoUrl, duration, orderIndex, isFree, isPublished, learningObjectives, resources);
 
             var updatedLesson = await PutAsync<LessonModel>($"/api/lessons/{lessonId}", request, cancellationToken);
 
@@ -239,7 +240,7 @@ public class LessonApiService : BaseApiService
     /// </summary>
     [McpServerTool, Description("Get the previous lesson in the course sequence")]
     public async Task<string> GetPreviousLessonAsync(
-        [Description("The current lesson ID")] int lessonId,
+    [Description("The current lesson ID")] int lessonId,
         CancellationToken cancellationToken = default)
     {
         try
@@ -283,9 +284,9 @@ public class LessonApiService : BaseApiService
     /// </summary>
     [McpServerTool, Description("Upload or update lesson video")]
     public async Task<string> UploadLessonVideoAsync(
-        [Description("The lesson ID")] int lessonId,
+      [Description("The lesson ID")] int lessonId,
         [Description("The video URL")] string videoUrl,
-        CancellationToken cancellationToken = default)
+ CancellationToken cancellationToken = default)
     {
         try
         {
@@ -327,8 +328,8 @@ public class LessonApiService : BaseApiService
     [McpServerTool, Description("Update lesson content")]
     public async Task<string> UpdateLessonContentAsync(
         [Description("The lesson ID")] int lessonId,
-        [Description("The new lesson content")] string content,
-        CancellationToken cancellationToken = default)
+    [Description("The new lesson content")] string content,
+     CancellationToken cancellationToken = default)
     {
         try
         {
@@ -369,7 +370,7 @@ public class LessonApiService : BaseApiService
     /// </summary>
     [McpServerTool, Description("Get lesson resources and attachments")]
     public async Task<string> GetLessonResourcesAsync(
-        [Description("The lesson ID")] int lessonId,
+   [Description("The lesson ID")] int lessonId,
         CancellationToken cancellationToken = default)
     {
         try
@@ -414,7 +415,7 @@ public class LessonApiService : BaseApiService
     [McpServerTool, Description("Publish a lesson to make it visible to students")]
     public async Task<string> PublishLessonAsync(
         [Description("The lesson ID")] int lessonId,
-        CancellationToken cancellationToken = default)
+   CancellationToken cancellationToken = default)
     {
         try
         {
@@ -454,7 +455,7 @@ public class LessonApiService : BaseApiService
     [McpServerTool, Description("Unpublish a lesson to hide it from students")]
     public async Task<string> UnpublishLessonAsync(
         [Description("The lesson ID")] int lessonId,
-        CancellationToken cancellationToken = default)
+     CancellationToken cancellationToken = default)
     {
         try
         {
@@ -599,7 +600,7 @@ public class LessonApiService : BaseApiService
             _logger.LogInformation("Creating lesson for course ID: {CourseId}", courseId);
 
             var request = new CreateLessonRequest(
-                title, description, content, videoUrl, duration, isFree, isPublished, learningObjectives, resources);
+                        title, description, content, videoUrl, duration, isFree, isPublished, learningObjectives, resources);
 
             var createdLesson = await PostAsync<LessonModel>($"/api/courses/{courseId}/lessons", request, cancellationToken);
 
@@ -631,7 +632,7 @@ public class LessonApiService : BaseApiService
     [McpServerTool, Description("Check if a lesson exists")]
     public async Task<string> CheckLessonExistsAsync(
         [Description("The lesson ID to check")] int lessonId,
-        CancellationToken cancellationToken = default)
+      CancellationToken cancellationToken = default)
     {
         try
         {
@@ -662,7 +663,7 @@ public class LessonApiService : BaseApiService
     /// </summary>
     [McpServerTool, Description("Get lesson summary (basic information only)")]
     public async Task<string> GetLessonSummaryAsync(
-        [Description("The lesson ID")] int lessonId,
+      [Description("The lesson ID")] int lessonId,
         CancellationToken cancellationToken = default)
     {
         try
@@ -680,16 +681,16 @@ public class LessonApiService : BaseApiService
             }
 
             var summary = new LessonSummaryModel(
-                lesson.Id,
-                lesson.CourseId,
-                lesson.Title,
-                lesson.Description,
-                lesson.Duration,
-                lesson.OrderIndex,
-                lesson.IsFree,
+              lesson.Id,
+              lesson.CourseId,
+              lesson.Title,
+                    lesson.Description,
+                      lesson.Duration,
+                          lesson.OrderIndex,
+                          lesson.IsFree,
                 lesson.IsPublished,
-                lesson.CreatedAt
-            );
+                     lesson.CreatedAt
+              );
 
             return System.Text.Json.JsonSerializer.Serialize(new
             {
@@ -706,6 +707,394 @@ public class LessonApiService : BaseApiService
                 success = false,
                 message = ex.Message
             });
+        }
+    }
+
+    #endregion
+
+    #region Extended Resources Management
+
+    /// <summary>
+    /// Add essential reading resource to a lesson
+    /// </summary>
+    [McpServerTool, Description("Add essential reading resource to a lesson")]
+    public async Task<string> AddEssentialReadingAsync(
+        [Description("The lesson ID")] int lessonId,
+        [Description("Title of the reading material")] string title,
+        [Description("Author of the reading material (optional)")] string? author = null,
+        [Description("Source/publisher (optional)")] string? source = null,
+        [Description("Description of the material (optional)")] string? description = null,
+        [Description("URL to access the material (optional)")] string? url = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("Adding essential reading to lesson {LessonId}", lessonId);
+
+            // Get current lesson
+            var lesson = await GetAsync<LessonModel>($"/api/lessons/{lessonId}", cancellationToken);
+            if (lesson == null)
+            {
+                return JsonSerializer.Serialize(new { success = false, message = $"Lesson with ID {lessonId} not found" });
+            }
+
+            // Parse existing resources
+            var resources = ExtendedResourcesHelper.ParseOrDefault(lesson.Resources);
+
+            // Add new essential reading
+            resources.EssentialReading.Add(new EssentialReadingResource
+            {
+                Title = title,
+                Author = author,
+                Source = source,
+                Description = description,
+                Url = url
+            });
+
+            // Update lesson
+            var request = new UpdateLessonRequest(Resources: ExtendedResourcesHelper.Serialize(resources));
+            var updatedLesson = await PutAsync<LessonModel>($"/api/lessons/{lessonId}", request, cancellationToken);
+
+            return JsonSerializer.Serialize(new
+            {
+                success = true,
+                data = updatedLesson,
+                message = "Essential reading added successfully"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding essential reading to lesson {LessonId}", lessonId);
+            return JsonSerializer.Serialize(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Add video resource to a lesson
+    /// </summary>
+    [McpServerTool, Description("Add video resource to a lesson")]
+    public async Task<string> AddVideoResourceAsync(
+        [Description("The lesson ID")] int lessonId,
+        [Description("Title of the video")] string title,
+        [Description("Platform (e.g., YouTube, Vimeo) (optional)")] string? platform = null,
+        [Description("Instructor/creator name (optional)")] string? instructor = null,
+        [Description("URL to the video (optional)")] string? url = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("Adding video resource to lesson {LessonId}", lessonId);
+
+            var lesson = await GetAsync<LessonModel>($"/api/lessons/{lessonId}", cancellationToken);
+            if (lesson == null)
+            {
+                return JsonSerializer.Serialize(new { success = false, message = $"Lesson with ID {lessonId} not found" });
+            }
+
+            var resources = ExtendedResourcesHelper.ParseOrDefault(lesson.Resources);
+
+            resources.Videos.Add(new VideoResourceItem
+            {
+                Title = title,
+                Platform = platform,
+                Instructor = instructor,
+                Url = url
+            });
+
+            var request = new UpdateLessonRequest(Resources: ExtendedResourcesHelper.Serialize(resources));
+            var updatedLesson = await PutAsync<LessonModel>($"/api/lessons/{lessonId}", request, cancellationToken);
+
+            return JsonSerializer.Serialize(new
+            {
+                success = true,
+                data = updatedLesson,
+                message = "Video resource added successfully"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding video resource to lesson {LessonId}", lessonId);
+            return JsonSerializer.Serialize(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Add tool/framework resource to a lesson
+    /// </summary>
+    [McpServerTool, Description("Add tool or framework resource to a lesson")]
+    public async Task<string> AddToolResourceAsync(
+        [Description("The lesson ID")] int lessonId,
+        [Description("Name of the tool or framework")] string name,
+        [Description("URL to the tool or framework")] string url,
+        [Description("Description of the tool (optional)")] string? description = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("Adding tool resource to lesson {LessonId}", lessonId);
+
+            var lesson = await GetAsync<LessonModel>($"/api/lessons/{lessonId}", cancellationToken);
+            if (lesson == null)
+            {
+                return JsonSerializer.Serialize(new { success = false, message = $"Lesson with ID {lessonId} not found" });
+            }
+
+            var resources = ExtendedResourcesHelper.ParseOrDefault(lesson.Resources);
+
+            resources.Tools.Add(new ToolResource
+            {
+                Name = name,
+                Url = url,
+                Description = description
+            });
+
+            var request = new UpdateLessonRequest(Resources: ExtendedResourcesHelper.Serialize(resources));
+            var updatedLesson = await PutAsync<LessonModel>($"/api/lessons/{lessonId}", request, cancellationToken);
+
+            return JsonSerializer.Serialize(new
+            {
+                success = true,
+                data = updatedLesson,
+                message = "Tool resource added successfully"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding tool resource to lesson {LessonId}", lessonId);
+            return JsonSerializer.Serialize(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Add research paper to a lesson
+    /// </summary>
+    [McpServerTool, Description("Add research paper reference to a lesson")]
+    public async Task<string> AddResearchPaperAsync(
+        [Description("The lesson ID")] int lessonId,
+        [Description("Research paper title or citation")] string paperReference,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("Adding research paper to lesson {LessonId}", lessonId);
+
+            var lesson = await GetAsync<LessonModel>($"/api/lessons/{lessonId}", cancellationToken);
+            if (lesson == null)
+            {
+                return JsonSerializer.Serialize(new { success = false, message = $"Lesson with ID {lessonId} not found" });
+            }
+
+            var resources = ExtendedResourcesHelper.ParseOrDefault(lesson.Resources);
+            resources.ResearchPapers.Add(paperReference);
+
+            var request = new UpdateLessonRequest(Resources: ExtendedResourcesHelper.Serialize(resources));
+            var updatedLesson = await PutAsync<LessonModel>($"/api/lessons/{lessonId}", request, cancellationToken);
+
+            return JsonSerializer.Serialize(new
+            {
+                success = true,
+                data = updatedLesson,
+                message = "Research paper added successfully"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding research paper to lesson {LessonId}", lessonId);
+            return JsonSerializer.Serialize(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Add community resource to a lesson
+    /// </summary>
+    [McpServerTool, Description("Add community resource (forum, Discord, Slack, etc.) to a lesson")]
+    public async Task<string> AddCommunityResourceAsync(
+        [Description("The lesson ID")] int lessonId,
+        [Description("Community resource (e.g., 'Discord: https://discord.gg/example')")] string communityInfo,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("Adding community resource to lesson {LessonId}", lessonId);
+
+            var lesson = await GetAsync<LessonModel>($"/api/lessons/{lessonId}", cancellationToken);
+            if (lesson == null)
+            {
+                return JsonSerializer.Serialize(new { success = false, message = $"Lesson with ID {lessonId} not found" });
+            }
+
+            var resources = ExtendedResourcesHelper.ParseOrDefault(lesson.Resources);
+            resources.Community.Add(communityInfo);
+
+            var request = new UpdateLessonRequest(Resources: ExtendedResourcesHelper.Serialize(resources));
+            var updatedLesson = await PutAsync<LessonModel>($"/api/lessons/{lessonId}", request, cancellationToken);
+
+            return JsonSerializer.Serialize(new
+            {
+                success = true,
+                data = updatedLesson,
+                message = "Community resource added successfully"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding community resource to lesson {LessonId}", lessonId);
+            return JsonSerializer.Serialize(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Add practice exercise to a lesson
+    /// </summary>
+    [McpServerTool, Description("Add practice exercise or challenge to a lesson")]
+    public async Task<string> AddPracticeExerciseAsync(
+        [Description("The lesson ID")] int lessonId,
+        [Description("Practice exercise description or link")] string exerciseInfo,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("Adding practice exercise to lesson {LessonId}", lessonId);
+
+            var lesson = await GetAsync<LessonModel>($"/api/lessons/{lessonId}", cancellationToken);
+            if (lesson == null)
+            {
+                return JsonSerializer.Serialize(new { success = false, message = $"Lesson with ID {lessonId} not found" });
+            }
+
+            var resources = ExtendedResourcesHelper.ParseOrDefault(lesson.Resources);
+            resources.PracticeExercises.Add(exerciseInfo);
+
+            var request = new UpdateLessonRequest(Resources: ExtendedResourcesHelper.Serialize(resources));
+            var updatedLesson = await PutAsync<LessonModel>($"/api/lessons/{lessonId}", request, cancellationToken);
+
+            return JsonSerializer.Serialize(new
+            {
+                success = true,
+                data = updatedLesson,
+                message = "Practice exercise added successfully"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding practice exercise to lesson {LessonId}", lessonId);
+            return JsonSerializer.Serialize(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Add additional resource to a lesson
+    /// </summary>
+    [McpServerTool, Description("Add additional resource to a lesson")]
+    public async Task<string> AddAdditionalResourceAsync(
+        [Description("The lesson ID")] int lessonId,
+        [Description("Additional resource information")] string resourceInfo,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("Adding additional resource to lesson {LessonId}", lessonId);
+
+            var lesson = await GetAsync<LessonModel>($"/api/lessons/{lessonId}", cancellationToken);
+            if (lesson == null)
+            {
+                return JsonSerializer.Serialize(new { success = false, message = $"Lesson with ID {lessonId} not found" });
+            }
+
+            var resources = ExtendedResourcesHelper.ParseOrDefault(lesson.Resources);
+            resources.AdditionalResources.Add(resourceInfo);
+
+            var request = new UpdateLessonRequest(Resources: ExtendedResourcesHelper.Serialize(resources));
+            var updatedLesson = await PutAsync<LessonModel>($"/api/lessons/{lessonId}", request, cancellationToken);
+
+            return JsonSerializer.Serialize(new
+            {
+                success = true,
+                data = updatedLesson,
+                message = "Additional resource added successfully"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding additional resource to lesson {LessonId}", lessonId);
+            return JsonSerializer.Serialize(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Get all extended resources for a lesson
+    /// </summary>
+    [McpServerTool, Description("Get all extended resources for a lesson in structured format")]
+    public async Task<string> GetExtendedResourcesAsync(
+      [Description("The lesson ID")] int lessonId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("Getting extended resources for lesson {LessonId}", lessonId);
+
+            var lesson = await GetAsync<LessonModel>($"/api/lessons/{lessonId}", cancellationToken);
+            if (lesson == null)
+            {
+                return JsonSerializer.Serialize(new { success = false, message = $"Lesson with ID {lessonId} not found" });
+            }
+
+            var resources = ExtendedResourcesHelper.ParseOrDefault(lesson.Resources);
+            var totalCount = ExtendedResourcesHelper.GetTotalResourceCount(resources);
+
+            return JsonSerializer.Serialize(new
+            {
+                success = true,
+                data = new
+                {
+                    lessonId = lesson.Id,
+                    lessonTitle = lesson.Title,
+                    resources,
+                    totalCount
+                },
+                message = "Extended resources retrieved successfully"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting extended resources for lesson {LessonId}", lessonId);
+            return JsonSerializer.Serialize(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Initialize empty extended resources structure for a lesson
+    /// </summary>
+    [McpServerTool, Description("Initialize empty extended resources structure for a lesson")]
+    public async Task<string> InitializeExtendedResourcesAsync(
+        [Description("The lesson ID")] int lessonId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("Initializing extended resources for lesson {LessonId}", lessonId);
+
+            var lesson = await GetAsync<LessonModel>($"/api/lessons/{lessonId}", cancellationToken);
+            if (lesson == null)
+            {
+                return JsonSerializer.Serialize(new { success = false, message = $"Lesson with ID {lessonId} not found" });
+            }
+
+            var emptyResources = ExtendedResourcesHelper.CreateDefault();
+            var request = new UpdateLessonRequest(Resources: ExtendedResourcesHelper.Serialize(emptyResources));
+            var updatedLesson = await PutAsync<LessonModel>($"/api/lessons/{lessonId}", request, cancellationToken);
+
+            return JsonSerializer.Serialize(new
+            {
+                success = true,
+                data = updatedLesson,
+                message = "Extended resources structure initialized successfully"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error initializing extended resources for lesson {LessonId}", lessonId);
+            return JsonSerializer.Serialize(new { success = false, message = ex.Message });
         }
     }
 

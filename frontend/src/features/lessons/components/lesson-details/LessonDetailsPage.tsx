@@ -11,7 +11,13 @@ import {
   Download,
   ExternalLink,
   Code,
-  Link2
+  Link2,
+  FileText,
+  Video,
+  Users,
+  Wrench,
+  GraduationCap,
+  Lightbulb
 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
@@ -26,6 +32,32 @@ import {
 import { EditLessonDialog, DeleteLessonDialog } from '../dialogs';
 import { formatLessonDuration, sortLessonsByOrder } from '../../lib';
 import type { LessonResource } from '../../types';
+
+// Extended interface for the new resource structure
+interface ExtendedLessonResources {
+  essential_reading?: Array<{
+    title: string;
+    author?: string;
+    source?: string;
+    description?: string;
+    url?: string;
+  }>;
+  videos?: Array<{
+    title: string;
+    platform?: string;
+    instructor?: string;
+    url?: string;
+  }>;
+  tools?: Array<{
+    name: string;
+    url: string;
+    description?: string;
+  }>;
+  research_papers?: string[];
+  community?: string[];
+  practice_exercises?: string[];
+  additional_resources?: string[];
+}
 
 // Helper function to get video embed URL
 const getVideoEmbedUrl = (url: string): string | null => {
@@ -138,19 +170,29 @@ export function LessonDetailsPage() {
     ? learningObjectivesRaw.split(/[,\n]/).map(obj => obj.trim()).filter(obj => obj.length > 0)
     : [];
 
-  // Parse resources (JSON string)
-  // Handle both string and undefined/null cases
+  // Parse resources (JSON string) - Support both old and new format
   let resources: LessonResource[] = [];
+  let extendedResources: ExtendedLessonResources | null = null;
   const resourcesRaw = (lesson as any).resources;
+  
   if (resourcesRaw && typeof resourcesRaw === 'string' && resourcesRaw.trim()) {
     try {
       const parsed = JSON.parse(resourcesRaw);
-      if (Array.isArray(parsed)) {
+      
+      // Check if it's the new extended format
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        if (parsed.essential_reading || parsed.videos || parsed.tools || parsed.research_papers) {
+          extendedResources = parsed as ExtendedLessonResources;
+        } else if (Array.isArray(parsed)) {
+          resources = parsed as LessonResource[];
+        }
+      } else if (Array.isArray(parsed)) {
         resources = parsed as LessonResource[];
       }
     } catch (e) {
       console.warn('Failed to parse lesson resources:', e);
       resources = [];
+      extendedResources = null;
     }
   }
 
@@ -166,6 +208,19 @@ export function LessonDetailsPage() {
       default:
         return <Link2 className="h-4 w-4" />;
     }
+  };
+
+  // Calculate total resources count for extended format
+  const getTotalResourcesCount = (extRes: ExtendedLessonResources): number => {
+    let count = 0;
+    if (extRes.essential_reading) count += extRes.essential_reading.length;
+    if (extRes.videos) count += extRes.videos.length;
+    if (extRes.tools) count += extRes.tools.length;
+    if (extRes.research_papers) count += extRes.research_papers.length;
+    if (extRes.community) count += extRes.community.length;
+    if (extRes.practice_exercises) count += extRes.practice_exercises.length;
+    if (extRes.additional_resources) count += extRes.additional_resources.length;
+    return count;
   };
 
   return (
@@ -407,15 +462,284 @@ export function LessonDetailsPage() {
               <CardTitle className="text-base flex items-center gap-2">
                 <Link2 className="h-4 w-4" />
                 Resources
-                {resources.length > 0 && (
+                {(extendedResources || resources.length > 0) && (
                   <Badge variant="secondary" className="ml-auto text-xs h-5 px-1.5">
-                    {resources.length}
+                    {extendedResources ? 
+                      getTotalResourcesCount(extendedResources) : 
+                      resources.length
+                    }
                   </Badge>
                 )}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4">
-              {resources.length > 0 ? (
+              {extendedResources ? (
+                <div className="space-y-6">
+                  {/* Essential Reading */}
+                  {extendedResources.essential_reading && extendedResources.essential_reading.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <FileText className="h-4 w-4 text-primary" />
+                        <h3 className="font-semibold text-sm">Essential Reading</h3>
+                        <Badge variant="outline" className="text-xs h-5">
+                          {extendedResources.essential_reading.length}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {extendedResources.essential_reading.map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 transition-colors group"
+                          >
+                            <div className="flex-shrink-0 w-8 h-8 rounded-md bg-blue-50 dark:bg-blue-950/50 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 transition-colors">
+                              <BookOpen className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm group-hover:text-primary transition-colors">
+                                {item.title}
+                              </div>
+                              {(item.author || item.source) && (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {item.author && <span>by {item.author}</span>}
+                                  {item.author && item.source && <span> • </span>}
+                                  {item.source && <span>{item.source}</span>}
+                                </div>
+                              )}
+                              {item.description && (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {item.description}
+                                </div>
+                              )}
+                            </div>
+                            {item.url && (
+                              <a
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-shrink-0"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Video Resources */}
+                  {extendedResources.videos && extendedResources.videos.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Video className="h-4 w-4 text-primary" />
+                        <h3 className="font-semibold text-sm">Video Resources</h3>
+                        <Badge variant="outline" className="text-xs h-5">
+                          {extendedResources.videos.length}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {extendedResources.videos.map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 transition-colors group"
+                          >
+                            <div className="flex-shrink-0 w-8 h-8 rounded-md bg-red-50 dark:bg-red-950/50 group-hover:bg-red-100 dark:group-hover:bg-red-900/50 flex items-center justify-center text-red-600 dark:text-red-400 transition-colors">
+                              <Play className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm group-hover:text-primary transition-colors">
+                                {item.title}
+                              </div>
+                              {(item.platform || item.instructor) && (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {item.platform && <span>{item.platform}</span>}
+                                  {item.platform && item.instructor && <span> • </span>}
+                                  {item.instructor && <span>{item.instructor}</span>}
+                                </div>
+                              )}
+                            </div>
+                            {item.url && (
+                              <a
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-shrink-0"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tools & Frameworks */}
+                  {extendedResources.tools && extendedResources.tools.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Wrench className="h-4 w-4 text-primary" />
+                        <h3 className="font-semibold text-sm">Tools & Frameworks</h3>
+                        <Badge variant="outline" className="text-xs h-5">
+                          {extendedResources.tools.length}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {extendedResources.tools.map((item, index) => (
+                          <a
+                            key={index}
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 transition-colors group"
+                          >
+                            <div className="flex-shrink-0 w-8 h-8 rounded-md bg-green-50 dark:bg-green-950/50 group-hover:bg-green-100 dark:group-hover:bg-green-900/50 flex items-center justify-center text-green-600 dark:text-green-400 transition-colors">
+                              <Code className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm group-hover:text-primary transition-colors">
+                                {item.name}
+                              </div>
+                              {item.description && (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {item.description}
+                                </div>
+                              )}
+                              <div className="text-xs text-blue-600 dark:text-blue-400 mt-1 truncate">
+                                {item.url}
+                              </div>
+                            </div>
+                            <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Research Papers */}
+                  {extendedResources.research_papers && extendedResources.research_papers.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <GraduationCap className="h-4 w-4 text-primary" />
+                        <h3 className="font-semibold text-sm">Research Papers</h3>
+                        <Badge variant="outline" className="text-xs h-5">
+                          {extendedResources.research_papers.length}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {extendedResources.research_papers.map((paper, index) => (
+                          <div
+                            key={index}
+                            className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 transition-colors group"
+                          >
+                            <div className="flex-shrink-0 w-8 h-8 rounded-md bg-purple-50 dark:bg-purple-950/50 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-400 transition-colors">
+                              <FileText className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm group-hover:text-primary transition-colors">
+                                {paper}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Community & Support */}
+                  {extendedResources.community && extendedResources.community.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Users className="h-4 w-4 text-primary" />
+                        <h3 className="font-semibold text-sm">Community & Support</h3>
+                        <Badge variant="outline" className="text-xs h-5">
+                          {extendedResources.community.length}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {extendedResources.community.map((community, index) => (
+                          <div
+                            key={index}
+                            className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 transition-colors group"
+                          >
+                            <div className="flex-shrink-0 w-8 h-8 rounded-md bg-orange-50 dark:bg-orange-950/50 group-hover:bg-orange-100 dark:group-hover:bg-orange-900/50 flex items-center justify-center text-orange-600 dark:text-orange-400 transition-colors">
+                              <Users className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm group-hover:text-primary transition-colors">
+                                {community}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Practice Exercises */}
+                  {extendedResources.practice_exercises && extendedResources.practice_exercises.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Lightbulb className="h-4 w-4 text-primary" />
+                        <h3 className="font-semibold text-sm">Practice Exercises</h3>
+                        <Badge variant="outline" className="text-xs h-5">
+                          {extendedResources.practice_exercises.length}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {extendedResources.practice_exercises.map((exercise, index) => (
+                          <div
+                            key={index}
+                            className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 transition-colors group"
+                          >
+                            <div className="flex-shrink-0 w-8 h-8 rounded-md bg-yellow-50 dark:bg-yellow-950/50 group-hover:bg-yellow-100 dark:group-hover:bg-yellow-900/50 flex items-center justify-center text-yellow-600 dark:text-yellow-400 transition-colors">
+                              <Target className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm group-hover:text-primary transition-colors">
+                                {exercise}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Additional Resources */}
+                  {extendedResources.additional_resources && extendedResources.additional_resources.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Link2 className="h-4 w-4 text-primary" />
+                        <h3 className="font-semibold text-sm">Additional Resources</h3>
+                        <Badge variant="outline" className="text-xs h-5">
+                          {extendedResources.additional_resources.length}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {extendedResources.additional_resources.map((resource, index) => (
+                          <div
+                            key={index}
+                            className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 transition-colors group"
+                          >
+                            <div className="flex-shrink-0 w-8 h-8 rounded-md bg-slate-50 dark:bg-slate-950/50 group-hover:bg-slate-100 dark:group-hover:bg-slate-900/50 flex items-center justify-center text-slate-600 dark:text-slate-400 transition-colors">
+                              <Link2 className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm group-hover:text-primary transition-colors">
+                                {resource}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : resources.length > 0 ? (
+                /* Fallback to old format */
                 <div className="space-y-2">
                   {resources.map((resource, index) => (
                     <a
