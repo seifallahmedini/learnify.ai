@@ -16,6 +16,8 @@
 | Variable | Description | Default Value |
 |----------|-------------|---------------|
 | `VITE_API_BASE_URL` | Base URL for the API server | `http://localhost:5271/api` |
+| `VITE_FUNCTIONS_BASE_URL` | Base URL for Azure Functions (separate host) | `http://localhost:7071/api` |
+| `VITE_AZURE_FUNCTION_CODE` | Azure Function key for protected endpoints (optional) |  |
 | `NODE_ENV` | Environment mode | `development` |
 
 ### Environment Files

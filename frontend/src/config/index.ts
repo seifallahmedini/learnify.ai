@@ -1,6 +1,7 @@
 // Environment configuration
 const config = {
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+  functionsBaseUrl: import.meta.env.VITE_FUNCTIONS_BASE_URL || 'http://localhost:7087/api',
   isDevelopment: import.meta.env.DEV,
   isProduction: import.meta.env.PROD
 }

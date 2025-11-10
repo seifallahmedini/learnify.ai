@@ -119,7 +119,7 @@ temp/
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
+# *.sln
 *.sw?
 
 # OS generated files

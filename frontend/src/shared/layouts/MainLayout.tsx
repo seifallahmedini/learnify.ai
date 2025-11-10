@@ -1,9 +1,9 @@
-import { Outlet, useLocation } from "react-router-dom"
+import { Outlet, useLocation, useMatches, useNavigation, ScrollRestoration } from "react-router-dom"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/shared/components/ui/sidebar"
 import { Separator } from "@/shared/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/shared/components/ui/breadcrumb"
 import { AppSidebar } from "./AppSidebar"
-import { Suspense, useMemo } from "react"
+import { Suspense, useMemo, useEffect, useRef } from "react"
 
 // Loading component for better UX
 function PageLoader() {
@@ -19,76 +19,91 @@ function PageLoader() {
 
 export function MainLayout() {
   const location = useLocation()
+  const matches = useMatches()
+  const navigation = useNavigation()
+  const mainRef = useRef<HTMLDivElement | null>(null)
   
-  // Build breadcrumb items based on path segments
+  // Build breadcrumb items based on route matches + handles
   const breadcrumbItems = useMemo(() => {
-    const segments = location.pathname.split('/').filter(Boolean)
+    const seen = new Set<string>()
     const items: Array<{ label: string; href: string }> = []
-    
-    // Always start with Dashboard
-    items.push({ label: 'Dashboard', href: '/' })
-    
-    // Build breadcrumb path
-    let currentPath = ''
-    segments.forEach((segment, index) => {
-      currentPath += `/${segment}`
-      
-      // Handle numeric IDs (route parameters)
-      if (!isNaN(Number(segment))) {
-        // Check if next segment is 'lessons' (nested route)
-        const nextSegment = segments[index + 1]
-        if (nextSegment === 'lessons' && segments[index - 1] === 'courses') {
-          // Skip this numeric segment, will be handled in next iteration
-          return
-        }
-        
-        // This is a parameter, use a generic label based on parent route
-        if (segments[index - 1] === 'courses') {
-          items.push({ label: 'Course Details', href: currentPath })
-        } else if (segments[index - 1] === 'lessons') {
-          items.push({ label: 'Lesson Details', href: currentPath })
-        } else if (segments[index - 1] === 'quizzes') {
-          items.push({ label: 'Quiz Details', href: currentPath })
-        } else if (segments[index - 1] === 'categories') {
-          items.push({ label: 'Category Details', href: currentPath })
-        } else if (segments[index - 1] === 'users') {
-          items.push({ label: 'User Details', href: currentPath })
-        } else {
-          items.push({ label: 'Details', href: currentPath })
-        }
-      } else {
-        // Handle special nested routes
-        const prevSegment = segments[index - 1]
-        const prevIsNumeric = index > 0 && !isNaN(Number(prevSegment))
-        
-        if (segment === 'lessons' && prevIsNumeric && segments[index - 2] === 'courses') {
-          // This is /courses/:id/lessons route
-          items.push({ label: 'Course Lessons', href: currentPath })
-        } else if (segment === 'quizzes' && prevIsNumeric && segments[index - 2] === 'courses') {
-          // This is /courses/:id/quizzes route
-          items.push({ label: 'Course Quizzes', href: currentPath })
-        } else {
-          // Regular route segment, capitalize it
-          const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ')
-          items.push({ label, href: currentPath })
+    matches.forEach(match => {
+      const pathname = match.pathname || '/'
+      if (seen.has(pathname)) return
+      seen.add(pathname)
+      // Derive label from handle if provided
+      let label: string | undefined
+      const handle: any = match.handle
+      if (handle) {
+        if (typeof handle === 'function') {
+          const res = handle({ params: match.params })
+          if (typeof res === 'string') label = res
+          else if (res?.breadcrumb) label = res.breadcrumb
+        } else if (handle.breadcrumb) {
+          if (typeof handle.breadcrumb === 'function') {
+            label = handle.breadcrumb({ params: match.params })
+          } else {
+            label = handle.breadcrumb
+          }
         }
       }
+      if (!label) {
+        if (pathname === '/') label = 'Dashboard'
+        else {
+          const segments = pathname.split('/').filter(Boolean)
+          const last = segments[segments.length - 1]
+          if (/^[0-9]+$/.test(last)) {
+            const parent = segments[segments.length - 2]
+            switch (parent) {
+              case 'courses': label = 'Course'; break
+              case 'lessons': label = 'Lesson'; break
+              case 'categories': label = 'Category'; break
+              case 'users': label = 'User'; break
+              case 'quizzes': label = 'Quiz'; break
+              default: label = 'Details'
+            }
+          } else {
+            label = last.charAt(0).toUpperCase() + last.slice(1).replace(/-/g, ' ')
+          }
+        }
+      }
+      items.push({ label, href: pathname })
     })
-    
     return items
+  }, [matches])
+
+  // Update document title from last breadcrumb
+  useEffect(() => {
+    const last = breadcrumbItems[breadcrumbItems.length - 1]
+    if (last) {
+      document.title = `${last.label} | Learnify.ai`
+    }
+  }, [breadcrumbItems])
+
+  // Focus main content on path change for accessibility
+  useEffect(() => {
+    mainRef.current?.focus()
   }, [location.pathname])
   
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-background">
+        {/* Skip link for keyboard users */}
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm z-50">Skip to content</a>
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col overflow-hidden">
           {/* Header with sidebar trigger and breadcrumbs */}
           <header className="sticky top-0 z-40 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" role="banner">
+            {/* Route transition progress bar */}
+            {navigation.state === 'loading' && (
+              <div className="h-0.5 w-full bg-primary/20">
+                <div className="h-full w-1/3 animate-[progress_1.2s_linear_infinite] bg-primary" />
+              </div>
+            )}
             <div className="flex h-14 items-center gap-4 px-4 lg:px-6">
               <SidebarTrigger className="-ml-1" aria-label="Toggle sidebar navigation" />
               <Separator orientation="vertical" className="h-4" aria-hidden="true" />
-              <Breadcrumb role="navigation" aria-label="Breadcrumb navigation">
+              <Breadcrumb role="navigation" aria-label="Breadcrumb">
                 <BreadcrumbList>
                   {breadcrumbItems.map((item, index) => {
                     const isLast = index === breadcrumbItems.length - 1
@@ -117,10 +132,11 @@ export function MainLayout() {
           </header>
 
           {/* Main content area */}
-          <main className="flex-1 overflow-auto" role="main" aria-label="Main content">
+          <main id="main-content" ref={mainRef} tabIndex={-1} className="flex-1 overflow-auto outline-none" role="main" aria-label="Main content">
             <div className="container max-w-screen-2xl mx-auto p-4 lg:p-6 space-y-6">
               <Suspense fallback={<PageLoader />}>
                 <Outlet />
+                <ScrollRestoration />
               </Suspense>
             </div>
           </main>

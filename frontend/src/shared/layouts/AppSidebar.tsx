@@ -1,4 +1,5 @@
-import { Link, useLocation } from "react-router-dom"
+import { NavLink, useLocation, matchPath } from "react-router-dom"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Sidebar,
   SidebarContent,
@@ -10,6 +11,7 @@ import {
   SidebarGroupLabel,
   SidebarGroup,
   useSidebar,
+  SidebarInput,
 } from "@/shared/components/ui/sidebar"
 import {
   Home,
@@ -17,10 +19,11 @@ import {
   Users,
   User,
   GraduationCap,
-  Award,
   LogOut,
   FolderOpen,
-  BookOpenCheck,
+  Search,
+  Layers3,
+  Bot,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar"
 import { Badge } from "@/shared/components/ui/badge"
@@ -50,7 +53,7 @@ const menuItems: MenuGroup[] = [
         title: "Dashboard",
         url: "/",
         icon: Home,
-        description: "Overview and analytics",
+        description: "Overview and quick insights",
       },
     ],
   },
@@ -70,21 +73,22 @@ const menuItems: MenuGroup[] = [
         description: "Course categories",
       },
       {
-        title: "Lessons",
-        url: "/lessons",
-        icon: BookOpenCheck,
-        description: "Individual lesson content",
+        title: "Learning Paths",
+        url: "/learning-paths",
+        icon: Layers3,
+        description: "Curated course sequences",
       },
     ],
   },
   {
-    title: "Assessment",
+    title: "Assistant",
     items: [
       {
-        title: "Quizzes",
-        url: "/courses",
-        icon: Award,
-        description: "Quizzes and assessments (via courses)",
+        title: "AI Assistant",
+        url: "/assistant",
+        icon: Bot,
+        description: "Chat with Learnify AI",
+        badge: "Beta",
       },
     ],
   },
@@ -114,35 +118,64 @@ const menuItems: MenuGroup[] = [
 
 export function AppSidebar() {
   const location = useLocation()
-  const { open } = useSidebar()
+  const { open, setOpen } = useSidebar()
+  const [query, setQuery] = useState("")
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
-  // Check if a route is active - handles exact match for dashboard and prefix match for others
-  const isActive = (url: string, itemTitle?: string): boolean => {
+  // Check if a route is active - exact for dashboard, pattern match for others
+  const isActive = (url: string): boolean => {
     const pathname = location.pathname
-    
-    // Exact match for dashboard
-    if (url === "/") {
-      return pathname === "/"
+
+    // Dashboard exact
+    if (url === "/") return pathname === "/"
+
+    // Courses: list, details, lessons, and quizzes are considered active
+    if (url === "/courses") {
+      const inCourses = Boolean(
+        matchPath({ path: "/courses" }, pathname) ||
+        matchPath({ path: "/courses/:courseId" }, pathname) ||
+        matchPath({ path: "/courses/:courseId/lessons" }, pathname) ||
+        matchPath({ path: "/courses/:courseId/quizzes" }, pathname)
+      )
+      return inCourses
     }
-    
-    // Special handling for quizzes - highlight when on any quiz-related route
-    if (itemTitle === "Quizzes") {
-      return pathname.includes("/quizzes")
-    }
-    
-    // For courses - active on course pages, but not when exclusively viewing quizzes
-    // (quizzes can be accessed through courses, but we want the quizzes item highlighted)
-    if (url === "/courses" && itemTitle !== "Quizzes") {
-      // Active on /courses or /courses/:id, but not on /courses/:id/quizzes
-      return pathname.startsWith("/courses") && !pathname.endsWith("/quizzes") && !pathname.includes("/quizzes/")
-    }
-    
-    // Default: prefix matching
-    return pathname.startsWith(url)
+
+    // Groups: prefix match via matchPath wildcard
+    return Boolean(
+      matchPath({ path: `${url}` }, pathname) ||
+      matchPath({ path: `${url}/*` }, pathname)
+    )
   }
 
+  // Filter items by search query across groups
+  const filteredMenu = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return menuItems
+    return menuItems
+      .map(group => ({
+        ...group,
+        items: group.items.filter(i =>
+          i.title.toLowerCase().includes(q) || i.description.toLowerCase().includes(q)
+        ),
+      }))
+      .filter(group => group.items.length > 0)
+  }, [query])
+
+  // Keyboard shortcut: '/' to focus search, 'Ctrl/Cmd+B' handled by provider for sidebar toggle
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault()
+        setOpen(true)
+        inputRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [setOpen])
+
   return (
-    <Sidebar collapsible="icon" className="border-r">
+    <Sidebar collapsible="icon" className="border-r" aria-label="Primary navigation sidebar">
       <SidebarHeader className="h-16 border-b border-sidebar-border">
         <div className={`flex items-center gap-3 px-4 ${!open ? 'justify-center' : ''}`}>
           <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
@@ -161,16 +194,31 @@ export function AppSidebar() {
 
       <SidebarContent className="px-3 py-2">
         <div className="space-y-3">
-          {menuItems.map((group, groupIndex) => (
-            <SidebarGroup key={`group-${groupIndex}`} className="space-y-2">
+          {open && (
+            <div className="px-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <SidebarInput
+                  ref={inputRef as any}
+                  placeholder="Search navigation... (/ to focus)"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="pl-8"
+                  aria-label="Search navigation"
+                />
+              </div>
+            </div>
+          )}
+          {(query ? filteredMenu : menuItems).map((group, groupIndex) => (
+            <SidebarGroup key={`group-${groupIndex}-${group.title}`} className="space-y-2">
               {open && (
-                <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2">
+                <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2" aria-label={`${group.title} section`}>
                   {group.title}
                 </SidebarGroupLabel>
               )}
               <SidebarMenu className="space-y-0.5">
                 {group.items.map((item) => {
-                  const active = isActive(item.url, item.title)
+                  const active = isActive(item.url)
                   return (
                     <SidebarMenuItem key={item.url}>
                       <SidebarMenuButton
@@ -183,9 +231,12 @@ export function AppSidebar() {
                             : 'hover:bg-muted/50'
                         } ${!open ? 'justify-center' : ''}`}
                       >
-                        <Link 
-                          to={item.url} 
-                          className={`flex items-center gap-3 w-full ${!open ? 'justify-center' : ''}`}
+                        <NavLink
+                          to={item.url}
+                          aria-current={active ? 'page' : undefined}
+                          className={`flex items-center gap-3 w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md ${!open ? 'justify-center' : ''}`}
+                          end={item.url === '/'}
+                          title={!open ? item.description : undefined}
                         >
                           <item.icon 
                             className={`size-5 shrink-0 transition-colors duration-200 ${
@@ -218,13 +269,13 @@ export function AppSidebar() {
                               )}
                             </>
                           )}
-                        </Link>
+                        </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )
                 })}
               </SidebarMenu>
-              {groupIndex < menuItems.length - 1 && open && (
+              {groupIndex < (query ? filteredMenu : menuItems).length - 1 && open && (
                 <div className="px-2">
                   <Separator className="my-2" />
                 </div>
